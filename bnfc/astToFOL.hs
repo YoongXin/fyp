@@ -12,6 +12,7 @@ import Prelude
   , Eq
   , Read
   )
+
 import System.Environment ( getArgs )
 import System.Exit        ( exitFailure )
 import Control.Monad      ( when )
@@ -87,6 +88,10 @@ subjectToTerm :: Subject -> Term
 subjectToTerm (SubQuoted str) = Var str
 subjectToTerm (SubUnQuoted ident) = Var (getIdentString ident)
 
+subjectToString :: Subject -> String
+subjectToString (SubQuoted str) = str
+subjectToString (SubUnQuoted ident) = getIdentString ident
+
 numericalExpressionToTerm :: NumericalExpression -> Term
 numericalExpressionToTerm (NumExpNum (NumInt n)) = Var (show n)  -- Assuming you want to represent numbers as variables
 numericalExpressionToTerm (NumExpObj numObj) = numericalObjectToTerm numObj
@@ -107,5 +112,30 @@ numericalObjectToTerm (NumEur _ (NumInt n)) = Var ("€" ++ show n)
 numericalObjectToTerm (NumAmount subject) = subjectToTerm subject
 
 conditionToFOL :: Condition -> FOLFormula
+conditionToFOL (CondiSim simpleCondition) = simpleConditionToFOL simpleConditon
+conditionToFOL (CondiOr simpleCondition condition) = Or (simpleConditionToFOL simpleCondition) (conditionToFOL condition)
+conditionToFOL (CondiAnd simpleCondition condition) = And (simpleConditionToFOL simpleCondition) (conditionToFOL condition)
+
+receiverToTerm :: Receiver -> Term
+receiverToTerm (Rec subject) = subjectToterm subject
+
+dateToTerm :: Date -> Term
+dateToTerm (DateSpe day month year) = Var 
+dateToTerm (DateAny) = 
+dateToTerm (DateA) = 
+dateToTerm (DateThe)= 
+dateToTerm (DateMonRange temporalQuantifier month) = 
+dateToTerm (DateYearRange temporalQuantifier year) = 
+dateToTerm (DateRange temporalRange) =
 
 simpleStatementToFOL :: SimpleStatement -> FOLFormula
+simpleStatementToFOL (SimStateOne _ Holds subject ModalPermi verb object receiver date) =
+    Exists (subjectToString subject) $ Predicate (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateOne _ Holds subject ModalForbi verb object receiver date) =
+    Not $ Exists "subject" $ Predicate (getVerbString verb) [Var "subject", getTerm receiver, getTerm date]
+
+simpleStatementToFOL (SimStateOne _ Holds subject ModalObli verb object receiver date) =
+    ForAll "subject" $ Predicate (getVerbString verb) [Var "subject", getTerm receiver, getTerm date]
+
+simpleConditionToFOL :: SimpleCondition -> FOLFormula
