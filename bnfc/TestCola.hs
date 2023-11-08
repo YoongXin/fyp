@@ -24,25 +24,6 @@ import ParCola   ( pContract, myLexer )
 import PrintCola ( Print, printTree )
 import SkelCola  ()
 
-import Data.List (intercalate)
-
--- Define a custom data type to represent FOL formulas
-data Term 
-    = Var String
-    | Fun String [Term]
-  deriving (Eq, Show, Read)
-
-data Formula 
-    = Pred String [Term]
-    | Equal Term Term
-    | Not Formula
-    | And Formula Formula
-    | Or Formula Formula
-    | Implies Formula Formula
-    | Exists String Formula
-    | Forall String Formula
-  deriving (Eq, Show, Read)
-
 type Err        = Either String
 type ParseFun a = [Token] -> Err a
 type Verbosity  = Int
@@ -83,20 +64,6 @@ usage = do
     , "  (files)         Parse content of files verbosely."
     , "  -s (files)      Silent mode. Parse content of files silently."
     ]
-
-
--- Function to convert the AST to FOL formula
-astToFOL :: Component -> FOLFormula
-astToFOL (ComState (StateSim (SimStateOne (IDSim (NumInt _)) _ subject _ verb object receiver date))) =
-    -- Construct the FOL formula
-    ForAll "Bob" (Predicate "deliver" [show subject, show receiver, show object, show date])
-
-
--- Helper function to pretty print the FOL formula
-showFOL :: FOLFormula -> String
-showFOL (ForAll var formula) = "For all (" ++ var ++ "), " ++ showFOL formula
-showFOL (Predicate name args) = name ++ "(" ++ intercalate ", " args ++ ")"
-showFOL _ = ""  -- Implement for other cases
 
 main :: IO ()
 main = do
