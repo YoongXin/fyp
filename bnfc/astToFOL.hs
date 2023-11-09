@@ -119,12 +119,35 @@ conditionToFOL (CondiAnd simpleCondition condition) = And (simpleConditionToFOL 
 receiverToTerm :: Receiver -> Term
 receiverToTerm (Rec subject) = subjectToterm subject
 
+numToString :: Num -> String
+numToString (NumInt num) = show num
+
+monthToString :: Month -> String
+monthToString MJan = "January"
+monthToString MFeb = "February"
+monthToString MMar = "March"
+monthToString MApr = "April"
+monthToString MMay = "May"
+monthToString MJun = "June"
+monthToString MJul = "July"
+monthToString MAug = "August"
+monthToString MSep = "September"
+monthToString MOct = "October"
+monthToString MNov = "November"
+monthToString MDec = "December"
+
+tempQuanToString :: TemporalQuantifier -> String
+tempQuanToString TempWithin = "Within"
+tempQuanToString TempAfter = "After"
+tempQuanToString TempBefore = "Before"
+tempQuanToString TempIn = "In"
+
 dateToTerm :: Date -> Term
-dateToTerm (DateSpe day month year) = Var 
-dateToTerm (DateAny) = 
-dateToTerm (DateA) = 
-dateToTerm (DateThe)= 
-dateToTerm (DateMonRange temporalQuantifier month) = 
+dateToTerm (DateSpe day month year) = Var ((numToString day) ++ (monthToString month) ++ (numToString year))
+dateToTerm (DateAny) = Var "AnyDate"
+dateToTerm (DateA) = Var "ADate"
+dateToTerm (DateThe)= Var "TheDate"
+dateToTerm (DateMonRange temporalQuantifier month) = Fun (tempQuanToString temporalQuantifier) []
 dateToTerm (DateYearRange temporalQuantifier year) = 
 dateToTerm (DateRange temporalRange) =
 
