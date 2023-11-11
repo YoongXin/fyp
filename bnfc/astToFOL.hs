@@ -1,4 +1,3 @@
-module Main where
 
 import Prelude
   ( ($), (.)
@@ -50,15 +49,15 @@ componentToFOL :: Component -> FOLFormula
 componentToFOL (ComDef definition) = definitionToFOL definition
 componentToFOL (ComConDef conditionalDefinition) = conditionalDefinitionToFOL conditionalDefinition
 componentToFOL (ComState statement) = statementToFOL statement
-componentToFOL (ComConState conditionalStatement) = conditionalStatementToFOL consitionalStatement
+componentToFOL (ComConState conditionalStatement) = conditionalStatementToFOL conditionalStatement
 
 definitionToFOL :: Definition -> FOLFormula
 definitionToFOL (DefSim simpleDefinition) = simpleDefinitionToFOL simpleDefinition
 definitionToFOL (DefAnd simpleDefinition definition) = And (simpleDefinitionToFOL simpleDefinition) (definitionToFOL definition)
 
 conditionalDefinitionToFOL :: ConditionalDefinition -> FOLFormula
-conditionalDefinitionToFOL (ConDefIf definition condition) = Implies (conditiontoFOL condition) (definitionToFOL definition)
-conditionalDefinitionToFOL (ConDefIfThen condition definition) = Implies (conditiontoFOL condition) (definitionToFOL definition)
+conditionalDefinitionToFOL (ConDefIf definition condition) = Implies (conditionToFOL condition) (definitionToFOL definition)
+conditionalDefinitionToFOL (ConDefIfThen condition definition) = Implies (conditionToFOL condition) (definitionToFOL definition)
 
 statementToFOL :: Statement -> FOLFormula
 statementToFOL (StateSim simpleStatement) = simpleStatementToFOL simpleStatement
@@ -112,12 +111,12 @@ numericalObjectToTerm (NumEur _ (NumInt n)) = Var ("€" ++ show n)
 numericalObjectToTerm (NumAmount subject) = subjectToTerm subject
 
 conditionToFOL :: Condition -> FOLFormula
-conditionToFOL (CondiSim simpleCondition) = simpleConditionToFOL simpleConditon
+conditionToFOL (CondiSim simpleCondition) = simpleConditionToFOL simpleCondition
 conditionToFOL (CondiOr simpleCondition condition) = Or (simpleConditionToFOL simpleCondition) (conditionToFOL condition)
 conditionToFOL (CondiAnd simpleCondition condition) = And (simpleConditionToFOL simpleCondition) (conditionToFOL condition)
 
 receiverToTerm :: Receiver -> Term
-receiverToTerm (Rec subject) = subjectToterm subject
+receiverToTerm (Rec subject) = subjectToTerm subject
 
 numToString :: Num -> String
 numToString (NumInt num) = show num
@@ -142,23 +141,184 @@ tempQuanToString TempAfter = "After"
 tempQuanToString TempBefore = "Before"
 tempQuanToString TempIn = "In"
 
+tempRangeToTerm :: TemporalRange -> Term
+tempRangeToTerm (BtwMonth month1 month2) = Fun "between" [Var (monthToString month1), Var (monthToString month2)]
+tempRangeToTerm (BtwYear year1 year2) = Fun "between" [Var (numToString year1), Var (numToString year2)]
+
 dateToTerm :: Date -> Term
 dateToTerm (DateSpe day month year) = Var ((numToString day) ++ (monthToString month) ++ (numToString year))
 dateToTerm (DateAny) = Var "AnyDate"
 dateToTerm (DateA) = Var "ADate"
 dateToTerm (DateThe)= Var "TheDate"
-dateToTerm (DateMonRange temporalQuantifier month) = Fun (tempQuanToString temporalQuantifier) []
-dateToTerm (DateYearRange temporalQuantifier year) = 
-dateToTerm (DateRange temporalRange) =
+dateToTerm (DateMonRange temporalQuantifier month) = Fun (tempQuanToString temporalQuantifier) [Var (monthToString month)]
+dateToTerm (DateYearRange temporalQuantifier year) = Fun (tempQuanToString temporalQuantifier) [Var (numToString year)]
+dateToTerm (DateRange temporalRange) = tempRangeToTerm temporalRange
+
+getVerbString :: Verb -> String
+getVerbString VDel = "deliver"
+getVerbString VPay = "pay"
+getVerbString VCharge = "charge"
+getVerbString VRefund = "refund"
+
+getVerbStatusString :: VerbStatus -> String
+getVerbStatusString VSDel = "delivered"
+getVerbStatusString VSPay = "payed"
+getVerbStatusString VSCharge = "charged"
+getVerbStatusString VSRefund = "refunded"
 
 simpleStatementToFOL :: SimpleStatement -> FOLFormula
-simpleStatementToFOL (SimStateOne _ Holds subject ModalPermi verb object receiver date) =
-    Exists (subjectToString subject) $ Predicate (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+simpleStatementToFOL (SimStateOne id HoldYes subject ModalPermi verb object receiver date) =
+    Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
 
-simpleStatementToFOL (SimStateOne _ Holds subject ModalForbi verb object receiver date) =
-    Not $ Exists "subject" $ Predicate (getVerbString verb) [Var "subject", getTerm receiver, getTerm date]
+simpleStatementToFOL (SimStateOne id HoldNo subject ModalPermi verb object receiver date) =
+    Not $ Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
 
-simpleStatementToFOL (SimStateOne _ Holds subject ModalObli verb object receiver date) =
-    ForAll "subject" $ Predicate (getVerbString verb) [Var "subject", getTerm receiver, getTerm date]
+simpleStatementToFOL (SimStateOne id HoldYes subject ModalForbi verb object receiver date) =
+    Not $ Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateOne id HoldNo subject ModalForbi verb object receiver date) =
+    Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateOne id HoldYes subject (ModalObli obli) verb object receiver date) =
+    ForAll (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateOne id HoldNo subject (ModalObli obli) verb object receiver date) =
+    Not $ ForAll (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateTwo id HoldYes subject date ModalPermi verb object receiver) = 
+    Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateTwo id HoldNo subject date ModalPermi verb object receiver) = 
+    Not $ Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateTwo id HoldYes subject date ModalForbi verb object receiver) = 
+    Not $ Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateTwo id HoldNo subject date ModalForbi verb object receiver) = 
+    Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateTwo id HoldYes subject date (ModalObli obli) verb object receiver) = 
+    ForAll (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateTwo id HoldNo subject date (ModalObli obli) verb object receiver) = 
+    Not $ ForAll (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateThree id HoldYes date subject ModalPermi verb object receiver) = 
+    Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateThree id HoldNo date subject ModalPermi verb object receiver) = 
+    Not $ Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateThree id HoldYes date subject ModalForbi verb object receiver) = 
+    Not $ Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateThree id HoldNo date subject ModalForbi verb object receiver) = 
+    Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateThree id HoldYes date subject (ModalObli obli) verb object receiver) = 
+    ForAll (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateThree id HoldNo date subject (ModalObli obli) verb object receiver) = 
+    Not $ ForAll (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateOneNH id subject ModalPermi verb object receiver date) =
+    Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateOneNH id subject ModalForbi verb object receiver date) =
+    Not $ Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+    
+simpleStatementToFOL (SimStateOneNH id subject (ModalObli obli) verb object receiver date) =
+    ForAll (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateTwoNH id subject date ModalPermi verb object receiver) =
+    Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateTwoNH id subject date ModalForbi verb object receiver) = 
+    Not $ Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+    
+simpleStatementToFOL (SimStateTwoNH id subject date (ModalObli obli) verb object receiver) = 
+    ForAll (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateThreeNH id date subject ModalPermi verb object receiver) =
+    Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleStatementToFOL (SimStateThreeNH id date subject ModalForbi verb object receiver) = 
+    Not $ Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+    
+simpleStatementToFOL (SimStateThreeNH id date subject (ModalObli obli) verb object receiver) = 
+    ForAll (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
 
 simpleConditionToFOL :: SimpleCondition -> FOLFormula
+simpleConditionToFOL (SimConOne id HoldYes subject verbStatus object receiver date) =
+    ForAll (subjectToString subject) $ Pred (getVerbStatusString verbStatus) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConOne id HoldNo subject verbStatus object receiver date) =
+    Not $ ForAll (subjectToString subject) $ Pred (getVerbStatusString verbStatus) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConTwo id HoldYes subject date verbStatus object receiver) =
+    ForAll (subjectToString subject) $ Pred (getVerbStatusString verbStatus) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConTwo id HoldNo subject date verbStatus object receiver) =
+    Not $ ForAll (subjectToString subject) $ Pred (getVerbStatusString verbStatus) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConThree id HoldYes date subject verbStatus object receiver) =
+    ForAll (subjectToString subject) $ Pred (getVerbStatusString verbStatus) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConThree id HoldNo date subject verbStatus object receiver) =
+    Not $ ForAll (subjectToString subject) $ Pred (getVerbStatusString verbStatus) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConFour id HoldYes subject ModalPermi verb object receiver date) =
+    Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConFour id HoldNo subject ModalPermi verb object receiver date) =
+    Not $ Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConFour id HoldYes subject ModalForbi verb object receiver date) =
+    Not $ Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConFour id HoldNo subject ModalForbi verb object receiver date) =
+    Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConFour id HoldYes subject (ModalObli obli) verb object receiver date) =
+    ForAll (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConFour id HoldNo subject (ModalObli obli) verb object receiver date) =
+    Not $ ForAll (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date] 
+
+simpleConditionToFOL (SimConFive id HoldYes booleanExpression) = boolExToFOL booleanExpression
+
+simpleConditionToFOL (SimConFive id HoldNo booleanExpression) = Not $ boolExToFOL booleanExpression
+
+simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver date) =
+    ForAll (subjectToString subject) $ Pred (getVerbStatusString verbStatus) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConTwoNH id subject date verbStatus object receiver) =
+    ForAll (subjectToString subject) $ Pred (getVerbStatusString verbStatus) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConThreeNH id date subject verbStatus object receiver) =
+    ForAll (subjectToString subject) $ Pred (getVerbStatusString verbStatus) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConFourNH id subject ModalPermi verb object receiver date) =
+    Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConFourNH id subject ModalForbi verb object receiver date) =
+    Not $ Exists (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConFourNH id subject (ModalObli obli) verb object receiver date) =
+    ForAll (subjectToString subject) $ Pred (getVerbString verb) [subjectToTerm subject, receiverToTerm receiver, dateToTerm date]
+
+simpleConditionToFOL (SimConFiveNH id booleanExpression) = boolExToFOL booleanExpression
+
+boolExToFOL :: BooleanExpression -> FOLFormula
+boolExToFOL (BoolEx subject1 VSDel CompareLess subject2) = ForAll (subjectToString subject1) $ Pred "DeliveredLess" [subjectToTerm subject1, subjectToTerm subject2]
+boolExToFOL (BoolEx subject1 VSDel (CompareEq eq) subject2) = ForAll (subjectToString subject1) $ Pred "DeliveredEqual" [subjectToTerm subject1, subjectToTerm subject2]
+boolExToFOL (BoolEx subject1 VSDel (CompareMore more) subject2) = ForAll (subjectToString subject1) $ Pred "DeliveredMore" [subjectToTerm subject1, subjectToTerm subject2]
+boolExToFOL (BoolEx subject1 VSPay CompareLess subject2) = ForAll (subjectToString subject1) $ Pred "PaidLess" [subjectToTerm subject1, subjectToTerm subject2]
+boolExToFOL (BoolEx subject1 VSPay (CompareEq eq) subject2) = ForAll (subjectToString subject1) $ Pred "PaidEqual" [subjectToTerm subject1, subjectToTerm subject2]
+boolExToFOL (BoolEx subject1 VSPay (CompareMore more) subject2) = ForAll (subjectToString subject1) $ Pred "PaidMore" [subjectToTerm subject1, subjectToTerm subject2]
+boolExToFOL (BoolEx subject1 VSCharge CompareLess subject2) = ForAll (subjectToString subject1) $ Pred "ChargedLess" [subjectToTerm subject1, subjectToTerm subject2]
+boolExToFOL (BoolEx subject1 VSCharge (CompareEq eq) subject2) = ForAll (subjectToString subject1) $ Pred "ChargedEqual" [subjectToTerm subject1, subjectToTerm subject2]
+boolExToFOL (BoolEx subject1 VSCharge (CompareMore more) subject2) = ForAll (subjectToString subject1) $ Pred "ChargedMore" [subjectToTerm subject1, subjectToTerm subject2]
+boolExToFOL (BoolEx subject1 VSRefund CompareLess subject2) = ForAll (subjectToString subject1) $ Pred "RefundedLess" [subjectToTerm subject1, subjectToTerm subject2]
+boolExToFOL (BoolEx subject1 VSRefund (CompareEq eq) subject2) = ForAll (subjectToString subject1) $ Pred "RefundedEqual" [subjectToTerm subject1, subjectToTerm subject2]
+boolExToFOL (BoolEx subject1 VSRefund (CompareMore more) subject2) = ForAll (subjectToString subject1) $ Pred "RefundedMore" [subjectToTerm subject1, subjectToTerm subject2]
