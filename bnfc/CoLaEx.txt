@@ -4,3 +4,5 @@
 C-AND
 [4] it is the case that Bob may deliver REPORT receipt to Alice on ANYDATE AND
 [5] it is the case that Bob is forbidden to charge AMOUNT \"delivery fee\" to Alice on ANYDATE "
+
+" IF [1] it is the case that Alice paid POUNDS 100 to Bob on the 1 April 2021 OR [2] it is the case that Alice paid DOLLARS 120 to Bob on the 1 April 2021 THEN [3] it is the case that Bob must deliver OTHEROBJECT bicycle to Alice on the 5 April 2021 C-AND [4] it is the case that Bob may deliver REPORT receipt to Alice on ANYDATE AND [5] it is the case that Bob is forbidden to charge AMOUNT \"delivery fee\" to Alice on ANYDATE "

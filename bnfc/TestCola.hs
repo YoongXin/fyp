@@ -12,17 +12,19 @@ import Prelude
   , Show, show
   , IO, (>>), (>>=), mapM_, putStrLn
   , FilePath
-  , getContents, readFile
+  , getContents, readFile, error
   )
 import System.Environment ( getArgs )
 import System.Exit        ( exitFailure )
 import Control.Monad      ( when )
+import Data.Either        (fromRight)
 
 import AbsCola   
 import LexCola   ( Token, mkPosToken )
 import ParCola   ( pContract, myLexer )
 import PrintCola ( Print, printTree )
 import SkelCola  ()
+import AstToFOL 
 
 type Err        = Either String
 type ParseFun a = [Token] -> Err a
@@ -49,6 +51,19 @@ run v p s =
   where
   ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]
+
+runAST :: ParseFun Contract -> String -> Either String Contract
+runAST p s = case p ts of
+  Right contract -> Right contract
+  Left parseError -> Left $ "Parse failed: " 
+  where
+    ts = myLexer s
+
+parseSentence :: String -> Contract
+parseSentence sentence =
+  case runAST pContract sentence of
+    Left errMsg -> error ("Parsing failed: " ++ errMsg)
+    Right parsedContract -> parsedContract
 
 showTree :: (Show a, Print a) => Int -> a -> IO ()
 showTree v tree = do
