@@ -67,7 +67,7 @@ statementToFOL (StateAnd simpleStatement statement) = And (simpleStatementToFOL 
 
 conditionalStatementToFOL :: ConditionalStatement -> FOLFormula
 conditionalStatementToFOL (ConStateIf statement condition) = Implies (conditionToFOL condition) (statementToFOL statement)
-conditionalStatementToFOl (ConStateIfThen condition statement) = Implies (conditionToFOL condition) (statementToFOL statement)
+conditionalStatementToFOL (ConStateIfThen condition statement) = Implies (conditionToFOL condition) (statementToFOL statement)
 
 simpleDefinitionToFOL :: SimpleDefinition -> FOLFormula
 simpleDefinitionToFOL (SimDefIs id subject1 subject2) =
