@@ -1,0 +1,153 @@
+ConEmpty. Contract ::= ;
+ConComp. Contract ::= Component ;
+ConAnd. Contract ::= Component "C-AND" Contract ;
+
+ComDef. Component ::= Definition ;
+ComConDef. Component ::= ConditionalDefinition ;
+ComState. Component ::= Statement ;
+ComConState. Component ::= ConditionalStatement ;
+
+DefSim. Definition ::= SimpleDefinition ;
+DefAnd. Definition ::= SimpleDefinition "AND" Definition ;
+
+SimDefIs. SimpleDefinition ::= ID Subject "IS" Subject ;
+SimDefEq. SimpleDefinition ::= ID Subject "EQUALS" NumericalExpression ;
+
+NumExpNum. NumericalExpression ::= Num ;
+NumExpObj. NumericalExpression ::= NumericalObject ;
+NumExpOp. NumericalExpression ::= NumericalExpression Operator NumericalExpression ;
+
+OpPlus. Operator ::= "PLUS" ;
+OpMin. Operator ::= "MINUS" ;
+OpMult. Operator ::= "TIMES" ;
+OpDiv. Operator ::= "DIVIDE" ;
+
+ConDefIf. ConditionalDefinition ::= Definition "IF" Condition ;
+ConDefIfThen. ConditionalDefinition ::= "IF" Condition "THEN" Definition ;
+
+StateSim. Statement ::= SimpleStatement ;
+StateOr. Statement ::= SimpleStatement "OR" Statement ;
+StateAnd. Statement ::= SimpleStatement "AND" Statement ;
+
+ConStateIf. ConditionalStatement ::= Statement "IF" Condition;
+ConStateIfThen. ConditionalStatement ::= "IF" Condition "THEN" Statement;
+
+SimStateOne. SimpleStatement ::= ID Holds Subject ModalVerb Verb Object Receiver Date ;
+SimStateTwo. SimpleStatement ::= ID Holds Subject Date ModalVerb Verb Object Receiver ;
+SimStateThree. SimpleStatement ::= ID Holds Date Subject ModalVerb Verb Object Receiver ;
+SimStateOneNH. SimpleStatement ::= ID Subject ModalVerb Verb Object Receiver Date ;
+SimStateTwoNH. SimpleStatement ::= ID Subject Date ModalVerb Verb Object Receiver ;
+SimStateThreeNH. SimpleStatement ::= ID Date Subject ModalVerb Verb Object Receiver ;
+
+CondiSim. Condition ::= SimpleCondition ;
+CondiOr. Condition ::= SimpleCondition "OR" Condition ;
+CondiAnd. Condition ::= SimpleCondition "AND" Condition ;
+
+SimConOne. SimpleCondition ::= ID Holds Subject VerbStatus Object Receiver Date ;
+SimConTwo. SimpleCondition ::= ID Holds Subject Date VerbStatus Object Receiver ;
+SimConThree. SimpleCondition ::= ID Holds Date Subject VerbStatus Object Receiver ;
+SimConFour. SimpleCondition ::= ID Holds Subject ModalVerb Verb Object Receiver Date ;
+SimConFive. SimpleCondition ::= ID Holds BooleanExpression ;
+SimConOneNH. SimpleCondition ::= ID Subject VerbStatus Object Receiver Date ;
+SimConTwoNH. SimpleCondition ::= ID Subject Date VerbStatus Object Receiver ;
+SimConThreeNH. SimpleCondition ::= ID Date Subject VerbStatus Object Receiver ;
+SimConFourNH. SimpleCondition ::= ID Subject ModalVerb Verb Object Receiver Date ;
+SimConFiveNH. SimpleCondition ::= ID BooleanExpression ;
+
+BoolEx. BooleanExpression ::= Subject VerbStatus Comparison Subject ;
+
+IDSim. ID ::= "[" Num "]" ;
+IDRep. ID ::= "[" Num "(" Num ")" "]" ;
+
+HoldYes. Holds ::= "it is the case that" ;
+HoldNo. Holds ::= "it is not the case that" ;
+
+SubQuoted. Subject ::= String ;
+SubUnQuoted. Subject ::= Ident;
+
+VDel. Verb ::= "deliver" ;
+VPay. Verb ::= "pay" ;
+VCharge. Verb ::="charge" ;
+VRefund. Verb ::= "refund" ;
+
+VSDel. VerbStatus ::= "delivered" ;
+VSPay. VerbStatus ::= "paid" ;
+VSCharge. VerbStatus ::= "charged" ;
+VSRefund. VerbStatus ::= "refunded" ;
+
+CompareLess. Comparison ::= "less than" ;
+CompareEq. Comparison ::= Equal ;
+CompareMore. Comparison ::= More ;
+
+EqOne. Equal ::= "equals" ;
+EqTwo. Equal ::= "equal to" ;
+
+MoreOne. More ::= "more than" ;
+MoreTwo. More ::= "greater than" ;
+
+ModalObli. ModalVerb ::= Obligation ;
+ModalPermi. ModalVerb ::= "may" ;
+ModalForbi. ModalVerb ::= "is forbidden to" ;
+
+ObliOne. Obligation ::= "shall" ;
+ObliTwo. Obligation ::= "must" ;
+
+DateSpe. Date ::= "on the" Num Month Num ;
+DateAny. Date ::= "on ANYDATE" ;
+DateSome. Date ::= "on SOMEDATE" Subject ;
+DateThe. Date ::= "on THEDATE" Subject;
+DateQuanSpecific. Date ::= TemporalQuantifier Num Month Num ;
+DateQuanThe. Date ::= TemporalQuantifier TemporalOffset TemporalQuantifier "THEDATE" Subject ;
+DateQuanSome. Date ::= TemporalQuantifier TemporalOffset TemporalQuantifier "SOMEDATE" Subject ;
+
+TempAfter. TemporalQuantifier ::= "after" ;
+TempBefore. TemporalQuantifier ::= "before" ;
+
+TempOffDay. TemporalOffset ::= Num "day(s)" ;
+TempOffYear. TemporalOffset ::= Num "year(s)" ;
+TempOffWeek. TemporalOffset ::= Num "week(s)" ;
+
+MJan. Month ::= "January" ;
+MFeb. Month ::= "February" ;
+MMar. Month ::= "March" ;
+MApr. Month ::= "April" ;
+MMay. Month ::= "May" ;
+MJun. Month ::= "June" ;
+MJul. Month ::= "July" ;
+MAug. Month ::= "August" ;
+MSep. Month ::= "September" ;
+MOct. Month ::= "October" ;
+MNov. Month ::= "November" ;
+MDec. Month ::= "December" ;
+
+ObjNu. Object ::= NumericalObject ;
+ObjNonNu. Object ::= NonNumericalObject ;
+
+NumPound. NumericalObject ::= Pounds Num ;
+NumDol. NumericalObject ::= Dollars Num ;
+NumEur. NumericalObject ::= Euros Num ; 
+NumAmount. NumericalObject ::= "AMOUNT" Subject ;
+
+PoundOne. Pounds ::= "GBP" ;
+PoundTwo. Pounds ::= "POUNDS" ;
+PoundThree. Pounds ::= "quid" ;
+
+DollarOne. Dollars ::= "USD" ;
+DollarTwo. Dollars ::= "DOLLARS" ;
+DollarThree. Dollars ::= "buck" ;
+
+EuroOne. Euros ::= "EUR" ;
+EuroTwo. Euros ::= "EUROS" ;
+
+NonNumCurr. NonNumericalObject ::= "SOMECURRENCY" Subject ;
+NonNumRep. NonNumericalObject ::= "REPORT" Subject ;
+NonNumNamed. NonNumericalObject ::=  "NAMEDOBJECT" Subject ;
+NonNumOther. NonNumericalObject ::=  "OTHEROBJECT" Subject ;
+
+NumInt. Num ::= Integer ;
+
+Rec. Receiver ::= "to" Subject ;
+
+
+
+
