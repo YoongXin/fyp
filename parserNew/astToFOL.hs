@@ -184,6 +184,20 @@ dateSpeToTerm (NumInt year) month (NumInt day) = Var $ show $ dateToInt year (mo
 
 simpleStatementToFOL :: SimpleStatement -> FOLFormula
 simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateSpe day month year)) =
+    createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
+simpleStatementToFOL (SimStateTwo id holds subject (DateSpe day month year) modalVerb verb object receiver) =
+    createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
+simpleStatementToFOL (SimStateThree id holds (DateSpe day month year) subject modalVerb verb object receiver) =
+    createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
+simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateSpe day month year)) =
+    createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
+simpleStatementToFOL (SimStateTwoNH id subject (DateSpe day month year) modalVerb verb object receiver) =
+    createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
+simpleStatementToFOL (SimStateThreeNH id (DateSpe day month year) subject modalVerb verb object receiver) =
+    createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
+
+createFormulaSimpleStatement :: Holds -> ModalVerb -> Verb -> Subject -> Object -> Receiver -> Num -> Month -> Num -> FOLFormula
+createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year =
     case (holds, modalVerb, verb) of
         (HoldYes, ModalObli _, VDel) -> yesMustDel 
         (HoldNo, ModalObli _, VDel) -> noMustDel 
@@ -210,6 +224,145 @@ simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receive
         (HoldYes, ModalForbi, VRefund) -> noMayRefund 
         (HoldNo, ModalForbi, VRefund) -> yesMayRefund 
 
+    where
+        -- Common base predicates
+        basePredicates = 
+            And
+                (And
+                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                    (Pred "Date" [Var "d", dateSpeToTerm year month day])
+                )
+                (objectToPredicate object)
+                
+        -- Predicates for different cases
+        yesMustDel = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
+        noMustDel = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
+        yesMayDel = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
+        noMayDel = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
+        yesMustPay = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
+        noMustPay = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
+        yesMayPay = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
+        noMayPay = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
+        yesMustCharge = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
+        noMustCharge = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
+        yesMayCharge = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
+        noMayCharge = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
+        yesMustRefund = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
+        noMustRefund = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
+        yesMayRefund = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
+        noMayRefund = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
+
+createFormulaSimpleStatementNH :: ModalVerb -> Verb -> Subject -> Object -> Receiver -> Num -> Month -> Num -> FOLFormula
+createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year =
+    case (modalVerb, verb) of
+        (ModalObli _, VDel) -> yesMustDel 
+        (ModalPermi, VDel) -> yesMayDel 
+        (ModalForbi, VDel) -> noMayDel  
+        (ModalObli _, VPay) -> yesMustPay 
+        (ModalPermi, VPay) -> yesMayPay 
+        (ModalForbi, VPay) -> noMayPay 
+        (ModalObli _, VCharge) -> yesMustCharge 
+        (ModalPermi, VCharge) -> yesMayCharge 
+        (ModalForbi, VCharge) -> noMayCharge 
+        (ModalObli _, VRefund) -> yesMustRefund 
+        (ModalPermi, VRefund) -> yesMayRefund
+        (ModalForbi, VRefund) -> noMayRefund 
+
+    where
+        -- Common base predicates
+        basePredicates = 
+            And
+                (And
+                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                    (Pred "Date" [Var "d", dateSpeToTerm year month day])
+                )
+                (objectToPredicate object)
+                
+        -- Predicates for different cases
+        yesMustDel = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
+        yesMayDel = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
+        noMayDel = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
+        yesMustPay = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
+        yesMayPay = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
+        noMayPay = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
+        yesMustCharge = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
+        yesMayCharge = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
+        noMayCharge = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
+        yesMustRefund = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
+        yesMayRefund = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
+        noMayRefund = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
+
+-- Convert different kinds of objects to predicates
+objectToPredicate :: Object -> FOLFormula
+objectToPredicate (ObjNu (NumPound _ (NumInt num))) = Pred "ObjectPound" [Var "o", Var (show num)]
+objectToPredicate (ObjNu (NumDol _ (NumInt num))) = Pred "ObjectDollar" [Var "o", Var (show num)]
+objectToPredicate (ObjNu (NumEur _ (NumInt num))) = Pred "ObjectEuro" [Var "o", Var (show num)]
+objectToPredicate (ObjNu (NumAmount subject)) = Pred "ObjectAmount" [Var "o", subjectToTerm subject]
+objectToPredicate (ObjNonNu (NonNumCurr subject)) = Pred "ObjectSomeCurrency" [Var "o", subjectToTerm subject]
+objectToPredicate (ObjNonNu (NonNumRep subject)) = Pred "ObjectReport" [Var "o", subjectToTerm subject]
+objectToPredicate (ObjNonNu (NonNumNamed subject)) = Pred "ObjectNamedObject" [Var "o", subjectToTerm subject]
+objectToPredicate (ObjNonNu (NonNumOther subject)) = Pred "ObjectOtherObject" [Var "o", subjectToTerm subject]
+
+simpleConditionToFOL :: SimpleCondition -> FOLFormula
+simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (DateSpe day month year)) =
+    createFormulaSimpleCondition holds verbStatus subject object receiver day month year
+simpleConditionToFOL (SimConTwo id holds subject (DateSpe day month year) verbStatus object receiver) = 
+    createFormulaSimpleCondition holds verbStatus subject object receiver day month year
+simpleConditionToFOL (SimConThree id holds (DateSpe day month year) subject verbStatus object receiver) = 
+    createFormulaSimpleCondition holds verbStatus subject object receiver day month year 
+simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateSpe day month year)) =
+    createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
+simpleConditionToFOL (SimConFive id HoldYes booleanExpression) = boolExToFOL booleanExpression
+simpleConditionToFOL (SimConFive id HoldNo booleanExpression) = Not $ (boolExToFOL booleanExpression)
+simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateSpe day month year)) =
+    createFormulaSimpleConditionNH verbStatus subject object receiver day month year
+simpleConditionToFOL (SimConTwoNH id subject (DateSpe day month year) verbStatus object receiver) = 
+    createFormulaSimpleConditionNH verbStatus subject object receiver day month year
+simpleConditionToFOL (SimConThreeNH id (DateSpe day month year) subject verbStatus object receiver) = 
+    createFormulaSimpleConditionNH verbStatus subject object receiver day month year 
+simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateSpe day month year)) =
+    createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
+simpleConditiontoFOL (SimConFiveNH id booleanExpression) = boolExToFOL booleanExpression
+
+createFormulaSimpleCondition :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> Num -> Month -> Num -> FOLFormula
+createFormulaSimpleCondition holds verbStatus subject object receiver day month year =
+    case (holds, verbStatus) of
+        (HoldYes, VSDel) -> yesDelivered
+        (HoldNo, VSDel) -> noDelivered
+        (HoldYes, VSPay) -> yesPaid
+        (HoldNo, VSPay) -> noPaid
+        (HoldYes, VSCharge) -> yesCharged
+        (HoldNo, VSCharge) -> noCharged
+        (HoldYes, VSRefund) -> yesRefunded
+        (HoldNo, VSRefund) -> noRefunded
+
+    where
+        -- Common base predicates
+        basePredicates =
+            And
+                (And
+                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                    (Pred "Date" [Var "d", dateSpeToTerm year month day])
+                )
+                (objectToPredicate object)
+                
+        -- Predicates for different cases
+        yesDelivered = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var "d"])
+        noDelivered = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var "d"])
+        yesPaid = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var "d"])
+        noPaid = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var "d"])
+        yesCharged = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var "d"])
+        noCharged = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var "d"])
+        yesRefunded = ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
+        noRefunded = Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
+
+createFormulaSimpleConditionNH :: VerbStatus -> Subject -> Object -> Receiver -> Num -> Month -> Num -> FOLFormula
+createFormulaSimpleConditionNH verbStatus subject object receiver day month year =
+    case verbStatus of
+        VSDel -> yesDelivered
+        VSPay -> yesPaid
+        VSCharge -> yesCharged
+        VSRefund -> yesRefunded
 
     where
         -- Common base predicates
@@ -222,46 +375,41 @@ simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receive
                     (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesMustDel = And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        noMustDel = Not $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayDel = And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        noMayDel = Not $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustPay = And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
-        noMustPay = Not $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayPay = And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
-        noMayPay = Not $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustCharge = And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
-        noMustCharge = Not $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayCharge = And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
-        noMayCharge = Not $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustRefund = And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
-        noMustRefund = Not $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayRefund = And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
-        noMayRefund = Not $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
-
-        -- Convert different kinds of objects to predicates
-        objectToPredicate (ObjNu (NumPound _ (NumInt num))) = Pred "ObjectPound" [Var "o", Var (show num)]
-        objectToPredicate (ObjNu (NumDol _ (NumInt num))) = Pred "ObjectDollar" [Var "o", Var (show num)]
-        objectToPredicate (ObjNu (NumEur _ (NumInt num))) = Pred "ObjectEuro" [Var "o", Var (show num)]
-        objectToPredicate (ObjNu (NumAmount subject)) = Pred "ObjectAmount" [Var "o", subjectToTerm subject]
-        objectToPredicate (ObjNonNu (NonNumCurr subject)) = Pred "ObjectSomeCurrency" [Var "o", subjectToTerm subject]
-        objectToPredicate (ObjNonNu (NonNumRep subject)) = Pred "ObjectReport" [Var "o", subjectToTerm subject]
-        objectToPredicate (ObjNonNu (NonNumNamed subject)) = Pred "ObjectNamedObject" [Var "o", subjectToTerm subject]
-        objectToPredicate (ObjNonNu (NonNumOther subject)) = Pred "ObjectOtherObject" [Var "o", subjectToTerm subject]
-
-simpleConditionToFOL :: SimpleCondition -> FOLFormula
-simpleConditionToFOL (SimConOne id HoldYes subject VSDel object receiver (DateSpe day month year)) =
-    ForAll [Var "x", Var "y", Var "d", Var "o"] $
-    And
-        (And
-            (And
-                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                (Pred "Date" [Var "d", dateSpeToTerm year month day])
-            )
-            (Pred "Object" [Var "o"])
-        )
-        (Pred "Delivered" [Var "x", Var "y", Var "o", Var "d"])
-
+        yesDelivered = And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var "d"])
+        yesPaid = And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var "d"])
+        yesCharged = And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var "d"])
+        yesRefunded = And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
 
 boolExToFOL :: BooleanExpression -> FOLFormula
-boolExToFOL (BoolEx subject1 VSDel CompareLess subject2) = ForAll [subjectToTerm subject1] $ Pred "DeliveredLess" [subjectToTerm subject1, subjectToTerm subject2]
+boolExToFOL (BoolEx subject1 verbStatus comparison subject2) = 
+    case (verbStatus, comparison) of
+        (VSDel, CompareLess) -> deliveredLess
+        (VSDel, CompareEq _) -> deliveredEqual
+        (VSDel, CompareMore _) -> deliveredMore
+        (VSPay, CompareLess) -> paidLess
+        (VSPay, CompareEq _) -> paidEqual
+        (VSPay, CompareMore _) -> paidMore
+        (VSCharge, CompareLess) -> chargedLess
+        (VSCharge, CompareEq _) -> chargedEqual
+        (VSCharge, CompareMore _) -> chargedMore
+        (VSRefund, CompareLess) -> refundedLess
+        (VSRefund, CompareEq _) -> refundedEqual
+        (VSRefund, CompareMore _) -> refundedMore
+
+    where
+        -- Common base predicates
+        basePredicates = (And (Pred "Name" [Var "x", subjectToTerm subject1]) (Pred "Name" [Var "y", subjectToTerm subject2]))
+                          
+        -- Predicates for different cases
+        deliveredLess = ForAll [Var "x", Var "y"] $ And basePredicates (Pred "DeliveredLess" [Var "x", Var "y"])
+        deliveredEqual = ForAll [Var "x", Var "y"] $ And basePredicates (Pred "DeliveredEqual" [Var "x", Var "y"])
+        deliveredMore = ForAll [Var "x", Var "y"] $ And basePredicates (Pred "DeliveredMore" [Var "x", Var "y"])
+        paidLess = ForAll [Var "x", Var "y"] $ And basePredicates (Pred "PaidLess" [Var "x", Var "y"])
+        paidEqual = ForAll [Var "x", Var "y"] $ And basePredicates (Pred "PaidEqual" [Var "x", Var "y"])
+        paidMore = ForAll [Var "x", Var "y"] $ And basePredicates (Pred "PaidMore" [Var "x", Var "y"])
+        chargedLess = ForAll [Var "x", Var "y"] $ And basePredicates (Pred "ChargedLess" [Var "x", Var "y"])
+        chargedEqual = ForAll [Var "x", Var "y"] $ And basePredicates (Pred "ChargedEqual" [Var "x", Var "y"])
+        chargedMore = ForAll [Var "x", Var "y"] $ And basePredicates (Pred "ChargedMore" [Var "x", Var "y"])
+        refundedLess = ForAll [Var "x", Var "y"] $ And basePredicates (Pred "RefundedLess" [Var "x", Var "y"])
+        refundedEqual = ForAll [Var "x", Var "y"] $ And basePredicates (Pred "RefundedEqual" [Var "x", Var "y"])
+        refundedMore = ForAll [Var "x", Var "y"] $ And basePredicates (Pred "RefundedMore" [Var "x", Var "y"])
