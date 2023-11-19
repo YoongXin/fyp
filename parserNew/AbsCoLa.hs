@@ -130,7 +130,12 @@ data TemporalQuantifier = TempAfter | TempBefore
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data TemporalOffset
-    = TempOffDay Num | TempOffYear Num | TempOffWeek Num
+    = TempOffDay Num
+    | TempOffYear Num
+    | TempOffWeek Num
+    | TempOffDays Num
+    | TempOffYears Num
+    | TempOffWeeks Num
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Month

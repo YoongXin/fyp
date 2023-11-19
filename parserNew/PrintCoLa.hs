@@ -296,9 +296,12 @@ instance Print AbsCoLa.TemporalQuantifier where
 
 instance Print AbsCoLa.TemporalOffset where
   prt i = \case
-    AbsCoLa.TempOffDay num -> prPrec i 0 (concatD [prt 0 num, doc (showString "day(s)")])
-    AbsCoLa.TempOffYear num -> prPrec i 0 (concatD [prt 0 num, doc (showString "year(s)")])
-    AbsCoLa.TempOffWeek num -> prPrec i 0 (concatD [prt 0 num, doc (showString "week(s)")])
+    AbsCoLa.TempOffDay num -> prPrec i 0 (concatD [prt 0 num, doc (showString "day")])
+    AbsCoLa.TempOffYear num -> prPrec i 0 (concatD [prt 0 num, doc (showString "year")])
+    AbsCoLa.TempOffWeek num -> prPrec i 0 (concatD [prt 0 num, doc (showString "week")])
+    AbsCoLa.TempOffDays num -> prPrec i 0 (concatD [prt 0 num, doc (showString "days")])
+    AbsCoLa.TempOffYears num -> prPrec i 0 (concatD [prt 0 num, doc (showString "years")])
+    AbsCoLa.TempOffWeeks num -> prPrec i 0 (concatD [prt 0 num, doc (showString "weeks")])
 
 instance Print AbsCoLa.Month where
   prt i = \case

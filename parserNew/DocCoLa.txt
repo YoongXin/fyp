@@ -40,17 +40,18 @@ The reserved words used in CoLa are the following:
   | ``REPORT`` | ``SOMECURRENCY`` | ``SOMEDATE`` | ``September``
   | ``THEDATE`` | ``THEN`` | ``TIMES`` | ``USD``
   | ``after`` | ``before`` | ``buck`` | ``case``
-  | ``charge`` | ``charged`` | ``deliver`` | ``delivered``
-  | ``equal`` | ``equals`` | ``forbidden`` | ``greater``
-  | ``is`` | ``it`` | ``less`` | ``may``
-  | ``more`` | ``must`` | ``not`` | ``on``
-  | ``paid`` | ``pay`` | ``quid`` | ``refund``
-  | ``refunded`` | ``shall`` | ``than`` | ``that``
-  | ``the`` | ``to`` |  |
+  | ``charge`` | ``charged`` | ``day`` | ``days``
+  | ``deliver`` | ``delivered`` | ``equal`` | ``equals``
+  | ``forbidden`` | ``greater`` | ``is`` | ``it``
+  | ``less`` | ``may`` | ``more`` | ``must``
+  | ``not`` | ``on`` | ``paid`` | ``pay``
+  | ``quid`` | ``refund`` | ``refunded`` | ``shall``
+  | ``than`` | ``that`` | ``the`` | ``to``
+  | ``week`` | ``weeks`` | ``year`` | ``years``
 
 The symbols used in CoLa are the following:
   | C-AND | [ | ] | (
-  | ) | day(s) | year(s) | week(s)
+  | ) |  |  |
 
 ===Comments===
 There are no single-line comments in the grammar.There are no multiple-line comments in the grammar.
@@ -141,9 +142,12 @@ All other symbols are terminals.
   |  |  **|**  | //TemporalQuantifier// //TemporalOffset// //TemporalQuantifier// ``SOMEDATE`` //Subject//
   | //TemporalQuantifier// | -> | ``after``
   |  |  **|**  | ``before``
-  | //TemporalOffset// | -> | //Num// ``day(s)``
-  |  |  **|**  | //Num// ``year(s)``
-  |  |  **|**  | //Num// ``week(s)``
+  | //TemporalOffset// | -> | //Num// ``day``
+  |  |  **|**  | //Num// ``year``
+  |  |  **|**  | //Num// ``week``
+  |  |  **|**  | //Num// ``days``
+  |  |  **|**  | //Num// ``years``
+  |  |  **|**  | //Num// ``weeks``
   | //Month// | -> | ``January``
   |  |  **|**  | ``February``
   |  |  **|**  | ``March``

@@ -103,9 +103,12 @@ DateQuanSome. Date ::= TemporalQuantifier TemporalOffset TemporalQuantifier "SOM
 TempAfter. TemporalQuantifier ::= "after" ;
 TempBefore. TemporalQuantifier ::= "before" ;
 
-TempOffDay. TemporalOffset ::= Num "day(s)" ;
-TempOffYear. TemporalOffset ::= Num "year(s)" ;
-TempOffWeek. TemporalOffset ::= Num "week(s)" ;
+TempOffDay. TemporalOffset ::= Num "day" ;
+TempOffYear. TemporalOffset ::= Num "year" ;
+TempOffWeek. TemporalOffset ::= Num "week" ;
+TempOffDays. TemporalOffset ::= Num "days" ;
+TempOffYears. TemporalOffset ::= Num "years" ;
+TempOffWeeks. TemporalOffset ::= Num "weeks" ;
 
 MJan. Month ::= "January" ;
 MFeb. Month ::= "February" ;

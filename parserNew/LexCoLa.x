@@ -28,7 +28,7 @@ $u = [. \n]          -- universal: any character
 
 -- Symbols and non-identifier-like reserved words
 
-@rsyms = "C" \- "AND" | \[ | \] | \( | \) | "day" \( "s" \) | "year" \( "s" \) | "week" \( "s" \)
+@rsyms = "C" \- "AND" | \[ | \] | \( | \)
 
 :-
 
@@ -152,8 +152,8 @@ eitherResIdent tv s = treeFind resWords
 -- | The keywords and symbols of the language organized as binary search tree.
 resWords :: BTree
 resWords =
-  b "TIMES" 38
-    (b "January" 19
+  b "USD" 39
+    (b "July" 20
        (b "DOLLARS" 10
           (b "ANYDATE" 5
              (b "AMOUNT" 3 (b ")" 2 (b "(" 1 N N) N) (b "AND" 4 N N))
@@ -162,35 +162,34 @@ resWords =
           (b "February" 15
              (b "EUR" 13
                 (b "EQUALS" 12 (b "December" 11 N N) N) (b "EUROS" 14 N N))
-             (b "IF" 17 (b "GBP" 16 N N) (b "IS" 18 N N))))
-       (b "October" 29
-          (b "May" 24
-             (b "MINUS" 22 (b "June" 21 (b "July" 20 N N) N) (b "March" 23 N N))
-             (b "OR" 27
-                (b "November" 26 (b "NAMEDOBJECT" 25 N N) N)
-                (b "OTHEROBJECT" 28 N N)))
-          (b "SOMEDATE" 34
-             (b "REPORT" 32
-                (b "POUNDS" 31 (b "PLUS" 30 N N) N) (b "SOMECURRENCY" 33 N N))
-             (b "THEDATE" 36 (b "September" 35 N N) (b "THEN" 37 N N)))))
-    (b "less" 57
-       (b "day(s)" 48
-          (b "before" 43
-             (b "]" 41 (b "[" 40 (b "USD" 39 N N) N) (b "after" 42 N N))
-             (b "charge" 46
-                (b "case" 45 (b "buck" 44 N N) N) (b "charged" 47 N N)))
-          (b "forbidden" 53
-             (b "equal" 51
-                (b "delivered" 50 (b "deliver" 49 N N) N) (b "equals" 52 N N))
-             (b "is" 55 (b "greater" 54 N N) (b "it" 56 N N))))
-       (b "refund" 66
-          (b "on" 62
-             (b "must" 60 (b "more" 59 (b "may" 58 N N) N) (b "not" 61 N N))
-             (b "pay" 64 (b "paid" 63 N N) (b "quid" 65 N N)))
-          (b "the" 71
-             (b "than" 69
-                (b "shall" 68 (b "refunded" 67 N N) N) (b "that" 70 N N))
-             (b "week(s)" 73 (b "to" 72 N N) (b "year(s)" 74 N N)))))
+             (b "IS" 18 (b "IF" 17 (b "GBP" 16 N N) N) (b "January" 19 N N))))
+       (b "PLUS" 30
+          (b "NAMEDOBJECT" 25
+             (b "March" 23 (b "MINUS" 22 (b "June" 21 N N) N) (b "May" 24 N N))
+             (b "OTHEROBJECT" 28
+                (b "OR" 27 (b "November" 26 N N) N) (b "October" 29 N N)))
+          (b "September" 35
+             (b "SOMECURRENCY" 33
+                (b "REPORT" 32 (b "POUNDS" 31 N N) N) (b "SOMEDATE" 34 N N))
+             (b "THEN" 37 (b "THEDATE" 36 N N) (b "TIMES" 38 N N)))))
+    (b "may" 59
+       (b "days" 49
+          (b "buck" 44
+             (b "after" 42 (b "]" 41 (b "[" 40 N N) N) (b "before" 43 N N))
+             (b "charged" 47
+                (b "charge" 46 (b "case" 45 N N) N) (b "day" 48 N N)))
+          (b "forbidden" 54
+             (b "equal" 52
+                (b "delivered" 51 (b "deliver" 50 N N) N) (b "equals" 53 N N))
+             (b "it" 57 (b "is" 56 (b "greater" 55 N N) N) (b "less" 58 N N))))
+       (b "shall" 69
+          (b "paid" 64
+             (b "not" 62 (b "must" 61 (b "more" 60 N N) N) (b "on" 63 N N))
+             (b "refund" 67
+                (b "quid" 66 (b "pay" 65 N N) N) (b "refunded" 68 N N)))
+          (b "week" 74
+             (b "the" 72 (b "that" 71 (b "than" 70 N N) N) (b "to" 73 N N))
+             (b "year" 76 (b "weeks" 75 N N) (b "years" 77 N N)))))
   where
   b s n = B bs (TS bs n)
     where

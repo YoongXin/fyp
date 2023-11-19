@@ -179,6 +179,9 @@ transTemporalOffset x = case x of
   AbsCoLa.TempOffDay num -> failure x
   AbsCoLa.TempOffYear num -> failure x
   AbsCoLa.TempOffWeek num -> failure x
+  AbsCoLa.TempOffDays num -> failure x
+  AbsCoLa.TempOffYears num -> failure x
+  AbsCoLa.TempOffWeeks num -> failure x
 
 transMonth :: AbsCoLa.Month -> Result
 transMonth x = case x of

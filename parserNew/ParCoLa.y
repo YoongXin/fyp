@@ -138,33 +138,36 @@ import LexCoLa
   'case'         { PT _ (TS _ 45) }
   'charge'       { PT _ (TS _ 46) }
   'charged'      { PT _ (TS _ 47) }
-  'day(s)'       { PT _ (TS _ 48) }
-  'deliver'      { PT _ (TS _ 49) }
-  'delivered'    { PT _ (TS _ 50) }
-  'equal'        { PT _ (TS _ 51) }
-  'equals'       { PT _ (TS _ 52) }
-  'forbidden'    { PT _ (TS _ 53) }
-  'greater'      { PT _ (TS _ 54) }
-  'is'           { PT _ (TS _ 55) }
-  'it'           { PT _ (TS _ 56) }
-  'less'         { PT _ (TS _ 57) }
-  'may'          { PT _ (TS _ 58) }
-  'more'         { PT _ (TS _ 59) }
-  'must'         { PT _ (TS _ 60) }
-  'not'          { PT _ (TS _ 61) }
-  'on'           { PT _ (TS _ 62) }
-  'paid'         { PT _ (TS _ 63) }
-  'pay'          { PT _ (TS _ 64) }
-  'quid'         { PT _ (TS _ 65) }
-  'refund'       { PT _ (TS _ 66) }
-  'refunded'     { PT _ (TS _ 67) }
-  'shall'        { PT _ (TS _ 68) }
-  'than'         { PT _ (TS _ 69) }
-  'that'         { PT _ (TS _ 70) }
-  'the'          { PT _ (TS _ 71) }
-  'to'           { PT _ (TS _ 72) }
-  'week(s)'      { PT _ (TS _ 73) }
-  'year(s)'      { PT _ (TS _ 74) }
+  'day'          { PT _ (TS _ 48) }
+  'days'         { PT _ (TS _ 49) }
+  'deliver'      { PT _ (TS _ 50) }
+  'delivered'    { PT _ (TS _ 51) }
+  'equal'        { PT _ (TS _ 52) }
+  'equals'       { PT _ (TS _ 53) }
+  'forbidden'    { PT _ (TS _ 54) }
+  'greater'      { PT _ (TS _ 55) }
+  'is'           { PT _ (TS _ 56) }
+  'it'           { PT _ (TS _ 57) }
+  'less'         { PT _ (TS _ 58) }
+  'may'          { PT _ (TS _ 59) }
+  'more'         { PT _ (TS _ 60) }
+  'must'         { PT _ (TS _ 61) }
+  'not'          { PT _ (TS _ 62) }
+  'on'           { PT _ (TS _ 63) }
+  'paid'         { PT _ (TS _ 64) }
+  'pay'          { PT _ (TS _ 65) }
+  'quid'         { PT _ (TS _ 66) }
+  'refund'       { PT _ (TS _ 67) }
+  'refunded'     { PT _ (TS _ 68) }
+  'shall'        { PT _ (TS _ 69) }
+  'than'         { PT _ (TS _ 70) }
+  'that'         { PT _ (TS _ 71) }
+  'the'          { PT _ (TS _ 72) }
+  'to'           { PT _ (TS _ 73) }
+  'week'         { PT _ (TS _ 74) }
+  'weeks'        { PT _ (TS _ 75) }
+  'year'         { PT _ (TS _ 76) }
+  'years'        { PT _ (TS _ 77) }
   L_Ident        { PT _ (TV $$)   }
   L_integ        { PT _ (TI $$)   }
   L_quoted       { PT _ (TL $$)   }
@@ -333,9 +336,12 @@ TemporalQuantifier
 
 TemporalOffset :: { AbsCoLa.TemporalOffset }
 TemporalOffset
-  : Num 'day(s)' { AbsCoLa.TempOffDay $1 }
-  | Num 'year(s)' { AbsCoLa.TempOffYear $1 }
-  | Num 'week(s)' { AbsCoLa.TempOffWeek $1 }
+  : Num 'day' { AbsCoLa.TempOffDay $1 }
+  | Num 'year' { AbsCoLa.TempOffYear $1 }
+  | Num 'week' { AbsCoLa.TempOffWeek $1 }
+  | Num 'days' { AbsCoLa.TempOffDays $1 }
+  | Num 'years' { AbsCoLa.TempOffYears $1 }
+  | Num 'weeks' { AbsCoLa.TempOffWeeks $1 }
 
 Month :: { AbsCoLa.Month }
 Month
