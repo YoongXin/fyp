@@ -196,42 +196,54 @@ simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receive
 simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver DateAny) =
     createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver 
 simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateSome date)) =
-    createFormulaSimpleStatementDSome holds modalVerb verb subject object receiver date
+    createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receiver date (DateSome date)
+simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateThe date)) =
+    createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receiver date (DateThe date)
 
 simpleStatementToFOL (SimStateTwo id holds subject (DateSpe day month year) modalVerb verb object receiver) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateTwo id holds subject DateAny modalVerb verb object receiver) =
     createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver 
 simpleStatementToFOL (SimStateTwo id holds subject (DateSome date) modalVerb verb object receiver) =
-    createFormulaSimpleStatementDSome holds modalVerb verb subject object receiver date
+    createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receiver date (DateSome date)
+simpleStatementToFOL (SimStateTwo id holds subject (DateThe date) modalVerb verb object receiver) =
+    createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receiver date (DateThe date)
 
 simpleStatementToFOL (SimStateThree id holds (DateSpe day month year) subject modalVerb verb object receiver) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateThree id holds DateAny subject modalVerb verb object receiver) =
     createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver
 simpleStatementToFOL (SimStateThree id holds (DateSome date) subject modalVerb verb object receiver) =
-    createFormulaSimpleStatementDSome holds modalVerb verb subject object receiver date
+    createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receiver date (DateSome date)
+simpleStatementToFOL (SimStateThree id holds (DateThe date) subject modalVerb verb object receiver) =
+    createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receiver date (DateThe date)
 
 simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateSpe day month year)) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver DateAny) =
     createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver
 simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateSome date)) =
-    createFormulaSimpleStatementNHDSome modalVerb verb subject object receiver date
+    createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver date (DateSome date)
+simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateThe date)) =
+    createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver date (DateThe date)
 
 simpleStatementToFOL (SimStateTwoNH id subject (DateSpe day month year) modalVerb verb object receiver) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateTwoNH id subject DateAny modalVerb verb object receiver) =
     createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver
 simpleStatementToFOL (SimStateTwoNH id subject (DateSome date) modalVerb verb object receiver) =
-    createFormulaSimpleStatementNHDSome modalVerb verb subject object receiver date
+    createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver date (DateSome date)
+simpleStatementToFOL (SimStateTwoNH id subject (DateThe date) modalVerb verb object receiver) =
+    createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver date (DateThe date)
 
 simpleStatementToFOL (SimStateThreeNH id (DateSpe day month year) subject modalVerb verb object receiver) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateThreeNH id DateAny subject modalVerb verb object receiver) =
     createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver
 simpleStatementToFOL (SimStateThreeNH id (DateSome date) subject modalVerb verb object receiver) =
-    createFormulaSimpleStatementNHDSome modalVerb verb subject object receiver date
+    createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver date (DateSome date)
+simpleStatementToFOL (SimStateThreeNH id (DateThe date) subject modalVerb verb object receiver) =
+    createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver date (DateThe date)
 
 createFormulaSimpleStatement :: Holds -> ModalVerb -> Verb -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year =
@@ -342,19 +354,22 @@ createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver =
         yesMayRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
         noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
 
-createFormulaSimpleStatementDSome :: Holds -> ModalVerb -> Verb -> Subject -> Object -> Receiver -> Subject -> State DateDictionary FOLFormula
-createFormulaSimpleStatementDSome holds modalVerb verb subject object receiver date = do
+createFormulaSimpleStatementDSomeThe :: Holds -> ModalVerb -> Verb -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
+createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receiver date dateType = do
     -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
     -- Use actualValue here
-    let basePredicates = 
-            And
-                (And
-                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                    (Pred "IsDate" [Var actualValue])
-                )
-                (objectToPredicate object)
+    let basePredicates = case dateType of
+            DateSome _ -> And
+                            (And
+                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (Pred "IsDate" [Var actualValue])
+                            )
+                            (objectToPredicate object)
+            DateThe _ -> And
+                            (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                            (objectToPredicate object)
 
     -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
@@ -484,19 +499,22 @@ createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver =
         yesMayRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
         noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
 
-createFormulaSimpleStatementNHDSome :: ModalVerb -> Verb -> Subject -> Object -> Receiver -> Subject -> State DateDictionary FOLFormula
-createFormulaSimpleStatementNHDSome modalVerb verb subject object receiver date = do
+createFormulaSimpleStatementNHDSomeThe :: ModalVerb -> Verb -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
+createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver date dateType = do
     -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
     -- Use actualValue here
-    let basePredicates = 
-            And
-                (And
-                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                    (Pred "IsDate" [Var actualValue])
-                )
-                (objectToPredicate object)
+    let basePredicates = case dateType of
+            DateSome _ -> And
+                            (And
+                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (Pred "IsDate" [Var actualValue])
+                            )
+                            (objectToPredicate object)
+            DateThe _ -> And
+                            (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                            (objectToPredicate object)
 
     -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
@@ -550,28 +568,36 @@ simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (Dat
 simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver DateAny) =
     createFormulaSimpleConditionDAny holds verbStatus subject object receiver
 simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (DateSome date)) =
-    createFormulaSimpleConditionDSome holds verbStatus subject object receiver date
+    createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver date (DateSome date)
+simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (DateThe date)) =
+    createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver date (DateThe date)
 
 simpleConditionToFOL (SimConTwo id holds subject (DateSpe day month year) verbStatus object receiver) = 
     createFormulaSimpleCondition holds verbStatus subject object receiver day month year
 simpleConditionToFOL (SimConTwo id holds subject DateAny verbStatus object receiver) = 
     createFormulaSimpleConditionDAny holds verbStatus subject object receiver
 simpleConditionToFOL (SimConTwo id holds subject (DateSome date) verbStatus object receiver) = 
-    createFormulaSimpleConditionDSome holds verbStatus subject object receiver date
+    createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver date (DateSome date)
+simpleConditionToFOL (SimConTwo id holds subject (DateThe date) verbStatus object receiver) = 
+    createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver date (DateThe date)
 
 simpleConditionToFOL (SimConThree id holds (DateSpe day month year) subject verbStatus object receiver) = 
     createFormulaSimpleCondition holds verbStatus subject object receiver day month year 
 simpleConditionToFOL (SimConThree id holds DateAny subject verbStatus object receiver) = 
     createFormulaSimpleConditionDAny holds verbStatus subject object receiver
 simpleConditionToFOL (SimConThree id holds (DateSome date) subject verbStatus object receiver) = 
-    createFormulaSimpleConditionDSome holds verbStatus subject object receiver date
+    createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver date (DateSome date)
+simpleConditionToFOL (SimConThree id holds (DateThe date) subject verbStatus object receiver) = 
+    createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver date (DateThe date)
 
 simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateSpe day month year)) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
 simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver DateAny) =
     createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver
 simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateSome date)) =
-    createFormulaSimpleStatementDSome holds modalVerb verb subject object receiver date
+    createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receiver date (DateSome date)
+simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateThe date)) =
+    createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receiver date (DateThe date)
 
 simpleConditionToFOL (SimConFive id HoldYes booleanExpression) = boolExToFOL booleanExpression
 simpleConditionToFOL (SimConFive id HoldNo booleanExpression) = Not <$> (boolExToFOL booleanExpression)
@@ -581,30 +607,36 @@ simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateSpe
 simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver DateAny) =
     createFormulaSimpleConditionNHDAny verbStatus subject object receiver 
 simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateSome date)) =
-    createFormulaSimpleConditionNHDSome verbStatus subject object receiver date
+    createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date (DateSome date)
+simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateThe date)) =
+    createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date (DateThe date)
 
 simpleConditionToFOL (SimConTwoNH id subject (DateSpe day month year) verbStatus object receiver) = 
     createFormulaSimpleConditionNH verbStatus subject object receiver day month year
 simpleConditionToFOL (SimConTwoNH id subject DateAny verbStatus object receiver) = 
     createFormulaSimpleConditionNHDAny verbStatus subject object receiver 
 simpleConditionToFOL (SimConTwoNH id subject (DateSome date) verbStatus object receiver) = 
-    createFormulaSimpleConditionNHDSome verbStatus subject object receiver date
+    createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date (DateSome date)
+simpleConditionToFOL (SimConTwoNH id subject (DateThe date) verbStatus object receiver) = 
+    createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date (DateThe date)
 
 simpleConditionToFOL (SimConThreeNH id (DateSpe day month year) subject verbStatus object receiver) = 
     createFormulaSimpleConditionNH verbStatus subject object receiver day month year 
 simpleConditionToFOL (SimConThreeNH id DateAny subject verbStatus object receiver) = 
     createFormulaSimpleConditionNHDAny verbStatus subject object receiver
 simpleConditionToFOL (SimConThreeNH id (DateSome date) subject verbStatus object receiver) = 
-    createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date DateSome
+    createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date (DateSome date)
 simpleConditionToFOL (SimConThreeNH id (DateThe date) subject verbStatus object receiver) = 
-    createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date DateThe
+    createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date (DateThe date)
 
 simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateSpe day month year)) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
 simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver DateAny) =
     createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver
 simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateSome date)) =
-    createFormulaSimpleStatementNHDSome modalVerb verb subject object receiver date
+    createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver date (DateSome date)
+simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateThe date)) =
+    createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver date (DateThe date)
 
 simpleConditiontoFOL (SimConFiveNH id booleanExpression) = boolExToFOL booleanExpression
 
@@ -669,19 +701,22 @@ createFormulaSimpleConditionDAny holds verbStatus subject object receiver =
         yesRefunded = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
         noRefunded = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
 
-createFormulaSimpleConditionDSome :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> Subject -> State DateDictionary FOLFormula
-createFormulaSimpleConditionDSome holds verbStatus subject object receiver date = do
+createFormulaSimpleConditionDSomeThe :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
+createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver date dateType = do
     -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
     -- Use actualValue here
-    let basePredicates = 
-            And
-                (And
-                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                    (Pred "IsDate" [Var actualValue])
-                )
-                (objectToPredicate object)
+    let basePredicates = case dateType of
+            DateSome _ -> And
+                            (And
+                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (Pred "IsDate" [Var actualValue])
+                            )
+                            (objectToPredicate object)
+            DateThe _ -> And
+                            (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                            (objectToPredicate object)
 
     -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
@@ -755,39 +790,6 @@ createFormulaSimpleConditionNHDAny verbStatus subject object receiver =
         yesCharged = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var "d"])
         yesRefunded = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
 
-createFormulaSimpleConditionNHDSome :: VerbStatus -> Subject -> Object -> Receiver -> Date -> State DateDictionary FOLFormula
-createFormulaSimpleConditionNHDSome verbStatus subject object receiver date = do
-    -- Get the actual value associated with the date
-    actualValue <- lookupDate (subjectToString date)
-
-    -- Use actualValue here
-    let basePredicates = 
-            And
-                (And
-                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                    (Pred "IsDate" [Var actualValue])
-                )
-                (objectToPredicate object)
-
-    -- Generate FOL formulas based on different cases
-    generateFormulas basePredicates actualValue
-
-    where
-        -- Function to generate FOL formulas based on different cases
-        generateFormulas basePredicates actualValue = 
-            case verbStatus of
-                VSDel -> yesDelivered
-                VSPay -> yesPaid
-                VSCharge -> yesCharged
-                VSRefund -> yesRefunded
-
-            where
-                -- Predicates for different cases
-                yesDelivered = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var actualValue])
-                yesPaid = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var actualValue])
-                yesCharged = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var actualValue])
-                yesRefunded = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var actualValue])
-
 createFormulaSimpleConditionNHDSomeThe :: VerbStatus -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date dateType = do
     -- Get the actual value associated with the date
@@ -795,13 +797,13 @@ createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date d
 
     -- Use actualValue here
     let basePredicates = case dateType of
-            DateSome -> And
+            DateSome _ -> And
                             (And
                                 (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
                                 (Pred "IsDate" [Var actualValue])
                             )
                             (objectToPredicate object)
-            DateThe -> And
+            DateThe _ -> And
                             (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
