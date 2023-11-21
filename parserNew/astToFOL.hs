@@ -13,6 +13,8 @@ import Prelude
   , Read
   , Integer
   , fromInteger
+  , Maybe(..)
+  , (+)
   )
 
 import System.Environment ( getArgs )
@@ -173,6 +175,21 @@ tempQuanToString TempBefore = "Before"
 dateSpeToTerm :: Num -> Month -> Num -> Term
 dateSpeToTerm (NumInt year) month (NumInt day) = Var $ show $ dateToInt year (monthToInt month) (fromInteger day)
 
+lookupDate :: String -> State DateDictionary String
+lookupDate date = do
+    -- Get the current state of the date dictionary
+    dateDictionary <- get
+
+    -- Check if the date is already in the dictionary
+    case Map.lookup date dateDictionary of
+        Just value -> return value
+        Nothing -> do
+            -- If it doesn't exist, add a new entry to the dictionary
+            let newValue = "d" ++ show (Map.size dateDictionary + 1)
+            let newDateDict = Map.insert date newValue dateDictionary
+            put newDateDict
+            return newValue
+
 simpleStatementToFOL :: SimpleStatement -> State DateDictionary FOLFormula
 simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateSpe day month year)) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
@@ -185,26 +202,36 @@ simpleStatementToFOL (SimStateTwo id holds subject (DateSpe day month year) moda
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateTwo id holds subject DateAny modalVerb verb object receiver) =
     createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver 
+simpleStatementToFOL (SimStateTwo id holds subject (DateSome date) modalVerb verb object receiver) =
+    createFormulaSimpleStatementDSome holds modalVerb verb subject object receiver date
 
 simpleStatementToFOL (SimStateThree id holds (DateSpe day month year) subject modalVerb verb object receiver) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateThree id holds DateAny subject modalVerb verb object receiver) =
     createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver
+simpleStatementToFOL (SimStateThree id holds (DateSome date) subject modalVerb verb object receiver) =
+    createFormulaSimpleStatementDSome holds modalVerb verb subject object receiver date
 
 simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateSpe day month year)) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver DateAny) =
     createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver
+simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateSome date)) =
+    createFormulaSimpleStatementNHDSome modalVerb verb subject object receiver date
 
 simpleStatementToFOL (SimStateTwoNH id subject (DateSpe day month year) modalVerb verb object receiver) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateTwoNH id subject DateAny modalVerb verb object receiver) =
     createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver
+simpleStatementToFOL (SimStateTwoNH id subject (DateSome date) modalVerb verb object receiver) =
+    createFormulaSimpleStatementNHDSome modalVerb verb subject object receiver date
 
 simpleStatementToFOL (SimStateThreeNH id (DateSpe day month year) subject modalVerb verb object receiver) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateThreeNH id DateAny subject modalVerb verb object receiver) =
     createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver
+simpleStatementToFOL (SimStateThreeNH id (DateSome date) subject modalVerb verb object receiver) =
+    createFormulaSimpleStatementNHDSome modalVerb verb subject object receiver date
 
 createFormulaSimpleStatement :: Holds -> ModalVerb -> Verb -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year =
@@ -316,60 +343,69 @@ createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver =
         noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
 
 createFormulaSimpleStatementDSome :: Holds -> ModalVerb -> Verb -> Subject -> Object -> Receiver -> Subject -> State DateDictionary FOLFormula
-createFormulaSimpleStatementDSome holds modalVerb verb subject object receiver date =
-    case (holds, modalVerb, verb) of
-        (HoldYes, ModalObli _, VDel) -> yesMustDel 
-        (HoldNo, ModalObli _, VDel) -> noMustDel 
-        (HoldYes, ModalPermi, VDel) -> yesMayDel 
-        (HoldNo, ModalPermi, VDel) -> noMayDel 
-        (HoldYes, ModalForbi, VDel) -> noMayDel 
-        (HoldNo, ModalForbi, VDel) -> yesMayDel 
-        (HoldYes, ModalObli _, VPay) -> yesMustPay 
-        (HoldNo, ModalObli _, VPay) -> noMustPay 
-        (HoldYes, ModalPermi, VPay) -> yesMayPay 
-        (HoldNo, ModalPermi, VPay) -> noMayPay 
-        (HoldYes, ModalForbi, VPay) -> noMayPay 
-        (HoldNo, ModalForbi, VPay) -> yesMayPay 
-        (HoldYes, ModalObli _, VCharge) -> yesMustCharge 
-        (HoldNo, ModalObli _, VCharge) -> noMustCharge 
-        (HoldYes, ModalPermi, VCharge) -> yesMayCharge 
-        (HoldNo, ModalPermi, VCharge) -> noMayCharge 
-        (HoldYes, ModalForbi, VCharge) -> noMayCharge 
-        (HoldNo, ModalForbi, VCharge) -> yesMayCharge 
-        (HoldYes, ModalObli _, VRefund) -> yesMustRefund 
-        (HoldNo, ModalObli _, VRefund) -> noMustRefund 
-        (HoldYes, ModalPermi, VRefund) -> yesMayRefund
-        (HoldNo, ModalPermi, VRefund) -> noMayRefund 
-        (HoldYes, ModalForbi, VRefund) -> noMayRefund 
-        (HoldNo, ModalForbi, VRefund) -> yesMayRefund 
+createFormulaSimpleStatementDSome holds modalVerb verb subject object receiver date = do
+    -- Get the actual value associated with the date
+    actualValue <- lookupDate (subjectToString date)
 
-    where
-        -- Common base predicates
-        basePredicates = 
+    -- Use actualValue here
+    let basePredicates = 
             And
                 (And
                     (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                    (Pred "IsDate" [Var "??"])
+                    (Pred "IsDate" [Var actualValue])
                 )
                 (objectToPredicate object)
-                
-        -- Predicates for different cases
-        yesMustDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        noMustDel = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        noMayDel = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
-        noMustPay = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
-        noMayPay = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
-        noMustCharge = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
-        noMayCharge = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
-        noMustRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
-        noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
+
+    -- Generate FOL formulas based on different cases
+    generateFormulas basePredicates actualValue
+
+    where
+        -- Function to generate FOL formulas based on different cases
+        generateFormulas basePredicates actualValue = 
+            case (holds, modalVerb, verb) of
+                (HoldYes, ModalObli _, VDel) -> yesMustDel 
+                (HoldNo, ModalObli _, VDel) -> noMustDel 
+                (HoldYes, ModalPermi, VDel) -> yesMayDel 
+                (HoldNo, ModalPermi, VDel) -> noMayDel 
+                (HoldYes, ModalForbi, VDel) -> noMayDel 
+                (HoldNo, ModalForbi, VDel) -> yesMayDel 
+                (HoldYes, ModalObli _, VPay) -> yesMustPay 
+                (HoldNo, ModalObli _, VPay) -> noMustPay 
+                (HoldYes, ModalPermi, VPay) -> yesMayPay 
+                (HoldNo, ModalPermi, VPay) -> noMayPay 
+                (HoldYes, ModalForbi, VPay) -> noMayPay 
+                (HoldNo, ModalForbi, VPay) -> yesMayPay 
+                (HoldYes, ModalObli _, VCharge) -> yesMustCharge 
+                (HoldNo, ModalObli _, VCharge) -> noMustCharge 
+                (HoldYes, ModalPermi, VCharge) -> yesMayCharge 
+                (HoldNo, ModalPermi, VCharge) -> noMayCharge 
+                (HoldYes, ModalForbi, VCharge) -> noMayCharge 
+                (HoldNo, ModalForbi, VCharge) -> yesMayCharge 
+                (HoldYes, ModalObli _, VRefund) -> yesMustRefund 
+                (HoldNo, ModalObli _, VRefund) -> noMustRefund 
+                (HoldYes, ModalPermi, VRefund) -> yesMayRefund
+                (HoldNo, ModalPermi, VRefund) -> noMayRefund 
+                (HoldYes, ModalForbi, VRefund) -> noMayRefund 
+                (HoldNo, ModalForbi, VRefund) -> yesMayRefund 
+
+            where
+                -- Predicates for different cases
+                yesMustDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var actualValue])
+                noMustDel = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMayDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var actualValue])
+                noMayDel = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMustPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var actualValue])
+                noMustPay = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMayPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var actualValue])
+                noMayPay = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMustCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var actualValue])
+                noMustCharge = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMayCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var actualValue])
+                noMayCharge = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMustRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var actualValue])
+                noMustRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMayRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var actualValue])
+                noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var actualValue])
 
 createFormulaSimpleStatementNH :: ModalVerb -> Verb -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year =
@@ -448,6 +484,54 @@ createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver =
         yesMayRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
         noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
 
+createFormulaSimpleStatementNHDSome :: ModalVerb -> Verb -> Subject -> Object -> Receiver -> Subject -> State DateDictionary FOLFormula
+createFormulaSimpleStatementNHDSome modalVerb verb subject object receiver date = do
+    -- Get the actual value associated with the date
+    actualValue <- lookupDate (subjectToString date)
+
+    -- Use actualValue here
+    let basePredicates = 
+            And
+                (And
+                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                    (Pred "IsDate" [Var actualValue])
+                )
+                (objectToPredicate object)
+
+    -- Generate FOL formulas based on different cases
+    generateFormulas basePredicates actualValue
+
+    where
+        -- Function to generate FOL formulas based on different cases
+        generateFormulas basePredicates actualValue = 
+            case (modalVerb, verb) of
+                (ModalObli _, VDel) -> yesMustDel 
+                (ModalPermi, VDel) -> yesMayDel 
+                (ModalForbi, VDel) -> noMayDel  
+                (ModalObli _, VPay) -> yesMustPay 
+                (ModalPermi, VPay) -> yesMayPay 
+                (ModalForbi, VPay) -> noMayPay 
+                (ModalObli _, VCharge) -> yesMustCharge 
+                (ModalPermi, VCharge) -> yesMayCharge 
+                (ModalForbi, VCharge) -> noMayCharge 
+                (ModalObli _, VRefund) -> yesMustRefund 
+                (ModalPermi, VRefund) -> yesMayRefund
+                (ModalForbi, VRefund) -> noMayRefund 
+
+            where
+                -- Predicates for different cases
+                yesMustDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMayDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var actualValue])
+                noMayDel = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMustPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMayPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var actualValue])
+                noMayPay = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMustCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMayCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var actualValue])
+                noMayCharge = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMustRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMayRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var actualValue])
+                noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var actualValue])
 
 -- Convert different kinds of objects to predicates
 objectToPredicate :: Object -> FOLFormula
@@ -465,21 +549,29 @@ simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (Dat
     createFormulaSimpleCondition holds verbStatus subject object receiver day month year
 simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver DateAny) =
     createFormulaSimpleConditionDAny holds verbStatus subject object receiver
+simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (DateSome date)) =
+    createFormulaSimpleConditionDSome holds verbStatus subject object receiver date
 
 simpleConditionToFOL (SimConTwo id holds subject (DateSpe day month year) verbStatus object receiver) = 
     createFormulaSimpleCondition holds verbStatus subject object receiver day month year
 simpleConditionToFOL (SimConTwo id holds subject DateAny verbStatus object receiver) = 
     createFormulaSimpleConditionDAny holds verbStatus subject object receiver
+simpleConditionToFOL (SimConTwo id holds subject (DateSome date) verbStatus object receiver) = 
+    createFormulaSimpleConditionDSome holds verbStatus subject object receiver date
 
 simpleConditionToFOL (SimConThree id holds (DateSpe day month year) subject verbStatus object receiver) = 
     createFormulaSimpleCondition holds verbStatus subject object receiver day month year 
 simpleConditionToFOL (SimConThree id holds DateAny subject verbStatus object receiver) = 
     createFormulaSimpleConditionDAny holds verbStatus subject object receiver
+simpleConditionToFOL (SimConThree id holds (DateSome date) subject verbStatus object receiver) = 
+    createFormulaSimpleConditionDSome holds verbStatus subject object receiver date
 
 simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateSpe day month year)) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
 simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver DateAny) =
     createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver
+simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateSome date)) =
+    createFormulaSimpleStatementDSome holds modalVerb verb subject object receiver date
 
 simpleConditionToFOL (SimConFive id HoldYes booleanExpression) = boolExToFOL booleanExpression
 simpleConditionToFOL (SimConFive id HoldNo booleanExpression) = Not <$> (boolExToFOL booleanExpression)
@@ -488,21 +580,31 @@ simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateSpe
     createFormulaSimpleConditionNH verbStatus subject object receiver day month year
 simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver DateAny) =
     createFormulaSimpleConditionNHDAny verbStatus subject object receiver 
+simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateSome date)) =
+    createFormulaSimpleConditionNHDSome verbStatus subject object receiver date
 
 simpleConditionToFOL (SimConTwoNH id subject (DateSpe day month year) verbStatus object receiver) = 
     createFormulaSimpleConditionNH verbStatus subject object receiver day month year
 simpleConditionToFOL (SimConTwoNH id subject DateAny verbStatus object receiver) = 
     createFormulaSimpleConditionNHDAny verbStatus subject object receiver 
+simpleConditionToFOL (SimConTwoNH id subject (DateSome date) verbStatus object receiver) = 
+    createFormulaSimpleConditionNHDSome verbStatus subject object receiver date
 
 simpleConditionToFOL (SimConThreeNH id (DateSpe day month year) subject verbStatus object receiver) = 
     createFormulaSimpleConditionNH verbStatus subject object receiver day month year 
 simpleConditionToFOL (SimConThreeNH id DateAny subject verbStatus object receiver) = 
     createFormulaSimpleConditionNHDAny verbStatus subject object receiver
+simpleConditionToFOL (SimConThreeNH id (DateSome date) subject verbStatus object receiver) = 
+    createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date DateSome
+simpleConditionToFOL (SimConThreeNH id (DateThe date) subject verbStatus object receiver) = 
+    createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date DateThe
 
 simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateSpe day month year)) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
 simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver DateAny) =
     createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver
+simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateSome date)) =
+    createFormulaSimpleStatementNHDSome modalVerb verb subject object receiver date
 
 simpleConditiontoFOL (SimConFiveNH id booleanExpression) = boolExToFOL booleanExpression
 
@@ -567,6 +669,47 @@ createFormulaSimpleConditionDAny holds verbStatus subject object receiver =
         yesRefunded = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
         noRefunded = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
 
+createFormulaSimpleConditionDSome :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> Subject -> State DateDictionary FOLFormula
+createFormulaSimpleConditionDSome holds verbStatus subject object receiver date = do
+    -- Get the actual value associated with the date
+    actualValue <- lookupDate (subjectToString date)
+
+    -- Use actualValue here
+    let basePredicates = 
+            And
+                (And
+                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                    (Pred "IsDate" [Var actualValue])
+                )
+                (objectToPredicate object)
+
+    -- Generate FOL formulas based on different cases
+    generateFormulas basePredicates actualValue
+
+    where
+        -- Function to generate FOL formulas based on different cases
+        generateFormulas basePredicates actualValue = 
+            case (holds, verbStatus) of
+                (HoldYes, VSDel) -> yesDelivered
+                (HoldNo, VSDel) -> noDelivered
+                (HoldYes, VSPay) -> yesPaid
+                (HoldNo, VSPay) -> noPaid
+                (HoldYes, VSCharge) -> yesCharged
+                (HoldNo, VSCharge) -> noCharged
+                (HoldYes, VSRefund) -> yesRefunded
+                (HoldNo, VSRefund) -> noRefunded
+
+            where
+                -- Predicates for different cases
+                yesDelivered = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var actualValue])
+                noDelivered = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var actualValue])
+                yesPaid = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var actualValue])
+                noPaid = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var actualValue])
+                yesCharged = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var actualValue])
+                noCharged = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var actualValue])
+                yesRefunded = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var actualValue])
+                noRefunded = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var actualValue])
+
 createFormulaSimpleConditionNH :: VerbStatus -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleConditionNH verbStatus subject object receiver day month year =
     case verbStatus of
@@ -611,6 +754,76 @@ createFormulaSimpleConditionNHDAny verbStatus subject object receiver =
         yesPaid = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var "d"])
         yesCharged = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var "d"])
         yesRefunded = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
+
+createFormulaSimpleConditionNHDSome :: VerbStatus -> Subject -> Object -> Receiver -> Date -> State DateDictionary FOLFormula
+createFormulaSimpleConditionNHDSome verbStatus subject object receiver date = do
+    -- Get the actual value associated with the date
+    actualValue <- lookupDate (subjectToString date)
+
+    -- Use actualValue here
+    let basePredicates = 
+            And
+                (And
+                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                    (Pred "IsDate" [Var actualValue])
+                )
+                (objectToPredicate object)
+
+    -- Generate FOL formulas based on different cases
+    generateFormulas basePredicates actualValue
+
+    where
+        -- Function to generate FOL formulas based on different cases
+        generateFormulas basePredicates actualValue = 
+            case verbStatus of
+                VSDel -> yesDelivered
+                VSPay -> yesPaid
+                VSCharge -> yesCharged
+                VSRefund -> yesRefunded
+
+            where
+                -- Predicates for different cases
+                yesDelivered = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var actualValue])
+                yesPaid = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var actualValue])
+                yesCharged = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var actualValue])
+                yesRefunded = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var actualValue])
+
+createFormulaSimpleConditionNHDSomeThe :: VerbStatus -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
+createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date dateType = do
+    -- Get the actual value associated with the date
+    actualValue <- lookupDate (subjectToString date)
+
+    -- Use actualValue here
+    let basePredicates = case dateType of
+            DateSome -> And
+                            (And
+                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (Pred "IsDate" [Var actualValue])
+                            )
+                            (objectToPredicate object)
+            DateThe -> And
+                            (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                            (objectToPredicate object)
+
+
+    -- Generate FOL formulas based on different cases
+    generateFormulas basePredicates actualValue
+
+    where
+        -- Function to generate FOL formulas based on different cases
+        generateFormulas basePredicates actualValue = 
+            case verbStatus of
+                VSDel -> yesDelivered
+                VSPay -> yesPaid
+                VSCharge -> yesCharged
+                VSRefund -> yesRefunded
+
+            where
+                -- Predicates for different cases
+                yesDelivered = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var actualValue])
+                yesPaid = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var actualValue])
+                yesCharged = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var actualValue])
+                yesRefunded = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var actualValue])
 
 boolExToFOL :: BooleanExpression -> State DateDictionary FOLFormula
 boolExToFOL (BoolEx subject1 verbStatus comparison subject2) = 
