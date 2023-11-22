@@ -15,6 +15,7 @@ import Prelude
   , fromInteger
   , Maybe(..)
   , (+)
+  , (*)
   )
 
 import System.Environment ( getArgs )
@@ -168,6 +169,14 @@ monthToInt MOct = 10
 monthToInt MNov = 11
 monthToInt MDec = 12
 
+temporalOffsetToTerm :: TemporalOffset -> Term
+temporalOffsetToTerm (TempOffDay (NumInt num)) = Var $ show num
+temporalOffsetToTerm (TempOffDays (NumInt num)) = Var $ show num
+temporalOffsetToTerm (TempOffWeek (NumInt num)) = Var $ show (num * 7)
+temporalOffsetToTerm (TempOffWeeks (NumInt num)) = Var $ show (num * 7)
+temporalOffsetToTerm (TempOffYear (NumInt num)) = Var $ show (num * 365)
+temporalOffsetToTerm (TempOffYears (NumInt num)) = Var $ show (num * 365)
+
 dateSpeToTerm :: Num -> Month -> Num -> Term
 dateSpeToTerm (NumInt year) month (NumInt day) = Var $ show $ dateToInt year (monthToInt month) (fromInteger day)
 
@@ -201,6 +210,10 @@ simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receive
     createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateQuanThe temporalQuantifier date)) =
     createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
+simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateQuanTempSome temporalQuantifier temporalOffset tq date)) =
+    createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateQuanTempThe temporalQuantifier temporalOffset tq date)) =
+    createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleStatementToFOL (SimStateTwo id holds subject (DateSpe day month year) modalVerb verb object receiver) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
@@ -216,6 +229,10 @@ simpleStatementToFOL (SimStateTwo id holds subject (DateQuanSome temporalQuantif
     createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleStatementToFOL (SimStateTwo id holds subject (DateQuanThe temporalQuantifier date) modalVerb verb object receiver) =
     createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
+simpleStatementToFOL (SimStateTwo id holds subject (DateQuanTempSome temporalQuantifier temporalOffset tq date) modalVerb verb object receiver) =
+    createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleStatementToFOL (SimStateTwo id holds subject (DateQuanTempThe temporalQuantifier temporalOffset tq date) modalVerb verb object receiver) =
+    createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleStatementToFOL (SimStateThree id holds (DateSpe day month year) subject modalVerb verb object receiver) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
@@ -231,6 +248,10 @@ simpleStatementToFOL (SimStateThree id holds (DateQuanSome temporalQuantifier da
     createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleStatementToFOL (SimStateThree id holds (DateQuanThe temporalQuantifier date) subject modalVerb verb object receiver) =
     createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
+simpleStatementToFOL (SimStateThree id holds (DateQuanTempSome temporalQuantifier temporalOffset tq date) subject modalVerb verb object receiver) =
+    createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleStatementToFOL (SimStateThree id holds (DateQuanTempThe temporalQuantifier temporalOffset tq date) subject modalVerb verb object receiver) =
+    createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateSpe day month year)) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
@@ -246,6 +267,10 @@ simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (D
     createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateQuanThe temporalQuantifier date)) =
     createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier subject object receiver date (DateQuanThe temporalQuantifier date)
+simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateQuanTempSome temporalQuantifier temporalOffset tq date)) =
+    createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateQuanTempThe temporalQuantifier temporalOffset tq date)) =
+    createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleStatementToFOL (SimStateTwoNH id subject (DateSpe day month year) modalVerb verb object receiver) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
@@ -261,6 +286,10 @@ simpleStatementToFOL (SimStateTwoNH id subject (DateQuanSome temporalQuantifier 
     createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleStatementToFOL (SimStateTwoNH id subject (DateQuanThe temporalQuantifier date) modalVerb verb object receiver) =
     createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier subject object receiver date (DateQuanThe temporalQuantifier date)
+simpleStatementToFOL (SimStateTwoNH id subject (DateQuanTempSome temporalQuantifier temporalOffset tq date) modalVerb verb object receiver) =
+    createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleStatementToFOL (SimStateTwoNH id subject (DateQuanTempThe temporalQuantifier temporalOffset tq date) modalVerb verb object receiver) =
+    createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
     
 simpleStatementToFOL (SimStateThreeNH id (DateSpe day month year) subject modalVerb verb object receiver) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
@@ -276,6 +305,10 @@ simpleStatementToFOL (SimStateThreeNH id (DateQuanSome temporalQuantifier date) 
     createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleStatementToFOL (SimStateThreeNH id (DateQuanThe temporalQuantifier date) subject modalVerb verb object receiver) =
     createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier subject object receiver date (DateQuanThe temporalQuantifier date)
+simpleStatementToFOL (SimStateThreeNH id (DateQuanTempSome temporalQuantifier temporalOffset tq date) subject modalVerb verb object receiver) =
+    createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleStatementToFOL (SimStateThreeNH id (DateQuanTempThe temporalQuantifier temporalOffset tq date) subject modalVerb verb object receiver) =
+    createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 createFormulaSimpleStatement :: Holds -> ModalVerb -> Verb -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year =
@@ -658,6 +691,135 @@ createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier
                 yesMayRefundAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var actualValue])
                 noMayRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var actualValue])
 
+createFormulaSimpleStatementDQuanTempSomeThe :: Holds -> ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State DateDictionary FOLFormula
+createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date dateType = do
+    -- Get the actual value associated with the date
+    actualValue <- lookupDate (subjectToString date)
+
+    -- Use actualValue here
+    let basePredicates = case (dateType, tq) of
+            (DateQuanTempSome _ _ _ _, TempBefore) -> And
+                            (And
+                                (And
+                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (Pred "IsDate" [Var actualValue])
+                                )
+                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+            (DateQuanTempSome _ _ _ _, TempAfter) -> And
+                            (And
+                                (And
+                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (Pred "IsDate" [Var actualValue])
+                                )
+                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+            (DateQuanTempThe _ _ _ _, TempBefore) -> And
+                            (And
+                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+            (DateQuanTempThe _ _ _ _, TempAfter) -> And
+                            (And
+                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+
+    -- Generate FOL formulas based on different cases
+    generateFormulas basePredicates actualValue
+
+    where
+        -- Function to generate FOL formulas based on different cases
+        generateFormulas basePredicates actualValue = 
+            case (holds, modalVerb, verb, temporalQuantifier) of
+                (HoldYes, ModalObli _, VDel, TempBefore) -> yesMustDelBefore
+                (HoldNo, ModalObli _, VDel, TempBefore) -> noMustDelBefore
+                (HoldYes, ModalPermi, VDel, TempBefore) -> yesMayDelBefore
+                (HoldNo, ModalPermi, VDel, TempBefore) -> noMayDelBefore
+                (HoldYes, ModalForbi, VDel, TempBefore) -> noMayDelBefore
+                (HoldNo, ModalForbi, VDel, TempBefore) -> yesMayDelBefore
+                (HoldYes, ModalObli _, VPay, TempBefore) -> yesMustPayBefore
+                (HoldNo, ModalObli _, VPay, TempBefore) -> noMustPayBefore
+                (HoldYes, ModalPermi, VPay, TempBefore) -> yesMayPayBefore
+                (HoldNo, ModalPermi, VPay, TempBefore) -> noMayPayBefore
+                (HoldYes, ModalForbi, VPay, TempBefore) -> noMayPayBefore
+                (HoldNo, ModalForbi, VPay, TempBefore) -> yesMayPayBefore
+                (HoldYes, ModalObli _, VCharge, TempBefore) -> yesMustChargeBefore
+                (HoldNo, ModalObli _, VCharge, TempBefore) -> noMustChargeBefore
+                (HoldYes, ModalPermi, VCharge, TempBefore) -> yesMayChargeBefore
+                (HoldNo, ModalPermi, VCharge, TempBefore) -> noMayChargeBefore
+                (HoldYes, ModalForbi, VCharge, TempBefore) -> noMayChargeBefore
+                (HoldNo, ModalForbi, VCharge, TempBefore) -> yesMayChargeBefore
+                (HoldYes, ModalObli _, VRefund, TempBefore) -> yesMustRefundBefore
+                (HoldNo, ModalObli _, VRefund, TempBefore) -> noMustRefundBefore
+                (HoldYes, ModalPermi, VRefund, TempBefore) -> yesMayRefundBefore
+                (HoldNo, ModalPermi, VRefund, TempBefore) -> noMayRefundBefore
+                (HoldYes, ModalForbi, VRefund, TempBefore) -> noMayRefundBefore
+                (HoldNo, ModalForbi, VRefund, TempBefore) -> yesMayRefundBefore
+                (HoldYes, ModalObli _, VDel, TempAfter) -> yesMustDelAfter 
+                (HoldNo, ModalObli _, VDel, TempAfter) -> noMustDelAfter
+                (HoldYes, ModalPermi, VDel, TempAfter) -> yesMayDelAfter
+                (HoldNo, ModalPermi, VDel, TempAfter) -> noMayDelAfter
+                (HoldYes, ModalForbi, VDel, TempAfter) -> noMayDelAfter
+                (HoldNo, ModalForbi, VDel, TempAfter) -> yesMayDelAfter
+                (HoldYes, ModalObli _, VPay, TempAfter) -> yesMustPayAfter
+                (HoldNo, ModalObli _, VPay, TempAfter) -> noMustPayAfter 
+                (HoldYes, ModalPermi, VPay, TempAfter) -> yesMayPayAfter
+                (HoldNo, ModalPermi, VPay, TempAfter) -> noMayPayAfter 
+                (HoldYes, ModalForbi, VPay, TempAfter) -> noMayPayAfter
+                (HoldNo, ModalForbi, VPay, TempAfter) -> yesMayPayAfter
+                (HoldYes, ModalObli _, VCharge, TempAfter) -> yesMustChargeAfter
+                (HoldNo, ModalObli _, VCharge, TempAfter) -> noMustChargeAfter
+                (HoldYes, ModalPermi, VCharge, TempAfter) -> yesMayChargeAfter
+                (HoldNo, ModalPermi, VCharge, TempAfter) -> noMayChargeAfter
+                (HoldYes, ModalForbi, VCharge, TempAfter) -> noMayChargeAfter
+                (HoldNo, ModalForbi, VCharge, TempAfter) -> yesMayChargeAfter
+                (HoldYes, ModalObli _, VRefund, TempAfter) -> yesMustRefundAfter
+                (HoldNo, ModalObli _, VRefund, TempAfter) -> noMustRefundAfter
+                (HoldYes, ModalPermi, VRefund, TempAfter) -> yesMayRefundAfter
+                (HoldNo, ModalPermi, VRefund, TempAfter) -> noMayRefundAfter
+                (HoldYes, ModalForbi, VRefund, TempAfter) -> noMayRefundAfter
+                (HoldNo, ModalForbi, VRefund, TempAfter) -> yesMayRefundAfter
+
+            where
+                -- Predicates for different cases
+                yesMustDelBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noMustDelBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayDelBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noMayDelBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustPayBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noMustPayBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayPayBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noMayPayBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustChargeBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noMustChargeBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayChargeBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noMayChargeBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustRefundBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noMustRefundBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayRefundBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noMayRefundBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustDelAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noMustDelAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayDelAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noMayDelAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustPayAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noMustPayAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayPayAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noMayPayAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustChargeAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noMustChargeAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayChargeAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noMayChargeAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustRefundAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noMustRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayRefundAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noMayRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
+
 createFormulaSimpleStatementNH :: ModalVerb -> Verb -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year =
     case (modalVerb, verb) of
@@ -927,6 +1089,102 @@ createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier sub
                 yesMayRefundAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var actualValue])
                 noMayRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var actualValue])
 
+createFormulaSimpleStatementNHDQuanTempSomeThe :: ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State DateDictionary FOLFormula
+createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date dateType = do
+    -- Get the actual value associated with the date
+    actualValue <- lookupDate (subjectToString date)
+
+    -- Use actualValue here
+    let basePredicates = case (dateType, tq) of
+            (DateQuanTempSome _ _ _ _, TempBefore) -> And
+                            (And
+                                (And
+                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (Pred "IsDate" [Var actualValue])
+                                )
+                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+            (DateQuanTempSome _ _ _ _, TempAfter) -> And
+                            (And
+                                (And
+                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (Pred "IsDate" [Var actualValue])
+                                )
+                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+            (DateQuanTempThe _ _ _ _, TempBefore) -> And
+                            (And
+                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+            (DateQuanTempThe _ _ _ _, TempAfter) -> And
+                            (And
+                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+
+    -- Generate FOL formulas based on different cases
+    generateFormulas basePredicates actualValue
+
+    where
+        -- Function to generate FOL formulas based on different cases
+        generateFormulas basePredicates actualValue = 
+            case (modalVerb, verb, temporalQuantifier) of
+                (ModalObli _, VDel, TempBefore) -> yesMustDelBefore
+                (ModalPermi, VDel, TempBefore) -> yesMayDelBefore
+                (ModalForbi, VDel, TempBefore) -> noMayDelBefore
+                (ModalObli _, VPay, TempBefore) -> yesMustPayBefore
+                (ModalPermi, VPay, TempBefore) -> yesMayPayBefore
+                (ModalForbi, VPay, TempBefore) -> noMayPayBefore
+                (ModalObli _, VCharge, TempBefore) -> yesMustChargeBefore
+                (ModalPermi, VCharge, TempBefore) -> yesMayChargeBefore
+                (ModalForbi, VCharge, TempBefore) -> noMayChargeBefore
+                (ModalObli _, VRefund, TempBefore) -> yesMustRefundBefore
+                (ModalPermi, VRefund, TempBefore) -> yesMayRefundBefore
+                (ModalForbi, VRefund, TempBefore) -> noMayRefundBefore
+                (ModalObli _, VDel, TempAfter) -> yesMustDelAfter 
+                (ModalPermi, VDel, TempAfter) -> yesMayDelAfter
+                (ModalForbi, VDel, TempAfter) -> noMayDelAfter
+                (ModalObli _, VPay, TempAfter) -> yesMustPayAfter 
+                (ModalPermi, VPay, TempAfter) -> yesMayPayAfter
+                (ModalForbi, VPay, TempAfter) -> noMayPayAfter
+                (ModalObli _, VCharge, TempAfter) -> yesMustChargeAfter
+                (ModalPermi, VCharge, TempAfter) -> yesMayChargeAfter
+                (ModalForbi, VCharge, TempAfter) -> noMayChargeAfter
+                (ModalObli _, VRefund, TempAfter) -> yesMustRefundAfter
+                (ModalPermi, VRefund, TempAfter) -> yesMayRefundAfter
+                (ModalForbi, VRefund, TempAfter) -> noMayRefundAfter
+
+            where
+                -- Predicates for different cases
+                yesMustDelBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayDelBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noMayDelBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustPayBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayPayBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noMayPayBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustChargeBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayChargeBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noMayChargeBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustRefundBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayRefundBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noMayRefundBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustDelAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayDelAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noMayDelAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustPayAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayPayAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noMayPayAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustChargeAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayChargeAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noMayChargeAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustRefundAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMayRefundAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noMayRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
 
 -- Convert different kinds of objects to predicates
 objectToPredicate :: Object -> FOLFormula
@@ -954,6 +1212,10 @@ simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (Dat
     createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (DateQuanThe temporalQuantifier date)) =
     createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier subject object receiver date (DateQuanThe temporalQuantifier date)
+simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (DateQuanTempSome temporalQuantifier temporalOffset tq date)) =
+    createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (DateQuanTempThe temporalQuantifier temporalOffset tq date)) =
+    createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleConditionToFOL (SimConTwo id holds subject (DateSpe day month year) verbStatus object receiver) = 
     createFormulaSimpleCondition holds verbStatus subject object receiver day month year
@@ -969,6 +1231,10 @@ simpleConditionToFOL (SimConTwo id holds subject (DateQuanSome temporalQuantifie
     createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleConditionToFOL (SimConTwo id holds subject (DateQuanThe temporalQuantifier date) verbStatus object receiver) =
     createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier subject object receiver date (DateQuanThe temporalQuantifier date)
+simpleConditionToFOL (SimConTwo id holds subject (DateQuanTempSome temporalQuantifier temporalOffset tq date) verbStatus object receiver) =
+    createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleConditionToFOL (SimConTwo id holds subject (DateQuanTempThe temporalQuantifier temporalOffset tq date) verbStatus object receiver) =
+    createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleConditionToFOL (SimConThree id holds (DateSpe day month year) subject verbStatus object receiver) = 
     createFormulaSimpleCondition holds verbStatus subject object receiver day month year 
@@ -984,6 +1250,10 @@ simpleConditionToFOL (SimConThree id holds (DateQuanSome temporalQuantifier date
     createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleConditionToFOL (SimConThree id holds (DateQuanThe temporalQuantifier date) subject verbStatus object receiver) =
     createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier subject object receiver date (DateQuanThe temporalQuantifier date)
+simpleConditionToFOL (SimConThree id holds (DateQuanTempSome temporalQuantifier temporalOffset tq date) subject verbStatus object receiver) =
+    createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleConditionToFOL (SimConThree id holds (DateQuanTempThe temporalQuantifier temporalOffset tq date) subject verbStatus object receiver) =
+    createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateSpe day month year)) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
@@ -999,6 +1269,10 @@ simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver
     createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateQuanThe temporalQuantifier date)) =
     createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier subject object receiver date (DateQuanThe temporalQuantifier date)
+simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateQuanTempSome temporalQuantifier temporalOffset tq date)) =
+    createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateQuanTempThe temporalQuantifier temporalOffset tq date)) =
+    createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleConditionToFOL (SimConFive id HoldYes booleanExpression) = boolExToFOL booleanExpression
 simpleConditionToFOL (SimConFive id HoldNo booleanExpression) = Not <$> (boolExToFOL booleanExpression)
@@ -1017,6 +1291,10 @@ simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateQua
     createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateQuanThe temporalQuantifier date)) =
     createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject object receiver date (DateQuanThe temporalQuantifier date)
+simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateQuanTempSome temporalQuantifier temporalOffset tq date)) =
+    createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateQuanTempThe temporalQuantifier temporalOffset tq date)) =
+    createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleConditionToFOL (SimConTwoNH id subject (DateSpe day month year) verbStatus object receiver) = 
     createFormulaSimpleConditionNH verbStatus subject object receiver day month year
@@ -1032,6 +1310,10 @@ simpleConditionToFOL (SimConTwoNH id subject (DateQuanSome temporalQuantifier da
     createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleConditionToFOL (SimConTwoNH id subject (DateQuanThe temporalQuantifier date) verbStatus object receiver) =
     createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject object receiver date (DateQuanThe temporalQuantifier date)
+simpleConditionToFOL (SimConTwoNH id subject (DateQuanTempSome temporalQuantifier temporalOffset tq date) verbStatus object receiver) =
+    createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleConditionToFOL (SimConTwoNH id subject (DateQuanTempThe temporalQuantifier temporalOffset tq date) verbStatus object receiver) =
+    createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleConditionToFOL (SimConThreeNH id (DateSpe day month year) subject verbStatus object receiver) = 
     createFormulaSimpleConditionNH verbStatus subject object receiver day month year 
@@ -1047,6 +1329,10 @@ simpleConditionToFOL (SimConThreeNH id (DateQuanSome temporalQuantifier date) su
     createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleConditionToFOL (SimConThreeNH id (DateQuanThe temporalQuantifier date) subject verbStatus object receiver) =
     createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject object receiver date (DateQuanThe temporalQuantifier date)
+simpleConditionToFOL (SimConThreeNH id (DateQuanTempSome temporalQuantifier temporalOffset tq date) subject verbStatus object receiver) =
+    createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleConditionToFOL (SimConThreeNH id (DateQuanTempThe temporalQuantifier temporalOffset tq date) subject verbStatus object receiver) =
+    createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateSpe day month year)) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
@@ -1062,6 +1348,10 @@ simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (Da
     createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier subject object receiver date (DateQuanSome temporalQuantifier date)
 simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateQuanThe temporalQuantifier date)) =
     createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier subject object receiver date (DateQuanThe temporalQuantifier date)
+simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateQuanTempSome temporalQuantifier temporalOffset tq date)) =
+    createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempSome temporalQuantifier temporalOffset tq date)
+simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateQuanTempThe temporalQuantifier temporalOffset tq date)) =
+    createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleConditiontoFOL (SimConFiveNH id booleanExpression) = boolExToFOL booleanExpression
 
@@ -1278,6 +1568,87 @@ createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier sub
                 yesRefundedAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var actualValue])
                 noRefundedAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var actualValue])
 
+createFormulaSimpleConditionDQuanTempSomeThe :: Holds -> VerbStatus -> TemporalQuantifier -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State DateDictionary FOLFormula
+createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier subject object receiver temporalOffset tq date dateType = do
+    -- Get the actual value associated with the date
+    actualValue <- lookupDate (subjectToString date)
+
+    -- Use actualValue here
+    let basePredicates = case (dateType, tq) of
+            (DateQuanTempSome _ _ _ _, TempBefore) -> And
+                            (And
+                                (And
+                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (Pred "IsDate" [Var actualValue])
+                                )
+                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+            (DateQuanTempSome _ _ _ _, TempAfter) -> And
+                            (And
+                                (And
+                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (Pred "IsDate" [Var actualValue])
+                                )
+                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+            (DateQuanTempThe _ _ _ _, TempBefore) -> And
+                            (And
+                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+            (DateQuanTempThe _ _ _ _, TempAfter) -> And
+                            (And
+                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+
+    -- Generate FOL formulas based on different cases
+    generateFormulas basePredicates actualValue
+
+    where
+        -- Function to generate FOL formulas based on different cases
+        generateFormulas basePredicates actualValue = 
+            case (holds, verbStatus, temporalQuantifier) of
+                (HoldYes, VSDel, TempBefore) -> yesDeliveredBefore
+                (HoldNo, VSDel, TempBefore) -> noDeliveredBefore
+                (HoldYes, VSPay, TempBefore) -> yesPaidBefore
+                (HoldNo, VSPay, TempBefore) -> noPaidBefore
+                (HoldYes, VSCharge, TempBefore) -> yesChargedBefore
+                (HoldNo, VSCharge, TempBefore) -> noChargedBefore
+                (HoldYes, VSRefund, TempBefore) -> yesRefundedBefore
+                (HoldNo, VSRefund, TempBefore) -> noRefundedBefore
+                (HoldYes, VSDel, TempAfter) -> yesDeliveredAfter
+                (HoldNo, VSDel, TempAfter) -> noDeliveredAfter
+                (HoldYes, VSPay, TempAfter) -> yesPaidAfter
+                (HoldNo, VSPay, TempAfter) -> noPaidAfter
+                (HoldYes, VSCharge, TempAfter) -> yesChargedAfter
+                (HoldNo, VSCharge, TempAfter) -> noChargedAfter
+                (HoldYes, VSRefund, TempAfter) -> yesRefundedAfter
+                (HoldNo, VSRefund, TempAfter) -> noRefundedAfter
+
+            where
+                -- Predicates for different cases
+                yesDeliveredBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noDeliveredBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesPaidBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noPaidBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesChargedBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noChargedBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesRefundedBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "x", Var "y", Var "o", Var "d"])
+                noRefundedBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesDeliveredAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noDeliveredAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesPaidAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noPaidAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesChargedAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noChargedAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesRefundedAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var "d"])
+                noRefundedAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var "d"])
+
 createFormulaSimpleConditionNH :: VerbStatus -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleConditionNH verbStatus subject object receiver day month year =
     case verbStatus of
@@ -1436,6 +1807,71 @@ createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject
                 yesChargedAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var actualValue])
                 yesRefundedAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var actualValue])
 
+createFormulaSimpleConditionNHDQuanTempSomeThe :: VerbStatus -> TemporalQuantifier -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State DateDictionary FOLFormula
+createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier subject object receiver temporalOffset tq date dateType = do
+    -- Get the actual value associated with the date
+    actualValue <- lookupDate (subjectToString date)
+
+    -- Use actualValue here
+    let basePredicates = case (dateType, tq) of
+            (DateQuanTempSome _ _ _ _, TempBefore) -> And
+                            (And
+                                (And
+                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (Pred "IsDate" [Var actualValue])
+                                )
+                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+            (DateQuanTempSome _ _ _ _, TempAfter) -> And
+                            (And
+                                (And
+                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (Pred "IsDate" [Var actualValue])
+                                )
+                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+            (DateQuanTempThe _ _ _ _, TempBefore) -> And
+                            (And
+                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+            (DateQuanTempThe _ _ _ _, TempAfter) -> And
+                            (And
+                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                            )
+                            (objectToPredicate object)
+
+    -- Generate FOL formulas based on different cases
+    generateFormulas basePredicates actualValue
+
+    where
+        -- Function to generate FOL formulas based on different cases
+        generateFormulas basePredicates actualValue = 
+            case (verbStatus, temporalQuantifier) of
+                (VSDel, TempBefore) -> yesDeliveredBefore
+                (VSPay, TempBefore) -> yesPaidBefore
+                (VSCharge, TempBefore) -> yesChargedBefore
+                (VSRefund, TempBefore) -> yesRefundedBefore
+                (VSDel, TempAfter) -> yesDeliveredAfter
+                (VSPay, TempAfter) -> yesPaidAfter
+                (VSCharge, TempAfter) -> yesChargedAfter
+                (VSRefund, TempAfter) -> yesRefundedAfter
+
+            where
+                -- Predicates for different cases
+                yesDeliveredBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesPaidBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesChargedBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesRefundedBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "x", Var "y", Var "o", Var "d"])
+                yesDeliveredAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesPaidAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesChargedAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesRefundedAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var "d"])
+                
 boolExToFOL :: BooleanExpression -> State DateDictionary FOLFormula
 boolExToFOL (BoolEx subject1 verbStatus comparison subject2) = 
     case (verbStatus, comparison) of
@@ -1471,5 +1907,5 @@ boolExToFOL (BoolEx subject1 verbStatus comparison subject2) =
         refundedMore = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "RefundedMore" [Var "x", Var "y"])
 
 -- Run contractToFOL with an empty DateDictionary
-runContract :: Contract -> FOLFormula
-runContract contract = evalState (contractToFOL contract) Map.empty
+runFOLConversion :: Contract -> FOLFormula
+runFOLConversion contract = evalState (contractToFOL contract) Map.empty
