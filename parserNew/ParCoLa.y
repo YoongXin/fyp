@@ -327,8 +327,10 @@ Date
   | 'on' 'SOMEDATE' Subject { AbsCoLa.DateSome $3 }
   | 'on' 'THEDATE' Subject { AbsCoLa.DateThe $3 }
   | TemporalQuantifier Num Month Num { AbsCoLa.DateQuanSpecific $1 $2 $3 $4 }
-  | TemporalQuantifier TemporalOffset TemporalQuantifier 'THEDATE' Subject { AbsCoLa.DateQuanThe $1 $2 $3 $5 }
-  | TemporalQuantifier TemporalOffset TemporalQuantifier 'SOMEDATE' Subject { AbsCoLa.DateQuanSome $1 $2 $3 $5 }
+  | TemporalQuantifier 'SOMEDATE' Subject { AbsCoLa.DateQuanSome $1 $3 }
+  | TemporalQuantifier 'THEDATE' Subject { AbsCoLa.DateQuanThe $1 $3 }
+  | TemporalQuantifier TemporalOffset TemporalQuantifier 'SOMEDATE' Subject { AbsCoLa.DateQuanTempSome $1 $2 $3 $5 }
+  | TemporalQuantifier TemporalOffset TemporalQuantifier 'THEDATE' Subject { AbsCoLa.DateQuanTempThe $1 $2 $3 $5 }
 
 TemporalQuantifier :: { AbsCoLa.TemporalQuantifier }
 TemporalQuantifier

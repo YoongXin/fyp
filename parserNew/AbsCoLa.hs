@@ -122,8 +122,10 @@ data Date
     | DateSome Subject
     | DateThe Subject
     | DateQuanSpecific TemporalQuantifier Num Month Num
-    | DateQuanThe TemporalQuantifier TemporalOffset TemporalQuantifier Subject
-    | DateQuanSome TemporalQuantifier TemporalOffset TemporalQuantifier Subject
+    | DateQuanSome TemporalQuantifier Subject
+    | DateQuanThe TemporalQuantifier Subject
+    | DateQuanTempSome TemporalQuantifier TemporalOffset TemporalQuantifier Subject
+    | DateQuanTempThe TemporalQuantifier TemporalOffset TemporalQuantifier Subject
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data TemporalQuantifier = TempAfter | TempBefore

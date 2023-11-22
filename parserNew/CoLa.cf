@@ -97,8 +97,10 @@ DateAny. Date ::= "on ANYDATE" ;
 DateSome. Date ::= "on SOMEDATE" Subject ;
 DateThe. Date ::= "on THEDATE" Subject;
 DateQuanSpecific. Date ::= TemporalQuantifier Num Month Num ;
-DateQuanThe. Date ::= TemporalQuantifier TemporalOffset TemporalQuantifier "THEDATE" Subject ;
-DateQuanSome. Date ::= TemporalQuantifier TemporalOffset TemporalQuantifier "SOMEDATE" Subject ;
+DateQuanSome. Date ::= TemporalQuantifier "SOMEDATE" Subject ;
+DateQuanThe. Date ::= TemporalQuantifier "THEDATE" Subject ;
+DateQuanTempSome. Date ::= TemporalQuantifier TemporalOffset TemporalQuantifier "SOMEDATE" Subject ;
+DateQuanTempThe. Date ::= TemporalQuantifier TemporalOffset TemporalQuantifier "THEDATE" Subject ;
 
 TempAfter. TemporalQuantifier ::= "after" ;
 TempBefore. TemporalQuantifier ::= "before" ;

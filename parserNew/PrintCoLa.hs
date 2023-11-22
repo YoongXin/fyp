@@ -286,8 +286,10 @@ instance Print AbsCoLa.Date where
     AbsCoLa.DateSome subject -> prPrec i 0 (concatD [doc (showString "on"), doc (showString "SOMEDATE"), prt 0 subject])
     AbsCoLa.DateThe subject -> prPrec i 0 (concatD [doc (showString "on"), doc (showString "THEDATE"), prt 0 subject])
     AbsCoLa.DateQuanSpecific temporalquantifier num1 month num2 -> prPrec i 0 (concatD [prt 0 temporalquantifier, prt 0 num1, prt 0 month, prt 0 num2])
-    AbsCoLa.DateQuanThe temporalquantifier1 temporaloffset temporalquantifier2 subject -> prPrec i 0 (concatD [prt 0 temporalquantifier1, prt 0 temporaloffset, prt 0 temporalquantifier2, doc (showString "THEDATE"), prt 0 subject])
-    AbsCoLa.DateQuanSome temporalquantifier1 temporaloffset temporalquantifier2 subject -> prPrec i 0 (concatD [prt 0 temporalquantifier1, prt 0 temporaloffset, prt 0 temporalquantifier2, doc (showString "SOMEDATE"), prt 0 subject])
+    AbsCoLa.DateQuanSome temporalquantifier subject -> prPrec i 0 (concatD [prt 0 temporalquantifier, doc (showString "SOMEDATE"), prt 0 subject])
+    AbsCoLa.DateQuanThe temporalquantifier subject -> prPrec i 0 (concatD [prt 0 temporalquantifier, doc (showString "THEDATE"), prt 0 subject])
+    AbsCoLa.DateQuanTempSome temporalquantifier1 temporaloffset temporalquantifier2 subject -> prPrec i 0 (concatD [prt 0 temporalquantifier1, prt 0 temporaloffset, prt 0 temporalquantifier2, doc (showString "SOMEDATE"), prt 0 subject])
+    AbsCoLa.DateQuanTempThe temporalquantifier1 temporaloffset temporalquantifier2 subject -> prPrec i 0 (concatD [prt 0 temporalquantifier1, prt 0 temporaloffset, prt 0 temporalquantifier2, doc (showString "THEDATE"), prt 0 subject])
 
 instance Print AbsCoLa.TemporalQuantifier where
   prt i = \case

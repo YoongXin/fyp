@@ -166,8 +166,10 @@ transDate x = case x of
   AbsCoLa.DateSome subject -> failure x
   AbsCoLa.DateThe subject -> failure x
   AbsCoLa.DateQuanSpecific temporalquantifier num1 month num2 -> failure x
-  AbsCoLa.DateQuanThe temporalquantifier1 temporaloffset temporalquantifier2 subject -> failure x
-  AbsCoLa.DateQuanSome temporalquantifier1 temporaloffset temporalquantifier2 subject -> failure x
+  AbsCoLa.DateQuanSome temporalquantifier subject -> failure x
+  AbsCoLa.DateQuanThe temporalquantifier subject -> failure x
+  AbsCoLa.DateQuanTempSome temporalquantifier1 temporaloffset temporalquantifier2 subject -> failure x
+  AbsCoLa.DateQuanTempThe temporalquantifier1 temporaloffset temporalquantifier2 subject -> failure x
 
 transTemporalQuantifier :: AbsCoLa.TemporalQuantifier -> Result
 transTemporalQuantifier x = case x of

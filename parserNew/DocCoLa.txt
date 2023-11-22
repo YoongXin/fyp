@@ -138,8 +138,10 @@ All other symbols are terminals.
   |  |  **|**  | ``on`` ``SOMEDATE`` //Subject//
   |  |  **|**  | ``on`` ``THEDATE`` //Subject//
   |  |  **|**  | //TemporalQuantifier// //Num// //Month// //Num//
-  |  |  **|**  | //TemporalQuantifier// //TemporalOffset// //TemporalQuantifier// ``THEDATE`` //Subject//
+  |  |  **|**  | //TemporalQuantifier// ``SOMEDATE`` //Subject//
+  |  |  **|**  | //TemporalQuantifier// ``THEDATE`` //Subject//
   |  |  **|**  | //TemporalQuantifier// //TemporalOffset// //TemporalQuantifier// ``SOMEDATE`` //Subject//
+  |  |  **|**  | //TemporalQuantifier// //TemporalOffset// //TemporalQuantifier// ``THEDATE`` //Subject//
   | //TemporalQuantifier// | -> | ``after``
   |  |  **|**  | ``before``
   | //TemporalOffset// | -> | //Num// ``day``
