@@ -49,7 +49,6 @@ data FOLFormula
     | Exists [Term] FOLFormula
     | ForAll [Term] FOLFormula
     | Brackets FOLFormula
-
   deriving (Eq, Show, Read)
 
 -- Function to convert a specific date to an integer
@@ -1908,4 +1907,24 @@ boolExToFOL (BoolEx subject1 verbStatus comparison subject2) =
 
 -- Run contractToFOL with an empty DateDictionary
 runFOLConversion :: Contract -> FOLFormula
-runFOLConversion contract = evalState (contractToFOL contract) Map.empty
+runFOLConversion contract = evalState (contractToFOLWithCheck contract) Map.empty
+
+-- Updated function to convert the contract to FOL formula with date dictionary check
+contractToFOLWithCheck :: Contract -> State DateDictionary FOLFormula
+contractToFOLWithCheck contract = do
+    folFormula <- contractToFOL contract
+    addDateDictionaryCheck folFormula
+
+-- Function to add date dictionary check to the FOL formula
+addDateDictionaryCheck :: FOLFormula -> State DateDictionary FOLFormula
+addDateDictionaryCheck folFormula = do
+    dateDict <- get
+    let dateVars = Map.elems (Map.map Var dateDict)
+    return $ addDateDictionaryCheck' folFormula dateVars
+
+-- Helper function to apply ForAll quantification
+addDateDictionaryCheck' :: FOLFormula -> [Term] -> FOLFormula
+addDateDictionaryCheck' folFormula dateVars =
+    case dateVars of
+        [] -> folFormula
+        _ -> ForAll dateVars $ Brackets $ folFormula
