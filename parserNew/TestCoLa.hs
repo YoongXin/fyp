@@ -24,6 +24,7 @@ import ParCoLa   ( pContract, myLexer )
 import PrintCoLa ( Print, printTree )
 import SkelCoLa  ()
 import AstToFOL
+import FOLToTPTP
 import qualified Data.Map as Map
 
 type Err        = Either String

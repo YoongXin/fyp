@@ -121,7 +121,11 @@ numericalExpressionToTerm (NumExpOp expr1 operator expr2) =
             OpMin -> "-"
             OpMult -> "*"
             OpDiv -> "/"
-    in Fun operatorStr [term1, term2]
+    in Var (termToString term1 ++ operatorStr ++ termToString term2)
+
+termToString :: Term -> String
+termToString (Var str) = str
+termToString (Fun name _) = name 
 
 numericalObjectToTerm :: NumericalObject -> Term
 numericalObjectToTerm (NumPound _ (NumInt n)) = Var ("Pound" ++ show n)
@@ -189,7 +193,7 @@ lookupDate date = do
         Just value -> return value
         Nothing -> do
             -- If it doesn't exist, add a new entry to the dictionary
-            let newValue = "d" ++ show (Map.size dateDictionary + 1)
+            let newValue = "D" ++ show (Map.size dateDictionary + 1)
             let newDateDict = Map.insert date newValue dateDictionary
             put newDateDict
             return newValue
@@ -342,28 +346,28 @@ createFormulaSimpleStatement holds modalVerb verb subject object receiver day mo
         basePredicates = 
             And
                 (And
-                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                    (Pred "Date" [Var "d", dateSpeToTerm year month day])
+                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                    (Pred "Date" [Var "D", dateSpeToTerm year month day])
                 )
                 (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesMustDel = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        noMustDel = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayDel = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        noMayDel = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustPay = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
-        noMustPay = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayPay = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
-        noMayPay = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustCharge = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
-        noMustCharge = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayCharge = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
-        noMayCharge = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustRefund = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
-        noMustRefund = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayRefund = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
-        noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
+        yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustPay = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustPay = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayPay = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayPay = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustCharge = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustCharge = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayCharge = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayCharge = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustRefund = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustRefund = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayRefund = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayRefund = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleStatementDAny :: Holds -> ModalVerb -> Verb -> Subject -> Object -> Receiver -> State DateDictionary FOLFormula
 createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver =
@@ -397,26 +401,26 @@ createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver =
         -- Common base predicates
         basePredicates = 
             And
-                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                 (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesMustDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        noMustDel = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        noMayDel = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
-        noMustPay = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
-        noMayPay = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
-        noMustCharge = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
-        noMayCharge = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
-        noMustRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
-        noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
+        yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustPay = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustPay = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayPay = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayPay = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustCharge = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustCharge = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayCharge = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayCharge = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustRefund = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustRefund = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayRefund = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayRefund = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleStatementDSomeThe :: Holds -> ModalVerb -> Verb -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receiver date dateType = do
@@ -427,12 +431,12 @@ createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receive
     let basePredicates = case dateType of
             DateSome _ -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                 (Pred "IsDate" [Var actualValue])
                             )
                             (objectToPredicate object)
             DateThe _ -> And
-                            (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                            (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
     -- Generate FOL formulas based on different cases
@@ -469,22 +473,22 @@ createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receive
 
             where
                 -- Predicates for different cases
-                yesMustDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var actualValue])
-                noMustDel = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayDel = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var actualValue])
-                noMustPay = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayPay = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var actualValue])
-                noMustCharge = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayCharge = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var actualValue])
-                noMustRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMustDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustPay = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMustPay = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayPay = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayPay = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustCharge = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMustCharge = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayCharge = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayCharge = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustRefund = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMustRefund = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayRefund = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayRefund = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "X", Var "Y", Var "O", Var actualValue])
 
 createFormulaSimpleStatementDQuanSpe :: Holds -> ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier subject object receiver day month year =
@@ -543,44 +547,44 @@ createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier sub
         basePredicates = 
             And
                 (And
-                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                    (Pred "Date" [Var "d", dateSpeToTerm year month day])
+                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                    (Pred "Date" [Var "D", dateSpeToTerm year month day])
                 )
                 (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesMustDelBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noMustDelBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayDelBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noMayDelBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustPayBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noMustPayBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayPayBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noMayPayBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustChargeBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noMustChargeBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayChargeBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noMayChargeBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustRefundBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noMustRefundBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayRefundBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noMayRefundBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustDelAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noMustDelAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayDelAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noMayDelAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustPayAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noMustPayAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayPayAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noMayPayAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustChargeAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noMustChargeAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayChargeAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noMayChargeAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustRefundAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noMustRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayRefundAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noMayRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
+        yesMustDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustPayBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustPayBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayPayBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayPayBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustChargeBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustChargeBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayChargeBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayChargeBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustRefundBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustRefundBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayRefundBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayRefundBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustDelAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustDelAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayDelAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayDelAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustPayAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustPayAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayPayAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayPayAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustChargeAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustChargeAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayChargeAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayChargeAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustRefundAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noMustRefundAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayRefundAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayRefundAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleStatementDQuanSomeThe :: Holds -> ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier subject object receiver date dateType = do
@@ -591,12 +595,12 @@ createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier
     let basePredicates = case dateType of
             DateQuanSome _ _ -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                 (Pred "IsDate" [Var actualValue])
                             )
                             (objectToPredicate object)
             DateQuanThe _ _ -> And
-                            (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                            (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
     -- Generate FOL formulas based on different cases
@@ -657,38 +661,38 @@ createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier
 
             where
                 -- Predicates for different cases
-                yesMustDelBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noMustDelBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayDelBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayDelBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustPayBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noMustPayBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayPayBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayPayBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustChargeBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noMustChargeBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayChargeBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayChargeBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustRefundBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noMustRefundBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayRefundBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayRefundBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustDelAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noMustDelAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayDelAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayDelAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustPayAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noMustPayAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayPayAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayPayAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustChargeAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noMustChargeAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayChargeAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayChargeAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustRefundAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noMustRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayRefundAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMustDelBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMustDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayDelBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustPayBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMustPayBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayPayBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayPayBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustChargeBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMustChargeBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayChargeBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayChargeBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustRefundBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMustRefundBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayRefundBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayRefundBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustDelAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMustDelAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayDelAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayDelAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustPayAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMustPayAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayPayAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayPayAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustChargeAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMustChargeAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayChargeAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayChargeAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustRefundAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMustRefundAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayRefundAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayRefundAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "X", Var "Y", Var "O", Var actualValue])
 
 createFormulaSimpleStatementDQuanTempSomeThe :: Holds -> ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date dateType = do
@@ -700,31 +704,31 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
             (DateQuanTempSome _ _ _ _, TempBefore) -> And
                             (And
                                 (And
-                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                     (Pred "IsDate" [Var actualValue])
                                 )
-                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (Pred "DateBefore" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
             (DateQuanTempSome _ _ _ _, TempAfter) -> And
                             (And
                                 (And
-                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                     (Pred "IsDate" [Var actualValue])
                                 )
-                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (Pred "DateAfter" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
             (DateQuanTempThe _ _ _ _, TempBefore) -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                                (Pred "DateBefore" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
             (DateQuanTempThe _ _ _ _, TempAfter) -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                                (Pred "DateAfter" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
 
@@ -786,38 +790,38 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
 
             where
                 -- Predicates for different cases
-                yesMustDelBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noMustDelBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayDelBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noMayDelBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustPayBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noMustPayBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayPayBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noMayPayBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustChargeBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noMustChargeBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayChargeBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noMayChargeBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustRefundBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noMustRefundBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayRefundBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noMayRefundBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustDelAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noMustDelAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayDelAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noMayDelAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustPayAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noMustPayAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayPayAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noMayPayAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustChargeAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noMustChargeAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayChargeAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noMayChargeAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustRefundAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noMustRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayRefundAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noMayRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noMustDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustPayBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noMustPayBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayPayBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayPayBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustChargeBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noMustChargeBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayChargeBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayChargeBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustRefundBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noMustRefundBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayRefundBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayRefundBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustDelAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noMustDelAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayDelAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayDelAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustPayAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noMustPayAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayPayAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayPayAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustChargeAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noMustChargeAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayChargeAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayChargeAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustRefundAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noMustRefundAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayRefundAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayRefundAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleStatementNH :: ModalVerb -> Verb -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year =
@@ -840,24 +844,24 @@ createFormulaSimpleStatementNH modalVerb verb subject object receiver day month 
         basePredicates = 
             And
                 (And
-                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                    (Pred "Date" [Var "d", dateSpeToTerm year month day])
+                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                    (Pred "Date" [Var "D", dateSpeToTerm year month day])
                 )
                 (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesMustDel = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayDel = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        noMayDel = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustPay = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayPay = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
-        noMayPay = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustCharge = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayCharge = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
-        noMayCharge = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustRefund = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayRefund = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
-        noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
+        yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustPay = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayPay = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayPay = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustCharge = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayCharge = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayCharge = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustRefund = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayRefund = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayRefund = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleStatementNHDAny :: ModalVerb -> Verb -> Subject -> Object -> Receiver -> State DateDictionary FOLFormula
 createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver =
@@ -879,22 +883,22 @@ createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver =
         -- Common base predicates
         basePredicates = 
             And
-                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                 (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesMustDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        noMayDel = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
-        noMayPay = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
-        noMayCharge = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
-        noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var "d"])
+        yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustPay = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayPay = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayPay = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustCharge = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayCharge = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayCharge = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustRefund = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayRefund = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayRefund = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleStatementNHDSomeThe :: ModalVerb -> Verb -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver date dateType = do
@@ -905,12 +909,12 @@ createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver da
     let basePredicates = case dateType of
             DateSome _ -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                 (Pred "IsDate" [Var actualValue])
                             )
                             (objectToPredicate object)
             DateThe _ -> And
-                            (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                            (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
     -- Generate FOL formulas based on different cases
@@ -935,18 +939,18 @@ createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver da
 
             where
                 -- Predicates for different cases
-                yesMustDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayDel = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayDel = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayPay = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayPay = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayCharge = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayCharge = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayRefund = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayRefund = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustPay = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustPay" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayPay = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayPay = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayPay" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustCharge = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustCharge" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayCharge = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayCharge = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayCharge" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustRefund = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustRefund" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayRefund = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayRefund = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayRefund" [Var "X", Var "Y", Var "O", Var actualValue])
 
 createFormulaSimpleStatementNHDQuanSpe :: ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject object receiver day month year =
@@ -981,36 +985,36 @@ createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject
         basePredicates = 
             And
                 (And
-                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                    (Pred "Date" [Var "d", dateSpeToTerm year month day])
+                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                    (Pred "Date" [Var "D", dateSpeToTerm year month day])
                 )
                 (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesMustDelBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayDelBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noMayDelBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustPayBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayPayBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noMayPayBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustChargeBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayChargeBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noMayChargeBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustRefundBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayRefundBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noMayRefundBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustDelAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayDelAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noMayDelAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustPayAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayPayAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noMayPayAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustChargeAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayChargeAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noMayChargeAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMustRefundAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesMayRefundAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noMayRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
+        yesMustDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustPayBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayPayBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayPayBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustChargeBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayChargeBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayChargeBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustRefundBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayRefundBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayRefundBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustDelAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayDelAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayDelAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustPayAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayPayAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayPayAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustChargeAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayChargeAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayChargeAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMustRefundAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesMayRefundAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noMayRefundAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleStatementNHDQuanSomeThe :: ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier subject object receiver date dateType = do
@@ -1021,12 +1025,12 @@ createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier sub
     let basePredicates = case dateType of
             DateSome _ -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                 (Pred "IsDate" [Var actualValue])
                             )
                             (objectToPredicate object)
             DateThe _ -> And
-                            (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                            (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
     -- Generate FOL formulas based on different cases
@@ -1063,30 +1067,30 @@ createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier sub
 
             where
                 -- Predicates for different cases
-                yesMustDelBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayDelBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayDelBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustPayBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayPayBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayPayBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustChargeBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayChargeBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayChargeBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustRefundBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayRefundBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayRefundBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustDelAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayDelAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayDelAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustPayAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayPayAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayPayAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustChargeAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayChargeAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayChargeAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMustRefundAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesMayRefundAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noMayRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var actualValue])
+                yesMustDelBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayDelBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustPayBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayPayBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayPayBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustChargeBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayChargeBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayChargeBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustRefundBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayRefundBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayRefundBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustDelAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayDelAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayDelAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustPayAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayPayAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayPayAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustChargeAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayChargeAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayChargeAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMustRefundAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesMayRefundAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noMayRefundAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "X", Var "Y", Var "O", Var actualValue])
 
 createFormulaSimpleStatementNHDQuanTempSomeThe :: ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date dateType = do
@@ -1098,31 +1102,31 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
             (DateQuanTempSome _ _ _ _, TempBefore) -> And
                             (And
                                 (And
-                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                     (Pred "IsDate" [Var actualValue])
                                 )
-                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (Pred "DateBefore" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
             (DateQuanTempSome _ _ _ _, TempAfter) -> And
                             (And
                                 (And
-                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                     (Pred "IsDate" [Var actualValue])
                                 )
-                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (Pred "DateAfter" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
             (DateQuanTempThe _ _ _ _, TempBefore) -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                                (Pred "DateBefore" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
             (DateQuanTempThe _ _ _ _, TempAfter) -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                                (Pred "DateAfter" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
 
@@ -1160,41 +1164,41 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
 
             where
                 -- Predicates for different cases
-                yesMustDelBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayDelBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noMayDelBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustPayBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayPayBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noMayPayBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustChargeBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayChargeBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noMayChargeBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustRefundBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayRefundBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noMayRefundBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustDelAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayDelAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noMayDelAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustPayAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayPayAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noMayPayAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustChargeAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayChargeAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noMayChargeAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMustRefundAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesMayRefundAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noMayRefundAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesMustDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustPayBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayPayBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayPayBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustChargeBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayChargeBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayChargeBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustRefundBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayRefundBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayRefundBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustDelAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayDelAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayDelAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayDeliverAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustPayAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayPayAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayPayAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayPayAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustChargeAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayChargeAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayChargeAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayChargeAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMustRefundAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MustRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesMayRefundAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noMayRefundAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "MayRefundAfter" [Var "X", Var "Y", Var "O", Var "D"])
 
 -- Convert different kinds of objects to predicates
 objectToPredicate :: Object -> FOLFormula
-objectToPredicate (ObjNu (NumPound _ (NumInt num))) = Pred "ObjectPound" [Var "o", Var (show num)]
-objectToPredicate (ObjNu (NumDol _ (NumInt num))) = Pred "ObjectDollar" [Var "o", Var (show num)]
-objectToPredicate (ObjNu (NumEur _ (NumInt num))) = Pred "ObjectEuro" [Var "o", Var (show num)]
-objectToPredicate (ObjNu (NumAmount subject)) = Pred "ObjectAmount" [Var "o", subjectToTerm subject]
-objectToPredicate (ObjNonNu (NonNumCurr subject)) = Pred "ObjectSomeCurrency" [Var "o", subjectToTerm subject]
-objectToPredicate (ObjNonNu (NonNumRep subject)) = Pred "ObjectReport" [Var "o", subjectToTerm subject]
-objectToPredicate (ObjNonNu (NonNumNamed subject)) = Pred "ObjectNamedObject" [Var "o", subjectToTerm subject]
-objectToPredicate (ObjNonNu (NonNumOther subject)) = Pred "ObjectOtherObject" [Var "o", subjectToTerm subject]
+objectToPredicate (ObjNu (NumPound _ (NumInt num))) = Pred "ObjectPound" [Var "O", Var (show num)]
+objectToPredicate (ObjNu (NumDol _ (NumInt num))) = Pred "ObjectDollar" [Var "O", Var (show num)]
+objectToPredicate (ObjNu (NumEur _ (NumInt num))) = Pred "ObjectEuro" [Var "O", Var (show num)]
+objectToPredicate (ObjNu (NumAmount subject)) = Pred "ObjectAmount" [Var "O", subjectToTerm subject]
+objectToPredicate (ObjNonNu (NonNumCurr subject)) = Pred "ObjectSomeCurrency" [Var "O", subjectToTerm subject]
+objectToPredicate (ObjNonNu (NonNumRep subject)) = Pred "ObjectReport" [Var "O", subjectToTerm subject]
+objectToPredicate (ObjNonNu (NonNumNamed subject)) = Pred "ObjectNamedObject" [Var "O", subjectToTerm subject]
+objectToPredicate (ObjNonNu (NonNumOther subject)) = Pred "ObjectOtherObject" [Var "O", subjectToTerm subject]
 
 simpleConditionToFOL :: SimpleCondition -> State DateDictionary FOLFormula
 simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (DateSpe day month year)) =
@@ -1371,20 +1375,20 @@ createFormulaSimpleCondition holds verbStatus subject object receiver day month 
         basePredicates =
             And
                 (And
-                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                    (Pred "Date" [Var "d", dateSpeToTerm year month day])
+                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                    (Pred "Date" [Var "D", dateSpeToTerm year month day])
                 )
                 (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesDelivered = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var "d"])
-        noDelivered = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var "d"])
-        yesPaid = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var "d"])
-        noPaid = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var "d"])
-        yesCharged = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var "d"])
-        noCharged = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var "d"])
-        yesRefunded = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
-        noRefunded = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
+        yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "X", Var "Y", Var "O", Var "D"])
+        noDelivered = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "X", Var "Y", Var "O", Var "D"])
+        yesPaid = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "Paid" [Var "X", Var "Y", Var "O", Var "D"])
+        noPaid = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "Paid" [Var "X", Var "Y", Var "O", Var "D"])
+        yesCharged = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "Charged" [Var "X", Var "Y", Var "O", Var "D"])
+        noCharged = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "Charged" [Var "X", Var "Y", Var "O", Var "D"])
+        yesRefunded = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "X", Var "Y", Var "O", Var "D"])
+        noRefunded = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleConditionDAny :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> State DateDictionary FOLFormula
 createFormulaSimpleConditionDAny holds verbStatus subject object receiver =
@@ -1402,18 +1406,18 @@ createFormulaSimpleConditionDAny holds verbStatus subject object receiver =
         -- Common base predicates
         basePredicates =
             And
-                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                 (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesDelivered = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var "d"])
-        noDelivered = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var "d"])
-        yesPaid = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var "d"])
-        noPaid = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var "d"])
-        yesCharged = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var "d"])
-        noCharged = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var "d"])
-        yesRefunded = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
-        noRefunded = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
+        yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "X", Var "Y", Var "O", Var "D"])
+        noDelivered = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "X", Var "Y", Var "O", Var "D"])
+        yesPaid = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "Paid" [Var "X", Var "Y", Var "O", Var "D"])
+        noPaid = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "Paid" [Var "X", Var "Y", Var "O", Var "D"])
+        yesCharged = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "Charged" [Var "X", Var "Y", Var "O", Var "D"])
+        noCharged = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "Charged" [Var "X", Var "Y", Var "O", Var "D"])
+        yesRefunded = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "X", Var "Y", Var "O", Var "D"])
+        noRefunded = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleConditionDSomeThe :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver date dateType = do
@@ -1424,12 +1428,12 @@ createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver da
     let basePredicates = case dateType of
             DateSome _ -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                 (Pred "IsDate" [Var actualValue])
                             )
                             (objectToPredicate object)
             DateThe _ -> And
-                            (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                            (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
     -- Generate FOL formulas based on different cases
@@ -1450,14 +1454,14 @@ createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver da
 
             where
                 -- Predicates for different cases
-                yesDelivered = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var actualValue])
-                noDelivered = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var actualValue])
-                yesPaid = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var actualValue])
-                noPaid = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var actualValue])
-                yesCharged = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var actualValue])
-                noCharged = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var actualValue])
-                yesRefunded = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var actualValue])
-                noRefunded = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var actualValue])
+                yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "X", Var "Y", Var "O", Var actualValue])
+                noDelivered = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesPaid = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "Paid" [Var "X", Var "Y", Var "O", Var actualValue])
+                noPaid = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "Paid" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesCharged = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "Charged" [Var "X", Var "Y", Var "O", Var actualValue])
+                noCharged = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "Charged" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesRefunded = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "X", Var "Y", Var "O", Var actualValue])
+                noRefunded = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "X", Var "Y", Var "O", Var actualValue])
 
 createFormulaSimpleConditionDQuanSpe :: Holds -> VerbStatus -> TemporalQuantifier -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleConditionDQuanSpe holds verbStatus temporalQuantifier subject object receiver day month year =
@@ -1484,28 +1488,28 @@ createFormulaSimpleConditionDQuanSpe holds verbStatus temporalQuantifier subject
         basePredicates =
             And
                 (And
-                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                    (Pred "Date" [Var "d", dateSpeToTerm year month day])
+                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                    (Pred "Date" [Var "D", dateSpeToTerm year month day])
                 )
                 (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesDeliveredBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noDeliveredBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesPaidBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noPaidBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesChargedBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noChargedBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesRefundedBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "x", Var "y", Var "o", Var "d"])
-        noRefundedBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesDeliveredAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noDeliveredAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesPaidAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noPaidAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesChargedAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noChargedAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesRefundedAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var "d"])
-        noRefundedAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var "d"])
+        yesDeliveredBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noDeliveredBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesPaidBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noPaidBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesChargedBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noChargedBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesRefundedBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        noRefundedBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesDeliveredAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noDeliveredAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesPaidAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noPaidAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesChargedAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noChargedAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesRefundedAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        noRefundedAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleConditionDQuanSomeThe :: Holds -> VerbStatus -> TemporalQuantifier -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier subject object receiver date dateType = do
@@ -1516,12 +1520,12 @@ createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier sub
     let basePredicates = case dateType of
             DateSome _ -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                 (Pred "IsDate" [Var actualValue])
                             )
                             (objectToPredicate object)
             DateThe _ -> And
-                            (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                            (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
     -- Generate FOL formulas based on different cases
@@ -1550,22 +1554,22 @@ createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier sub
 
             where
                 -- Predicates for different cases
-                yesDeliveredBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noDeliveredBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesPaidBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noPaidBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesChargedBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noChargedBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesRefundedBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                noRefundedBefore = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesDeliveredAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noDeliveredAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesPaidAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noPaidAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesChargedAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noChargedAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesRefundedAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                noRefundedAfter = return $ Not $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var actualValue])
+                yesDeliveredBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noDeliveredBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesPaidBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noPaidBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesChargedBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noChargedBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesRefundedBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                noRefundedBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesDeliveredAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noDeliveredAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesPaidAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noPaidAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesChargedAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noChargedAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesRefundedAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                noRefundedAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "X", Var "Y", Var "O", Var actualValue])
 
 createFormulaSimpleConditionDQuanTempSomeThe :: Holds -> VerbStatus -> TemporalQuantifier -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier subject object receiver temporalOffset tq date dateType = do
@@ -1577,31 +1581,31 @@ createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier
             (DateQuanTempSome _ _ _ _, TempBefore) -> And
                             (And
                                 (And
-                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                     (Pred "IsDate" [Var actualValue])
                                 )
-                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (Pred "DateBefore" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
             (DateQuanTempSome _ _ _ _, TempAfter) -> And
                             (And
                                 (And
-                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                     (Pred "IsDate" [Var actualValue])
                                 )
-                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (Pred "DateAfter" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
             (DateQuanTempThe _ _ _ _, TempBefore) -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                                (Pred "DateBefore" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
             (DateQuanTempThe _ _ _ _, TempAfter) -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                                (Pred "DateAfter" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
 
@@ -1631,22 +1635,22 @@ createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier
 
             where
                 -- Predicates for different cases
-                yesDeliveredBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noDeliveredBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesPaidBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noPaidBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesChargedBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noChargedBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesRefundedBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "x", Var "y", Var "o", Var "d"])
-                noRefundedBefore = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesDeliveredAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noDeliveredAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesPaidAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noPaidAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesChargedAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noChargedAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesRefundedAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var "d"])
-                noRefundedAfter = return $ Not $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesDeliveredBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noDeliveredBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesPaidBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noPaidBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesChargedBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noChargedBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesRefundedBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                noRefundedBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesDeliveredAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noDeliveredAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesPaidAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noPaidAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesChargedAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noChargedAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesRefundedAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                noRefundedAfter = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleConditionNH :: VerbStatus -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleConditionNH verbStatus subject object receiver day month year =
@@ -1661,16 +1665,16 @@ createFormulaSimpleConditionNH verbStatus subject object receiver day month year
         basePredicates =
                 And
                     (And
-                        (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                        (Pred "Date" [Var "d", dateSpeToTerm year month day])
+                        (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                        (Pred "Date" [Var "D", dateSpeToTerm year month day])
                     )
                     (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesDelivered = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var "d"])
-        yesPaid = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var "d"])
-        yesCharged = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var "d"])
-        yesRefunded = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
+        yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "X", Var "Y", Var "O", Var "D"])
+        yesPaid = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "Paid" [Var "X", Var "Y", Var "O", Var "D"])
+        yesCharged = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "Charged" [Var "X", Var "Y", Var "O", Var "D"])
+        yesRefunded = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleConditionNHDAny :: VerbStatus -> Subject -> Object -> Receiver -> State DateDictionary FOLFormula
 createFormulaSimpleConditionNHDAny verbStatus subject object receiver =
@@ -1684,14 +1688,14 @@ createFormulaSimpleConditionNHDAny verbStatus subject object receiver =
         -- Common base predicates
         basePredicates =
                     And
-                        (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                        (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                         (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesDelivered = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var "d"])
-        yesPaid = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var "d"])
-        yesCharged = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var "d"])
-        yesRefunded = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ Exists [Var "d"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var "d"])
+        yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "X", Var "Y", Var "O", Var "D"])
+        yesPaid = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "Paid" [Var "X", Var "Y", Var "O", Var "D"])
+        yesCharged = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "Charged" [Var "X", Var "Y", Var "O", Var "D"])
+        yesRefunded = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleConditionNHDSomeThe :: VerbStatus -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date dateType = do
@@ -1702,12 +1706,12 @@ createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date d
     let basePredicates = case dateType of
             DateSome _ -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                 (Pred "IsDate" [Var actualValue])
                             )
                             (objectToPredicate object)
             DateThe _ -> And
-                            (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                            (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
 
@@ -1725,10 +1729,10 @@ createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date d
 
             where
                 -- Predicates for different cases
-                yesDelivered = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "x", Var "y", Var "o", Var actualValue])
-                yesPaid = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Paid" [Var "x", Var "y", Var "o", Var actualValue])
-                yesCharged = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Charged" [Var "x", Var "y", Var "o", Var actualValue])
-                yesRefunded = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "x", Var "y", Var "o", Var actualValue])
+                yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "Delivered" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesPaid = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "Paid" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesCharged = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "Charged" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesRefunded = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "Refunded" [Var "X", Var "Y", Var "O", Var actualValue])
 
 createFormulaSimpleConditionNHDQuanSpe :: VerbStatus -> TemporalQuantifier -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State DateDictionary FOLFormula
 createFormulaSimpleConditionNHDQuanSpe verbStatus temporalQuantifier subject object receiver day month year =
@@ -1747,20 +1751,20 @@ createFormulaSimpleConditionNHDQuanSpe verbStatus temporalQuantifier subject obj
         basePredicates =
             And
                 (And
-                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                    (Pred "Date" [Var "d", dateSpeToTerm year month day])
+                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                    (Pred "Date" [Var "D", dateSpeToTerm year month day])
                 )
                 (objectToPredicate object)
                 
         -- Predicates for different cases
-        yesDeliveredBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesPaidBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesChargedBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesRefundedBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "x", Var "y", Var "o", Var "d"])
-        yesDeliveredAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesPaidAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesChargedAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var "d"])
-        yesRefundedAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var "d"])
+        yesDeliveredBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesPaidBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesChargedBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesRefundedBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "X", Var "Y", Var "O", Var "D"])
+        yesDeliveredAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesPaidAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesChargedAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "X", Var "Y", Var "O", Var "D"])
+        yesRefundedAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "X", Var "Y", Var "O", Var "D"])
 
 createFormulaSimpleConditionNHDQuanSomeThe :: VerbStatus -> TemporalQuantifier -> Subject -> Object -> Receiver -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject object receiver date dateType = do
@@ -1771,12 +1775,12 @@ createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject
     let basePredicates = case dateType of
             DateQuanSome _ _ -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                 (Pred "IsDate" [Var actualValue])
                             )
                             (objectToPredicate object)
             DateQuanThe _ _ -> And
-                            (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                            (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
     -- Generate FOL formulas based on different cases
@@ -1797,14 +1801,14 @@ createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject
 
             where
                 -- Predicates for different cases
-                yesDeliveredBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesPaidBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesChargedBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesRefundedBefore = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "x", Var "y", Var "o", Var actualValue])
-                yesDeliveredAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesPaidAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesChargedAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var actualValue])
-                yesRefundedAfter = return $ ForAll [Var "x", Var "y", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var actualValue])
+                yesDeliveredBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesPaidBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesChargedBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesRefundedBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesDeliveredAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesPaidAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesChargedAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "X", Var "Y", Var "O", Var actualValue])
+                yesRefundedAfter = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "X", Var "Y", Var "O", Var actualValue])
 
 createFormulaSimpleConditionNHDQuanTempSomeThe :: VerbStatus -> TemporalQuantifier -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State DateDictionary FOLFormula
 createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier subject object receiver temporalOffset tq date dateType = do
@@ -1816,31 +1820,31 @@ createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier sub
             (DateQuanTempSome _ _ _ _, TempBefore) -> And
                             (And
                                 (And
-                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                     (Pred "IsDate" [Var actualValue])
                                 )
-                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (Pred "DateBefore" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
             (DateQuanTempSome _ _ _ _, TempAfter) -> And
                             (And
                                 (And
-                                    (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
+                                    (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
                                     (Pred "IsDate" [Var actualValue])
                                 )
-                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (Pred "DateAfter" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
             (DateQuanTempThe _ _ _ _, TempBefore) -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                                (Pred "DateBefore" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                                (Pred "DateBefore" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
             (DateQuanTempThe _ _ _ _, TempAfter) -> And
                             (And
-                                (And (Pred "Name" [Var "x", subjectToTerm subject]) (Pred "Name" [Var "y", receiverToTerm receiver]))
-                                (Pred "DateAfter" [Var "d", Var actualValue, temporalOffsetToTerm temporalOffset])
+                                (And (Pred "Name" [Var "X", subjectToTerm subject]) (Pred "Name" [Var "Y", receiverToTerm receiver]))
+                                (Pred "DateAfter" [Var "D", Var actualValue, temporalOffsetToTerm temporalOffset])
                             )
                             (objectToPredicate object)
 
@@ -1862,14 +1866,14 @@ createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier sub
 
             where
                 -- Predicates for different cases
-                yesDeliveredBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesPaidBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesChargedBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesRefundedBefore = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "x", Var "y", Var "o", Var "d"])
-                yesDeliveredAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesPaidAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesChargedAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "x", Var "y", Var "o", Var "d"])
-                yesRefundedAfter = return $ ForAll [Var "x", Var "y", Var "d", Var "o"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "x", Var "y", Var "o", Var "d"])
+                yesDeliveredBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "DeliveredBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesPaidBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "PaidBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesChargedBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "ChargedBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesRefundedBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "RefundedBefore" [Var "X", Var "Y", Var "O", Var "D"])
+                yesDeliveredAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "DeliveredAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesPaidAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "PaidAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesChargedAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "ChargedAfter" [Var "X", Var "Y", Var "O", Var "D"])
+                yesRefundedAfter = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "RefundedAfter" [Var "X", Var "Y", Var "O", Var "D"])
                 
 boolExToFOL :: BooleanExpression -> State DateDictionary FOLFormula
 boolExToFOL (BoolEx subject1 verbStatus comparison subject2) = 
@@ -1889,21 +1893,21 @@ boolExToFOL (BoolEx subject1 verbStatus comparison subject2) =
 
     where
         -- Common base predicates
-        basePredicates = (And (Pred "Name" [Var "x", subjectToTerm subject1]) (Pred "Name" [Var "y", subjectToTerm subject2]))
+        basePredicates = (And (Pred "Name" [Var "X", subjectToTerm subject1]) (Pred "Name" [Var "Y", subjectToTerm subject2]))
                           
         -- Predicates for different cases
-        deliveredLess = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "DeliveredLess" [Var "x", Var "y"])
-        deliveredEqual = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "DeliveredEqual" [Var "x", Var "y"])
-        deliveredMore = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "DeliveredMore" [Var "x", Var "y"])
-        paidLess = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "PaidLess" [Var "x", Var "y"])
-        paidEqual = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "PaidEqual" [Var "x", Var "y"])
-        paidMore = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "PaidMore" [Var "x", Var "y"])
-        chargedLess = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "ChargedLess" [Var "x", Var "y"])
-        chargedEqual = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "ChargedEqual" [Var "x", Var "y"])
-        chargedMore = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "ChargedMore" [Var "x", Var "y"])
-        refundedLess = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "RefundedLess" [Var "x", Var "y"])
-        refundedEqual = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "RefundedEqual" [Var "x", Var "y"])
-        refundedMore = return $ ForAll [Var "x", Var "y"] $ Brackets $ And basePredicates (Pred "RefundedMore" [Var "x", Var "y"])
+        deliveredLess = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "DeliveredLess" [Var "X", Var "Y"])
+        deliveredEqual = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "DeliveredEqual" [Var "X", Var "Y"])
+        deliveredMore = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "DeliveredMore" [Var "X", Var "Y"])
+        paidLess = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "PaidLess" [Var "X", Var "Y"])
+        paidEqual = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "PaidEqual" [Var "X", Var "Y"])
+        paidMore = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "PaidMore" [Var "X", Var "Y"])
+        chargedLess = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "ChargedLess" [Var "X", Var "Y"])
+        chargedEqual = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "ChargedEqual" [Var "X", Var "Y"])
+        chargedMore = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "ChargedMore" [Var "X", Var "Y"])
+        refundedLess = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "RefundedLess" [Var "X", Var "Y"])
+        refundedEqual = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "RefundedEqual" [Var "X", Var "Y"])
+        refundedMore = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "RefundedMore" [Var "X", Var "Y"])
 
 -- Run contractToFOL with an empty DateDictionary
 runFOLConversion :: Contract -> FOLFormula
