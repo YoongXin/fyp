@@ -196,9 +196,11 @@ instance Print AbsCoLa.SimpleStatement where
     AbsCoLa.SimStateOne id_ holds subject modalverb verb object receiver date -> prPrec i 0 (concatD [prt 0 id_, prt 0 holds, prt 0 subject, prt 0 modalverb, prt 0 verb, prt 0 object, prt 0 receiver, prt 0 date])
     AbsCoLa.SimStateTwo id_ holds subject date modalverb verb object receiver -> prPrec i 0 (concatD [prt 0 id_, prt 0 holds, prt 0 subject, prt 0 date, prt 0 modalverb, prt 0 verb, prt 0 object, prt 0 receiver])
     AbsCoLa.SimStateThree id_ holds date subject modalverb verb object receiver -> prPrec i 0 (concatD [prt 0 id_, prt 0 holds, prt 0 date, prt 0 subject, prt 0 modalverb, prt 0 verb, prt 0 object, prt 0 receiver])
+    AbsCoLa.SimStateFour id_ holds subject verbstatus object receiver date -> prPrec i 0 (concatD [prt 0 id_, prt 0 holds, prt 0 subject, prt 0 verbstatus, prt 0 object, prt 0 receiver, prt 0 date])
     AbsCoLa.SimStateOneNH id_ subject modalverb verb object receiver date -> prPrec i 0 (concatD [prt 0 id_, prt 0 subject, prt 0 modalverb, prt 0 verb, prt 0 object, prt 0 receiver, prt 0 date])
     AbsCoLa.SimStateTwoNH id_ subject date modalverb verb object receiver -> prPrec i 0 (concatD [prt 0 id_, prt 0 subject, prt 0 date, prt 0 modalverb, prt 0 verb, prt 0 object, prt 0 receiver])
     AbsCoLa.SimStateThreeNH id_ date subject modalverb verb object receiver -> prPrec i 0 (concatD [prt 0 id_, prt 0 date, prt 0 subject, prt 0 modalverb, prt 0 verb, prt 0 object, prt 0 receiver])
+    AbsCoLa.SimStateFourNH id_ subject verbstatus object receiver date -> prPrec i 0 (concatD [prt 0 id_, prt 0 subject, prt 0 verbstatus, prt 0 object, prt 0 receiver, prt 0 date])
 
 instance Print AbsCoLa.Condition where
   prt i = \case

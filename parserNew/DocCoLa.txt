@@ -90,9 +90,11 @@ All other symbols are terminals.
   | //SimpleStatement// | -> | //ID// //Holds// //Subject// //ModalVerb// //Verb// //Object// //Receiver// //Date//
   |  |  **|**  | //ID// //Holds// //Subject// //Date// //ModalVerb// //Verb// //Object// //Receiver//
   |  |  **|**  | //ID// //Holds// //Date// //Subject// //ModalVerb// //Verb// //Object// //Receiver//
+  |  |  **|**  | //ID// //Holds// //Subject// //VerbStatus// //Object// //Receiver// //Date//
   |  |  **|**  | //ID// //Subject// //ModalVerb// //Verb// //Object// //Receiver// //Date//
   |  |  **|**  | //ID// //Subject// //Date// //ModalVerb// //Verb// //Object// //Receiver//
   |  |  **|**  | //ID// //Date// //Subject// //ModalVerb// //Verb// //Object// //Receiver//
+  |  |  **|**  | //ID// //Subject// //VerbStatus// //Object// //Receiver// //Date//
   | //Condition// | -> | //SimpleCondition//
   |  |  **|**  | //SimpleCondition// ``OR`` //Condition//
   |  |  **|**  | //SimpleCondition// ``AND`` //Condition//

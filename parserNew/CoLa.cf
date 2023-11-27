@@ -35,9 +35,11 @@ ConStateIfThen. ConditionalStatement ::= "IF" Condition "THEN" Statement;
 SimStateOne. SimpleStatement ::= ID Holds Subject ModalVerb Verb Object Receiver Date ;
 SimStateTwo. SimpleStatement ::= ID Holds Subject Date ModalVerb Verb Object Receiver ;
 SimStateThree. SimpleStatement ::= ID Holds Date Subject ModalVerb Verb Object Receiver ;
+SimStateFour. SimpleStatement ::= ID Holds Subject VerbStatus Object Receiver Date ;
 SimStateOneNH. SimpleStatement ::= ID Subject ModalVerb Verb Object Receiver Date ;
 SimStateTwoNH. SimpleStatement ::= ID Subject Date ModalVerb Verb Object Receiver ;
 SimStateThreeNH. SimpleStatement ::= ID Date Subject ModalVerb Verb Object Receiver ;
+SimStateFourNH. SimpleStatement ::= ID Subject VerbStatus Object Receiver Date ;
 
 CondiSim. Condition ::= SimpleCondition ;
 CondiOr. Condition ::= SimpleCondition "OR" Condition ;

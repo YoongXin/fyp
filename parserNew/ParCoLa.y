@@ -240,9 +240,11 @@ SimpleStatement
   : ID Holds Subject ModalVerb Verb Object Receiver Date { AbsCoLa.SimStateOne $1 $2 $3 $4 $5 $6 $7 $8 }
   | ID Holds Subject Date ModalVerb Verb Object Receiver { AbsCoLa.SimStateTwo $1 $2 $3 $4 $5 $6 $7 $8 }
   | ID Holds Date Subject ModalVerb Verb Object Receiver { AbsCoLa.SimStateThree $1 $2 $3 $4 $5 $6 $7 $8 }
+  | ID Holds Subject VerbStatus Object Receiver Date { AbsCoLa.SimStateFour $1 $2 $3 $4 $5 $6 $7 }
   | ID Subject ModalVerb Verb Object Receiver Date { AbsCoLa.SimStateOneNH $1 $2 $3 $4 $5 $6 $7 }
   | ID Subject Date ModalVerb Verb Object Receiver { AbsCoLa.SimStateTwoNH $1 $2 $3 $4 $5 $6 $7 }
   | ID Date Subject ModalVerb Verb Object Receiver { AbsCoLa.SimStateThreeNH $1 $2 $3 $4 $5 $6 $7 }
+  | ID Subject VerbStatus Object Receiver Date { AbsCoLa.SimStateFourNH $1 $2 $3 $4 $5 $6 }
 
 Condition :: { AbsCoLa.Condition }
 Condition

@@ -58,9 +58,11 @@ data SimpleStatement
     = SimStateOne ID Holds Subject ModalVerb Verb Object Receiver Date
     | SimStateTwo ID Holds Subject Date ModalVerb Verb Object Receiver
     | SimStateThree ID Holds Date Subject ModalVerb Verb Object Receiver
+    | SimStateFour ID Holds Subject VerbStatus Object Receiver Date
     | SimStateOneNH ID Subject ModalVerb Verb Object Receiver Date
     | SimStateTwoNH ID Subject Date ModalVerb Verb Object Receiver
     | SimStateThreeNH ID Date Subject ModalVerb Verb Object Receiver
+    | SimStateFourNH ID Subject VerbStatus Object Receiver Date
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Condition

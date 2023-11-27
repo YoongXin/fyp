@@ -76,9 +76,11 @@ transSimpleStatement x = case x of
   AbsCoLa.SimStateOne id holds subject modalverb verb object receiver date -> failure x
   AbsCoLa.SimStateTwo id holds subject date modalverb verb object receiver -> failure x
   AbsCoLa.SimStateThree id holds date subject modalverb verb object receiver -> failure x
+  AbsCoLa.SimStateFour id holds subject verbstatus object receiver date -> failure x
   AbsCoLa.SimStateOneNH id subject modalverb verb object receiver date -> failure x
   AbsCoLa.SimStateTwoNH id subject date modalverb verb object receiver -> failure x
   AbsCoLa.SimStateThreeNH id date subject modalverb verb object receiver -> failure x
+  AbsCoLa.SimStateFourNH id subject verbstatus object receiver date -> failure x
 
 transCondition :: AbsCoLa.Condition -> Result
 transCondition x = case x of
