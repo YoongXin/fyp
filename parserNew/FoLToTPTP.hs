@@ -1,5 +1,6 @@
 module FOLToTPTP where
 
+import AbsCoLa
 import AstToFOL
 import Data.List 
 
@@ -34,14 +35,18 @@ arguments :: [TPTPTerm] -> String
 arguments [] = ""
 arguments ts = "(" ++ intercalate "," (map show ts) ++ ")"
 
+arguments' :: [TPTPTerm] -> String
+arguments' [] = ""
+arguments' ts = intercalate "," (map show ts) 
+
 termToTptp :: Term -> TPTPTerm
 termToTptp (Var str) = Variable str
-termToTptp (Fun str [term]) = Function str [termToTptp term]
+termToTptp (Fun str terms) = Function str (map termToTptp terms)
 
 instance Show TPTPFormula where
     show rep = case rep of
-        TPTPForAll terms formula -> "! [" ++ arguments terms ++ "] : (" ++ show formula ++ ")"
-        TPTPExists terms formula -> "? [" ++ arguments terms ++ "] : (" ++ show formula ++ ")"
+        TPTPForAll terms formula -> "! [" ++ arguments' terms ++ "] : (" ++ show formula ++ ")"
+        TPTPExists terms formula -> "? [" ++ arguments' terms ++ "] : (" ++ show formula ++ ")"
         TPTPImplication formula1 formula2 -> "(" ++ show formula1 ++ ") => (" ++ show formula2 ++ ")"
         TPTPConjunction formula1 formula2 -> "(" ++ show formula1 ++ ") & (" ++ show formula2 ++ ")"
         TPTPDisjunction formula1 formula2 -> "(" ++ show formula1 ++ ") | (" ++ show formula2 ++ ")"
@@ -51,6 +56,22 @@ instance Show TPTPFormula where
 
 instance Show TPTPTerm where
     show (Function f ts) = f ++ arguments ts
-    show (Variable s)    = s
+    show (Variable s)    = removeSpaces s
+
+removeSpaces :: String -> String
+removeSpaces = filter (/= ' ')
+
+folToTPTPString :: String -> FOLFormula -> String
+folToTPTPString name formula =
+  "fof(" ++ name ++ ", axiom, (" ++ show (folToTPTP formula) ++ "))."
+    
+runTptpConversion :: Contract -> String
+runTptpConversion contract = folToTPTPString "contract" (runFOLConversion contract)
+
+--allow paid delivered... etc in simple statements
+--build axioms for must may, before after
+--ask user to input performance of contract
+--put output into one file and run vampire
+--check vampire to see how to output proof can be clearer
 
 
