@@ -65,10 +65,14 @@ folToTPTPString :: String -> FOLFormula -> String
 folToTPTPString name formula =
   "fof(" ++ name ++ ", axiom, (" ++ show (folToTPTP formula) ++ "))."
     
-runTptpConversion :: Contract -> String
-runTptpConversion contract = folToTPTPString "contract" (runFOLConversion contract)
+runTptpConversionContract :: Contract -> String
+runTptpConversionContract contract = folToTPTPString "contract" (runFOLConversion contract)
 
---allow paid delivered... etc in simple statements
+runTptpConversionPerformance :: Contract -> String
+runTptpConversionPerformance performance = folToTPTPString "performance" (runFOLConversion performance)
+
+
+
 --build axioms for must may, before after
 --ask user to input performance of contract
 --put output into one file and run vampire
