@@ -74,6 +74,10 @@ runTptpConversionPerformance performance = folToTPTPString "performance" (runFOL
 
 
 --build axioms for must may, before after
+-- add to dictionary for nh statements
+-- change simplestatement verb status to check dictionary
+-- might need to pass in new parameter
+
 --ask user to input performance of contract
 --put output into one file and run vampire
 --check vampire to see how to output proof can be clearer
