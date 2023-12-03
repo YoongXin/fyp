@@ -5,6 +5,30 @@ C-AND
 [4] it is the case that Bob may deliver REPORT receipt to Alice on ANYDATE AND
 [5] it is the case that Bob is forbidden to charge AMOUNT \"delivery fee\" to Alice on ANYDATE "
 
-" IF [1] it is the case that Alice paid POUNDS 100 to Bob on the 1 April 2021 OR [2] it is the case that Alice paid DOLLARS 120 to Bob on the 1 April 2021 THEN [3] it is the case that Bob must deliver OTHEROBJECT bicycle to Alice on the 5 April 2021 C-AND [4] it is the case that Bob may deliver REPORT receipt to Alice on ANYDATE AND [5] it is the case that Bob is forbidden to charge AMOUNT \"delivery fee\" to Alice on ANYDATE "
+-- Typical Alice Bob Contract
+IF [1] it is the case that Alice paid POUNDS 100 to Bob on the 1 April 2021 OR [2] it is the case that Alice paid DOLLARS 120 to Bob on the 1 April 2021 THEN [3] it is the case that Bob must deliver OTHEROBJECT bicycle to Alice on the 5 April 2021 C-AND [4] it is the case that Bob may deliver REPORT receipt to Alice on ANYDATE AND [5] it is the case that Bob is forbidden to charge AMOUNT "delivery fee" to Alice on ANYDATE
 
-" IF [1] it is the case that Alice paid POUNDS 100 to Bob on SOMEDATE unknownTwo OR [2] it is the case that Alice paid DOLLARS 120 to Bob on the 1 April 2021 THEN [3] it is the case that Bob must deliver OTHEROBJECT bicycle to Alice on THEDATE unknownTwo C-AND [4] it is the case that Bob may deliver REPORT receipt to Alice on ANYDATE AND [5] it is the case that Bob is forbidden to charge AMOUNT \"delivery fee\" to Alice before 20 April 2023"
+-- Satisfiable case where Bob did what he should do
+[1] it is the case that Alice paid POUNDS 100 to Bob on the 1 April 2021 C-AND [2] it is the case that Bob delivered OTHEROBJECT bicycle to Alice on the 5 April 2021
+
+-- Unsatisfiable case where Bob did not perform responsibility
+[1] it is the case that Alice paid POUNDS 100 to Bob on the 1 April 2021 C-AND [2] it is not the case that Bob delivered OTHEROBJECT bicycle to Alice on the 5 April 2021
+
+-- Unsatisfiable case where Bob did something forbidden
+[1] it is the case that Bob charged AMOUNT "delivery fee" to Alice on the 1 April 2021
+
+-- Satisfiable case where Alice did not do the if 
+[1] it is not the case that Bob delivered OTHEROBJECT bicycle to Alice on the 5 April 2021
+
+" IF [1] it is the case that Alice paid POUNDS 100 to Bob on SOMEDATE unknownTwo OR [2] it is the case that Alice paid DOLLARS 120 to Bob on the 1 April 2021 THEN [3] it is the case that Bob must deliver OTHEROBJECT bicycle to Alice on THEDATE unknownTwo C-AND [4] it is the case that Bob may deliver REPORT receipt to Alice on ANYDATE AND [5] it is the case that Bob is forbidden to charge AMOUNT "delivery fee" to Alice before 20 April 2023"
+
+-- A contract with before/after specific date
+IF [1] it is the case that Corol paid EUROS 30 to David before 20 September 2023 THEN [2] David must deliver OTHEROBJECT orange to Carol before 27 September 2023
+
+-- Satisfiable case where David did his responsibility on time
+[1] Carol paid EUROS 30 to David before 20 September 2023 C-AND [2] David delivered OTHEROBJECT orange to Carol on the 23 September 2023
+
+-- Unsatisfiable case where David did his responsibility late
+[1] Carol paid EUROS 30 to David before 20 September 2023 C-AND [2] David delivered OTHEROBJECT orange to Carol on the 29 September 2023
+
+

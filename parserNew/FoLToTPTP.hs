@@ -3,6 +3,7 @@ module FOLToTPTP where
 import AbsCoLa
 import AstToFOL
 import Data.List 
+import System.IO
 
 data TPTPFormula
     = TPTPForAll [TPTPTerm] TPTPFormula
@@ -13,6 +14,7 @@ data TPTPFormula
     | TPTPNot TPTPFormula 
     | TPTPPredicate String [TPTPTerm]
     | TPTPEqual TPTPTerm TPTPTerm
+    | TPTPFalser
   deriving (Eq, Read)
 
 data TPTPTerm 
@@ -30,6 +32,7 @@ folToTPTP (Implies formula1 formula2) = TPTPImplication (folToTPTP formula1) (fo
 folToTPTP (ForAll vars formula) = TPTPForAll (map termToTptp vars) (folToTPTP formula)
 folToTPTP (Exists vars formula) = TPTPExists (map termToTptp vars) (folToTPTP formula)
 folToTPTP (Brackets formula) = folToTPTP formula
+folToTPTP (Falser) = TPTPFalser
 
 arguments :: [TPTPTerm] -> String
 arguments [] = ""
@@ -53,6 +56,7 @@ instance Show TPTPFormula where
         TPTPNot formula -> "~ (" ++ show formula ++ ")"
         TPTPPredicate pred terms -> pred ++ arguments terms
         TPTPEqual term1 term2 -> show term1 ++ " = " ++ show term2
+        TPTPFalser -> "$false"
 
 instance Show TPTPTerm where
     show (Function f ts) = f ++ arguments ts
@@ -71,14 +75,6 @@ runTptpConversionContract contract = folToTPTPString "contract" (runFOLConversio
 runTptpConversionPerformance :: Contract -> String
 runTptpConversionPerformance performance = folToTPTPString "performance" (runFOLConversion performance)
 
-
-
---build axioms for must may, before after
--- add to dictionary for nh statements
--- change simplestatement verb status to check dictionary
--- might need to pass in new parameter
-
---ask user to input performance of contract
 --put output into one file and run vampire
 --check vampire to see how to output proof can be clearer
 

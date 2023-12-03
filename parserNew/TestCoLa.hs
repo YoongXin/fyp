@@ -26,6 +26,8 @@ import SkelCoLa  ()
 import AstToFOL
 import FOLToTPTP
 import qualified Data.Map as Map
+import Control.Monad.State
+import System.IO (putStr, hFlush, stdout, getLine)
 
 type Err        = Either String
 type ParseFun a = [Token] -> Err a
@@ -89,4 +91,56 @@ main = do
     []         -> getContents >>= run 2 pContract
     "-s":fs    -> mapM_ (runFile 0 pContract) fs
     fs         -> mapM_ (runFile 2 pContract) fs
+
+-- Function to interactively get user input for a contract or performance
+getUserInput :: String -> IO String
+getUserInput prompt = do
+  putStrLn prompt
+  putStr "> "
+  hFlush stdout
+  getLine
+
+
+checkInconsistency :: IO ()
+checkInconsistency = do
+
+    contractString <- getUserInput "Enter a contract:"
+    let (contract, dateDictionary, tempQuanDictionary) = runFOLConversion' (parseSentence contractString)
+    let tptpContract = folToTPTPString "contract" contract
+
+    putStrLn "\n"
+
+    performanceString <- getUserInput "Enter a performance:"
+    let performance = evalState (contractToFOLWithCheck (parseSentence performanceString)) (dateDictionary, tempQuanDictionary)
+    let tptpPerformance = folToTPTPString "performance" performance
+
+    putStrLn "%TPTP representation for the contract:"
+    putStrLn tptpContract
+    putStrLn "\n"
+
+    putStrLn "%TPTP representation for the performance:"
+    putStrLn tptpPerformance
+    putStrLn "\n"
+
+    putStrLn $ "fof(mustCondition, axiom, (" ++
+      "! [X,Y,O,D] :" ++
+      "(mustDeliver(X,Y,O,D) => delivered(X,Y,O,D)) & " ++
+      "(mustPay(X,Y,O,D) => paid(X,Y,O,D)) & " ++
+      "(mustCharge(X,Y,O,D) => charged(X,Y,O,D)) & " ++
+      "(mustRefund(X,Y,O,D) => refunded(X,Y,O,D))" ++
+      "))."
+
+    putStrLn "\n"
+
+    putStrLn $ "fof(forbiddenContradiction, axiom, (" ++
+      "! [X, Y, D, O] : (" ++
+      "(~ mayDeliver(X, Y, O, D) & delivered(X, Y, O, D)) |" ++
+      "(~ mayPay(X, Y, O, D) & paid(X, Y, O, D)) |" ++
+      "(~ mayCharge(X, Y, O, D) & charged(X, Y, O, D)) |" ++
+      "(~ mayRefund(X, Y, O, D) & refunded(X, Y, O, D))" ++
+      " => $false" ++
+      ")" ++
+      "))."
+
+    
 

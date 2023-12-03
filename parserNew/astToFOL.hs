@@ -18,6 +18,10 @@ import Prelude
   , (*)
   , fst
   , snd
+  , Bool
+  , (>=)
+  , (<=)
+  , Bool(..)
   )
 
 import System.Environment ( getArgs )
@@ -53,6 +57,7 @@ data FOLFormula
     | Exists [Term] FOLFormula
     | ForAll [Term] FOLFormula
     | Brackets FOLFormula
+    | Falser
   deriving (Eq, Show, Read)
 
 -- Function to convert a specific date to an integer
@@ -61,6 +66,12 @@ dateToInt year month day = toModifiedJulianDay (fromGregorian year month day)
 
 connectTerms :: Subject -> Verb -> Receiver -> Object -> String
 connectTerms subject verb receiver object = subjectToString subject ++ verbToString verb ++ receiverToString receiver ++ objectToString object
+
+verbStatusToVerb :: VerbStatus -> Verb
+verbStatusToVerb VSDel = VDel
+verbStatusToVerb VSPay = VPay
+verbStatusToVerb VSCharge = VCharge
+verbStatusToVerb VSRefund = VRefund
 
 -- Function to convert the contract to FOL formula
 contractToFOL :: Contract -> State (DateDictionary, TempQuanDictionary) FOLFormula
@@ -249,6 +260,19 @@ updateTempQuanDictionary key value intValue = do
     -- Update the state with the new TempQuanDictionary
     put (dateDictionary, newTempQuanDict)
 
+checkTempQuanDictionary :: String -> Integer -> State (DateDictionary, TempQuanDictionary) Bool
+checkTempQuanDictionary key intValue = do
+    -- Get the current state of the TempQuanDictionary
+    (dateDictionary, tempQuanDictionary) <- get
+
+    -- Check if the key exists in the TempQuanDictionary
+    case Map.lookup key tempQuanDictionary of
+        Just (tempStr, tempInt) -> do
+            -- Compare based on the specified condition
+            case tempStr of
+                "Before" -> return (intValue <= tempInt)
+                "After"  -> return (intValue >= tempInt)
+        Nothing -> return True -- Key not found, consider it true
 
 simpleStatementToFOL :: SimpleStatement -> State (DateDictionary, TempQuanDictionary) FOLFormula
 simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateSpe day month year)) =
@@ -309,7 +333,7 @@ simpleStatementToFOL (SimStateThree id holds (DateQuanTempThe temporalQuantifier
     createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleStatementToFOL (SimStateFour id holds subject verbStatus object receiver (DateSpe day month year)) =
-    createFormulaSimpleCondition holds verbStatus subject object receiver day month year
+    createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver day month year
 simpleStatementToFOL (SimStateFour id holds subject verbStatus object receiver DateAny) =
     createFormulaSimpleConditionDAny holds verbStatus subject object receiver
 simpleStatementToFOL (SimStateFour id holds subject verbStatus object receiver (DateSome date)) =
@@ -385,7 +409,7 @@ simpleStatementToFOL (SimStateThreeNH id (DateQuanTempThe temporalQuantifier tem
     createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleStatementToFOL (SimStateFourNH id subject verbStatus object receiver (DateSpe day month year)) =
-    createFormulaSimpleConditionNH verbStatus subject object receiver day month year
+    createFormulaSimpleStatementNHDateCheck verbStatus subject object receiver day month year
 simpleStatementToFOL (SimStateFourNH id subject verbStatus object receiver DateAny) =
     createFormulaSimpleConditionNHDAny verbStatus subject object receiver 
 simpleStatementToFOL (SimStateFourNH id subject verbStatus object receiver (DateSome date)) =
@@ -1084,28 +1108,67 @@ createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver da
 createFormulaSimpleStatementNHDQuanSpe :: ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject object receiver day month year =
     case (modalVerb, verb, temporalQuantifier) of
-        (ModalObli _, VDel, TempBefore) -> yesMustDelBefore
+        (ModalObli _, VDel, TempBefore) -> do
+            let formula = yesMustDelBefore
+            updateTempQuanDictionary (connectTerms subject verb receiver object) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
+
         (ModalPermi, VDel, TempBefore) -> yesMayDelBefore
         (ModalForbi, VDel, TempBefore) -> noMayDelBefore
-        (ModalObli _, VPay, TempBefore) -> yesMustPayBefore
+
+        (ModalObli _, VPay, TempBefore) -> do
+            let formula = yesMustPayBefore
+            updateTempQuanDictionary (connectTerms subject verb receiver object) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
+
         (ModalPermi, VPay, TempBefore) -> yesMayPayBefore
         (ModalForbi, VPay, TempBefore) -> noMayPayBefore
-        (ModalObli _, VCharge, TempBefore) -> yesMustChargeBefore
+
+        (ModalObli _, VCharge, TempBefore) -> do
+            let formula = yesMustChargeBefore
+            updateTempQuanDictionary (connectTerms subject verb receiver object) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
+
         (ModalPermi, VCharge, TempBefore) -> yesMayChargeBefore
         (ModalForbi, VCharge, TempBefore) -> noMayChargeBefore
-        (ModalObli _, VRefund, TempBefore) -> yesMustRefundBefore
+
+        (ModalObli _, VRefund, TempBefore) -> do
+            let formula = yesMustRefundBefore
+            updateTempQuanDictionary (connectTerms subject verb receiver object) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
+
         (ModalPermi, VRefund, TempBefore) -> yesMayRefundBefore
         (ModalForbi, VRefund, TempBefore) -> noMayRefundBefore
-        (ModalObli _, VDel, TempAfter) -> yesMustDelAfter 
+
+        (ModalObli _, VDel, TempAfter) -> do
+            let formula = yesMustDelAfter
+            updateTempQuanDictionary (connectTerms subject verb receiver object) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula 
+
         (ModalPermi, VDel, TempAfter) -> yesMayDelAfter
         (ModalForbi, VDel, TempAfter) -> noMayDelAfter
-        (ModalObli _, VPay, TempAfter) -> yesMustPayAfter
+
+        (ModalObli _, VPay, TempAfter) -> do
+            let formula = yesMustPayAfter
+            updateTempQuanDictionary (connectTerms subject verb receiver object) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula 
+
         (ModalPermi, VPay, TempAfter) -> yesMayPayAfter
         (ModalForbi, VPay, TempAfter) -> noMayPayAfter
-        (ModalObli _, VCharge, TempAfter) -> yesMustChargeAfter
+
+        (ModalObli _, VCharge, TempAfter) -> do
+            let formula = yesMustChargeAfter
+            updateTempQuanDictionary (connectTerms subject verb receiver object) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula 
+
         (ModalPermi, VCharge, TempAfter) -> yesMayChargeAfter
         (ModalForbi, VCharge, TempAfter) -> noMayChargeAfter
-        (ModalObli _, VRefund, TempAfter) -> yesMustRefundAfter
+
+        (ModalObli _, VRefund, TempAfter) -> do
+            let formula = yesMustRefundAfter
+            updateTempQuanDictionary (connectTerms subject verb receiver object) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula 
+
         (ModalPermi, VRefund, TempAfter) -> yesMayRefundAfter
         (ModalForbi, VRefund, TempAfter) -> noMayRefundAfter
 
@@ -1496,6 +1559,116 @@ simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (Da
     createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 
 simpleConditiontoFOL (SimConFiveNH id booleanExpression) = boolExToFOL booleanExpression
+
+createFormulaSimpleStatementDateCheck :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State (DateDictionary, TempQuanDictionary) FOLFormula
+createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver day month year =
+    let
+        -- Common base predicates
+        basePredicates =
+            And
+                (And
+                    (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
+                    (Pred "date" [Var "D", dateSpeToTerm year month day])
+                )
+                (objectToPredicate object)
+                
+        -- Predicates for different cases
+        yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
+        noDelivered = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
+        yesPaid = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
+        noPaid = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
+        yesCharged = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "charged" [Var "X", Var "Y", Var "O", Var "D"])
+        noCharged = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "charged" [Var "X", Var "Y", Var "O", Var "D"])
+        yesRefunded = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "refunded" [Var "X", Var "Y", Var "O", Var "D"])
+        noRefunded = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "refunded" [Var "X", Var "Y", Var "O", Var "D"])
+    in
+        case (holds, verbStatus) of
+            (HoldYes, VSDel) -> do
+                formula <- yesDelivered
+                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                if checkValue
+                    then return formula
+                    else return $ And (formula) (Not $ formula)
+            (HoldNo, VSDel) -> do
+                formula <- noDelivered
+                return formula
+
+            (HoldYes, VSPay) -> do
+                formula <- yesPaid
+                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                if checkValue
+                    then return formula
+                    else return $ And (formula) (Not $ formula)
+            (HoldNo, VSPay) -> do
+                formula <- noPaid
+                return formula
+
+            (HoldYes, VSCharge) -> do
+                formula <- yesCharged
+                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                if checkValue
+                    then return formula
+                    else return $ And (formula) (Not $ formula)
+            (HoldNo, VSCharge) -> do
+                formula <- noCharged
+                return formula
+
+            (HoldYes, VSRefund) -> do
+                formula <- yesRefunded
+                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                if checkValue
+                    then return formula
+                    else return $ And (formula) (Not $ formula)
+            (HoldNo, VSRefund) -> do
+                formula <- noRefunded
+                return formula
+
+createFormulaSimpleStatementNHDateCheck :: VerbStatus -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State (DateDictionary, TempQuanDictionary) FOLFormula
+createFormulaSimpleStatementNHDateCheck verbStatus subject object receiver day month year =
+    let
+        -- Common base predicates
+        basePredicates =
+            And
+                (And
+                    (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
+                    (Pred "date" [Var "D", dateSpeToTerm year month day])
+                )
+                (objectToPredicate object)
+                
+        -- Predicates for different cases
+        yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
+        yesPaid = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
+        yesCharged = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "charged" [Var "X", Var "Y", Var "O", Var "D"])
+        yesRefunded = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "refunded" [Var "X", Var "Y", Var "O", Var "D"])
+    in
+        case (verbStatus) of
+            (VSDel) -> do
+                formula <- yesDelivered
+                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                if checkValue
+                    then return formula
+                    else return $ And (formula) (Not $ formula)
+
+            (VSPay) -> do
+                formula <- yesPaid
+                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                if checkValue
+                    then return formula
+                    else return $ And (formula) (Not $ formula)
+
+            (VSCharge) -> do
+                formula <- yesCharged
+                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                if checkValue
+                    then return formula
+                    else return $ And (formula) (Not $ formula)
+
+            (VSRefund) -> do
+                formula <- yesRefunded
+                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                if checkValue
+                    then return formula
+                    else return $ And (formula) (Not $ formula)
 
 createFormulaSimpleCondition :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleCondition holds verbStatus subject object receiver day month year =
@@ -2052,6 +2225,13 @@ boolExToFOL (BoolEx subject1 verbStatus comparison subject2) =
 runFOLConversion :: Contract -> FOLFormula
 runFOLConversion contract = evalState (contractToFOLWithCheck contract) (Map.empty, Map.empty)
 
+-- Function to run contractToFOLWithCheck with two empty dictionaries
+runFOLConversion' :: Contract -> (FOLFormula, DateDictionary, TempQuanDictionary)
+runFOLConversion' contract = (result, newDateDict, newTempQuanDict)
+  where
+    -- Run the conversion and get the result and the updated state
+    (result, (newDateDict, newTempQuanDict)) = runState (contractToFOLWithCheck contract) (Map.empty, Map.empty)
+
 -- Updated function to convert the contract to FOL formula with date dictionary check
 contractToFOLWithCheck :: Contract -> State (DateDictionary, TempQuanDictionary) FOLFormula
 contractToFOLWithCheck contract = do
@@ -2065,16 +2245,16 @@ addDateDictionaryCheck folFormula = do
     let dateVars = Map.elems (Map.map Var dateDict)
     return $ addDateDictionaryCheck' folFormula dateVars
 
--- -- Function to add date dictionary check to the FOL formula
--- addDateDictionaryCheck :: FOLFormula -> State (DateDictionary, TempQuanDictionary) FOLFormula
--- addDateDictionaryCheck folFormula = do
---     dateDict <- gets snd
---     let dateVars = Map.elems (Map.mapWithKey (\key (_, intValue) -> Var key) dateDict)
---     return $ addDateDictionaryCheck' folFormula dateVars
-
 -- Helper function to apply ForAll quantification
 addDateDictionaryCheck' :: FOLFormula -> [Term] -> FOLFormula
 addDateDictionaryCheck' folFormula dateVars =
     case dateVars of
         [] -> folFormula
         _ -> ForAll dateVars $ Brackets $ folFormula
+
+-- Function to add temp quan dictionary check to the FOL formula
+-- addDateDictionaryCheck :: FOLFormula -> State (DateDictionary, TempQuanDictionary) FOLFormula
+-- addDateDictionaryCheck folFormula = do
+--     dateDict <- gets snd
+--     let dateVars = Map.elems (Map.mapWithKey (\key (_, intValue) -> Var key) dateDict)
+--     return $ addDateDictionaryCheck' folFormula dateVars
