@@ -101,6 +101,8 @@ DateThe. Date ::= "on THEDATE" Subject;
 DateQuanSpecific. Date ::= TemporalQuantifier Num Month Num ;
 DateQuanSome. Date ::= TemporalQuantifier "SOMEDATE" Subject ;
 DateQuanThe. Date ::= TemporalQuantifier "THEDATE" Subject ;
+DateQuanSomeWO. Date ::= TemporalOffset TemporalQuantifier "SOMEDATE" Subject ;
+DateQuanTheWO. Date ::= TemporalOffset TemporalQuantifier "THEDATE" Subject ;
 DateQuanTempSome. Date ::= TemporalQuantifier TemporalOffset TemporalQuantifier "SOMEDATE" Subject ;
 DateQuanTempThe. Date ::= TemporalQuantifier TemporalOffset TemporalQuantifier "THEDATE" Subject ;
 

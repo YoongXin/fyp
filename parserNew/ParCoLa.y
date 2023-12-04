@@ -331,6 +331,8 @@ Date
   | TemporalQuantifier Num Month Num { AbsCoLa.DateQuanSpecific $1 $2 $3 $4 }
   | TemporalQuantifier 'SOMEDATE' Subject { AbsCoLa.DateQuanSome $1 $3 }
   | TemporalQuantifier 'THEDATE' Subject { AbsCoLa.DateQuanThe $1 $3 }
+  | TemporalOffset TemporalQuantifier 'SOMEDATE' Subject { AbsCoLa.DateQuanSomeWO $1 $2 $4 }
+  | TemporalOffset TemporalQuantifier 'THEDATE' Subject { AbsCoLa.DateQuanTheWO $1 $2 $4 }
   | TemporalQuantifier TemporalOffset TemporalQuantifier 'SOMEDATE' Subject { AbsCoLa.DateQuanTempSome $1 $2 $3 $5 }
   | TemporalQuantifier TemporalOffset TemporalQuantifier 'THEDATE' Subject { AbsCoLa.DateQuanTempThe $1 $2 $3 $5 }
 

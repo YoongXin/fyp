@@ -142,6 +142,8 @@ All other symbols are terminals.
   |  |  **|**  | //TemporalQuantifier// //Num// //Month// //Num//
   |  |  **|**  | //TemporalQuantifier// ``SOMEDATE`` //Subject//
   |  |  **|**  | //TemporalQuantifier// ``THEDATE`` //Subject//
+  |  |  **|**  | //TemporalOffset// //TemporalQuantifier// ``SOMEDATE`` //Subject//
+  |  |  **|**  | //TemporalOffset// //TemporalQuantifier// ``THEDATE`` //Subject//
   |  |  **|**  | //TemporalQuantifier// //TemporalOffset// //TemporalQuantifier// ``SOMEDATE`` //Subject//
   |  |  **|**  | //TemporalQuantifier// //TemporalOffset// //TemporalQuantifier// ``THEDATE`` //Subject//
   | //TemporalQuantifier// | -> | ``after``
