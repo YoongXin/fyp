@@ -142,5 +142,20 @@ checkInconsistency = do
       ")" ++
       "))."
 
+    putStrLn "\n"
+
+    putStrLn $ "fof(mustWithTemporalQuantifierContradiction, axiom, (" ++
+      "! [X, Y, O, D] : (" ++
+      "(mustDeliverAfter(X, Y, O, D) & ~ deliveredAfter(X, Y, O, D)) |" ++
+      "(mustPayAfter(X, Y, O, D) & ~ paidAfter(X, Y, O, D)) |" ++
+      "(mustChargeAfter(X, Y, O, D) & ~ chargedAfter(X, Y, O, D)) |" ++
+      "(mustRefundAfter(X, Y, O, D) & ~ refundedAfter(X, Y, O, D)) |" ++
+      "(mustDeliverBefore(X, Y, O, D) & ~ deliveredBefore(X, Y, O, D)) |" ++
+      "(mustPayBefore(X, Y, O, D) & ~ paidBefore(X, Y, O, D)) |" ++
+      "(mustChargeBefore(X, Y, O, D) & ~ chargedBefore(X, Y, O, D)) |" ++
+      "(mustRefundBefore(X, Y, O, D) & ~ refundedBefore(X, Y, O, D))" ++
+      " => $false)))."
+
+
     
 
