@@ -1215,13 +1215,13 @@ createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier sub
 
     -- Use actualValue here
     let basePredicates = case dateType of
-            DateSome _ -> And
+            DateQuanSome _ _ -> And
                             (And
                                 (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                                 (Pred "isDate" [Var actualValue])
                             )
                             (objectToPredicate object)
-            DateThe _ -> And
+            DateQuanThe _ _ -> And
                             (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
@@ -1830,13 +1830,13 @@ createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier sub
 
     -- Use actualValue here
     let basePredicates = case dateType of
-            DateSome _ -> And
+            DateQuanSome _ _ -> And
                             (And
                                 (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                                 (Pred "isDate" [Var actualValue])
                             )
                             (objectToPredicate object)
-            DateThe _ -> And
+            DateQuanThe _ _ -> And
                             (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
