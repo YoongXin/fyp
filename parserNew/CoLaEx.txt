@@ -62,4 +62,7 @@ IF [1] it is the case that Ivana charged DOLLARS 13 to Jess before SOMEDATE unkn
 IF [1] it is the case that Kathy paid EUROS 3 to Lily on SOMEDATE unknownOne THEN [2] it is the case that Lily must deliver OTHEROBJECT bicycle to Kathy before 7 days after SOMEDATE unknownOne
 
 -- Satisfiable case
-[1] Kathy paid EUROS 3 to Lily on SOMEDATE unknownOne C-AND [2] Lily delivered OTHEROBJECT bicycle to Kathy before 7 days after SOMEDATE unknownOne
+[1] Kathy paid EUROS 3 to Lily on SOMEDATE unknownOne C-AND [2] Lily delivered OTHEROBJECT bicycle to Kathy 7 days after THEDATE unknownOne
+
+-- Unsatisfiable case
+[1] Kathy paid EUROS 3 to Lily on SOMEDATE unknownOne C-AND [2] Lily delivered OTHEROBJECT bicycle to Kathy 8 days after THEDATE unknownOne

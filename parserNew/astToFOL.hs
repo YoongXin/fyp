@@ -463,9 +463,9 @@ simpleStatementToFOL (SimStateFourNH id subject verbStatus object receiver (Date
 simpleStatementToFOL (SimStateFourNH id subject verbStatus object receiver (DateQuanTempThe temporalQuantifier temporalOffset tq date)) =
     createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier subject object receiver temporalOffset tq date (DateQuanTempThe temporalQuantifier temporalOffset tq date)
 simpleStatementToFOL (SimStateFourNH id subject verbStatus object receiver (DateQuanSomeWO temporalOffset tq date)) =
-    createFormulaSimpleConditionNHDQuanSomeTheWO verbStatus subject object receiver temporalOffset tq date (DateQuanSomeWO temporalOffset tq date)
+    createFormulaSimpleStatementNHDateCheckSomeThe verbStatus subject object receiver temporalOffset tq date (DateQuanSomeWO temporalOffset tq date)
 simpleStatementToFOL (SimStateFourNH id subject verbStatus object receiver (DateQuanTheWO temporalOffset tq date)) =
-    createFormulaSimpleConditionNHDQuanSomeTheWO verbStatus subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
+    createFormulaSimpleStatementNHDateCheckSomeThe verbStatus subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
 createFormulaSimpleStatement :: Holds -> ModalVerb -> Verb -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year =

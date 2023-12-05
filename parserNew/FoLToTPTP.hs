@@ -75,6 +75,5 @@ runTptpConversionContract contract = folToTPTPString "contract" (runFOLConversio
 runTptpConversionPerformance :: Contract -> String
 runTptpConversionPerformance performance = folToTPTPString "performance" (runFOLConversion performance)
 
--- add to dictionary for datequantempsomethe statement + condition
--- check dictionary for datequansomethewo statement
+
 
