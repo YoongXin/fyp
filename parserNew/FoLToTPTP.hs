@@ -75,7 +75,6 @@ runTptpConversionContract contract = folToTPTPString "contract" (runFOLConversio
 runTptpConversionPerformance :: Contract -> String
 runTptpConversionPerformance performance = folToTPTPString "performance" (runFOLConversion performance)
 
---put output into one file and run vampire
---check vampire to see how to output proof can be clearer
-
+-- add to dictionary for datequantempsomethe statement + condition
+-- check dictionary for datequansomethewo statement
 
