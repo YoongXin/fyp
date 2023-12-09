@@ -66,3 +66,10 @@ IF [1] it is the case that Kathy paid EUROS 3 to Lily on SOMEDATE unknownOne THE
 
 -- Unsatisfiable case
 [1] Kathy paid EUROS 3 to Lily on SOMEDATE unknownOne C-AND [2] Lily delivered OTHEROBJECT bicycle to Kathy 8 days after THEDATE unknownOne
+
+-- Contract with date Definition
+IF [1] Mandy paid POUNDS 17 to Nancy on 7 April 2021 THEN [2] Nancy must deliver OTHEROBJECT bag to Mandy on SOMEDATE unknownOne C-AND [3] unknownOne IS 9 April 2021
+
+-- Satisfiable case
+[1] Mandy paid POUNDS 17 to Nancy on 7 April 2021 C-AND [2] Nancy delivered OTHEROBJECT bag to Mandy on 9 April 2021
+

@@ -12,6 +12,7 @@ DefAnd. Definition ::= SimpleDefinition "AND" Definition ;
 
 SimDefIs. SimpleDefinition ::= ID Subject "IS" Subject ;
 SimDefEq. SimpleDefinition ::= ID Subject "EQUALS" NumericalExpression ;
+SimDefDate. SimpleDefinition ::= ID Subject "IS" Num Month Num;
 
 NumExpNum. NumericalExpression ::= Num ;
 NumExpObj. NumericalExpression ::= NumericalObject ;
@@ -94,7 +95,7 @@ ModalForbi. ModalVerb ::= "is forbidden to" ;
 ObliOne. Obligation ::= "shall" ;
 ObliTwo. Obligation ::= "must" ;
 
-DateSpe. Date ::= "on the" Num Month Num ;
+DateSpe. Date ::= SpecificDate ;
 DateAny. Date ::= "on ANYDATE" ;
 DateSome. Date ::= "on SOMEDATE" Subject ;
 DateThe. Date ::= "on THEDATE" Subject;
@@ -105,6 +106,9 @@ DateQuanSomeWO. Date ::= TemporalOffset TemporalQuantifier "SOMEDATE" Subject ;
 DateQuanTheWO. Date ::= TemporalOffset TemporalQuantifier "THEDATE" Subject ;
 DateQuanTempSome. Date ::= TemporalQuantifier TemporalOffset TemporalQuantifier "SOMEDATE" Subject ;
 DateQuanTempThe. Date ::= TemporalQuantifier TemporalOffset TemporalQuantifier "THEDATE" Subject ;
+
+DateSpeOnThe. SpecificDate ::= "on the" Num Month Num ;
+DateSpeOn. SpecificDate ::= "on" Num Month Num ;
 
 TempAfter. TemporalQuantifier ::= "after" ;
 TempBefore. TemporalQuantifier ::= "before" ;

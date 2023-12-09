@@ -161,6 +161,7 @@ instance Print AbsCoLa.SimpleDefinition where
   prt i = \case
     AbsCoLa.SimDefIs id_ subject1 subject2 -> prPrec i 0 (concatD [prt 0 id_, prt 0 subject1, doc (showString "IS"), prt 0 subject2])
     AbsCoLa.SimDefEq id_ subject numericalexpression -> prPrec i 0 (concatD [prt 0 id_, prt 0 subject, doc (showString "EQUALS"), prt 0 numericalexpression])
+    AbsCoLa.SimDefDate id_ subject num1 month num2 -> prPrec i 0 (concatD [prt 0 id_, prt 0 subject, doc (showString "IS"), prt 0 num1, prt 0 month, prt 0 num2])
 
 instance Print AbsCoLa.NumericalExpression where
   prt i = \case
@@ -283,7 +284,7 @@ instance Print AbsCoLa.Obligation where
 
 instance Print AbsCoLa.Date where
   prt i = \case
-    AbsCoLa.DateSpe num1 month num2 -> prPrec i 0 (concatD [doc (showString "on"), doc (showString "the"), prt 0 num1, prt 0 month, prt 0 num2])
+    AbsCoLa.DateSpe specificdate -> prPrec i 0 (concatD [prt 0 specificdate])
     AbsCoLa.DateAny -> prPrec i 0 (concatD [doc (showString "on"), doc (showString "ANYDATE")])
     AbsCoLa.DateSome subject -> prPrec i 0 (concatD [doc (showString "on"), doc (showString "SOMEDATE"), prt 0 subject])
     AbsCoLa.DateThe subject -> prPrec i 0 (concatD [doc (showString "on"), doc (showString "THEDATE"), prt 0 subject])
@@ -294,6 +295,11 @@ instance Print AbsCoLa.Date where
     AbsCoLa.DateQuanTheWO temporaloffset temporalquantifier subject -> prPrec i 0 (concatD [prt 0 temporaloffset, prt 0 temporalquantifier, doc (showString "THEDATE"), prt 0 subject])
     AbsCoLa.DateQuanTempSome temporalquantifier1 temporaloffset temporalquantifier2 subject -> prPrec i 0 (concatD [prt 0 temporalquantifier1, prt 0 temporaloffset, prt 0 temporalquantifier2, doc (showString "SOMEDATE"), prt 0 subject])
     AbsCoLa.DateQuanTempThe temporalquantifier1 temporaloffset temporalquantifier2 subject -> prPrec i 0 (concatD [prt 0 temporalquantifier1, prt 0 temporaloffset, prt 0 temporalquantifier2, doc (showString "THEDATE"), prt 0 subject])
+
+instance Print AbsCoLa.SpecificDate where
+  prt i = \case
+    AbsCoLa.DateSpeOnThe num1 month num2 -> prPrec i 0 (concatD [doc (showString "on"), doc (showString "the"), prt 0 num1, prt 0 month, prt 0 num2])
+    AbsCoLa.DateSpeOn num1 month num2 -> prPrec i 0 (concatD [doc (showString "on"), prt 0 num1, prt 0 month, prt 0 num2])
 
 instance Print AbsCoLa.TemporalQuantifier where
   prt i = \case

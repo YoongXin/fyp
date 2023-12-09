@@ -28,6 +28,7 @@ data Definition
 data SimpleDefinition
     = SimDefIs ID Subject Subject
     | SimDefEq ID Subject NumericalExpression
+    | SimDefDate ID Subject Num Month Num
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data NumericalExpression
@@ -119,7 +120,7 @@ data Obligation = ObliOne | ObliTwo
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Date
-    = DateSpe Num Month Num
+    = DateSpe SpecificDate
     | DateAny
     | DateSome Subject
     | DateThe Subject
@@ -130,6 +131,10 @@ data Date
     | DateQuanTheWO TemporalOffset TemporalQuantifier Subject
     | DateQuanTempSome TemporalQuantifier TemporalOffset TemporalQuantifier Subject
     | DateQuanTempThe TemporalQuantifier TemporalOffset TemporalQuantifier Subject
+  deriving (C.Eq, C.Ord, C.Show, C.Read)
+
+data SpecificDate
+    = DateSpeOnThe Num Month Num | DateSpeOn Num Month Num
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data TemporalQuantifier = TempAfter | TempBefore

@@ -32,6 +32,7 @@ module ParCoLa
   , pModalVerb
   , pObligation
   , pDate
+  , pSpecificDate
   , pTemporalQuantifier
   , pTemporalOffset
   , pMonth
@@ -76,6 +77,7 @@ import LexCoLa
 %name pModalVerb ModalVerb
 %name pObligation Obligation
 %name pDate Date
+%name pSpecificDate SpecificDate
 %name pTemporalQuantifier TemporalQuantifier
 %name pTemporalOffset TemporalOffset
 %name pMonth Month
@@ -205,6 +207,7 @@ SimpleDefinition :: { AbsCoLa.SimpleDefinition }
 SimpleDefinition
   : ID Subject 'IS' Subject { AbsCoLa.SimDefIs $1 $2 $4 }
   | ID Subject 'EQUALS' NumericalExpression { AbsCoLa.SimDefEq $1 $2 $4 }
+  | ID Subject 'IS' Num Month Num { AbsCoLa.SimDefDate $1 $2 $4 $5 $6 }
 
 NumericalExpression :: { AbsCoLa.NumericalExpression }
 NumericalExpression
@@ -324,7 +327,7 @@ Obligation
 
 Date :: { AbsCoLa.Date }
 Date
-  : 'on' 'the' Num Month Num { AbsCoLa.DateSpe $3 $4 $5 }
+  : SpecificDate { AbsCoLa.DateSpe $1 }
   | 'on' 'ANYDATE' { AbsCoLa.DateAny }
   | 'on' 'SOMEDATE' Subject { AbsCoLa.DateSome $3 }
   | 'on' 'THEDATE' Subject { AbsCoLa.DateThe $3 }
@@ -335,6 +338,11 @@ Date
   | TemporalOffset TemporalQuantifier 'THEDATE' Subject { AbsCoLa.DateQuanTheWO $1 $2 $4 }
   | TemporalQuantifier TemporalOffset TemporalQuantifier 'SOMEDATE' Subject { AbsCoLa.DateQuanTempSome $1 $2 $3 $5 }
   | TemporalQuantifier TemporalOffset TemporalQuantifier 'THEDATE' Subject { AbsCoLa.DateQuanTempThe $1 $2 $3 $5 }
+
+SpecificDate :: { AbsCoLa.SpecificDate }
+SpecificDate
+  : 'on' 'the' Num Month Num { AbsCoLa.DateSpeOnThe $3 $4 $5 }
+  | 'on' Num Month Num { AbsCoLa.DateSpeOn $2 $3 $4 }
 
 TemporalQuantifier :: { AbsCoLa.TemporalQuantifier }
 TemporalQuantifier

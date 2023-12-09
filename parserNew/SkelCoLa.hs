@@ -41,6 +41,7 @@ transSimpleDefinition :: AbsCoLa.SimpleDefinition -> Result
 transSimpleDefinition x = case x of
   AbsCoLa.SimDefIs id subject1 subject2 -> failure x
   AbsCoLa.SimDefEq id subject numericalexpression -> failure x
+  AbsCoLa.SimDefDate id subject num1 month num2 -> failure x
 
 transNumericalExpression :: AbsCoLa.NumericalExpression -> Result
 transNumericalExpression x = case x of
@@ -163,7 +164,7 @@ transObligation x = case x of
 
 transDate :: AbsCoLa.Date -> Result
 transDate x = case x of
-  AbsCoLa.DateSpe num1 month num2 -> failure x
+  AbsCoLa.DateSpe specificdate -> failure x
   AbsCoLa.DateAny -> failure x
   AbsCoLa.DateSome subject -> failure x
   AbsCoLa.DateThe subject -> failure x
@@ -174,6 +175,11 @@ transDate x = case x of
   AbsCoLa.DateQuanTheWO temporaloffset temporalquantifier subject -> failure x
   AbsCoLa.DateQuanTempSome temporalquantifier1 temporaloffset temporalquantifier2 subject -> failure x
   AbsCoLa.DateQuanTempThe temporalquantifier1 temporaloffset temporalquantifier2 subject -> failure x
+
+transSpecificDate :: AbsCoLa.SpecificDate -> Result
+transSpecificDate x = case x of
+  AbsCoLa.DateSpeOnThe num1 month num2 -> failure x
+  AbsCoLa.DateSpeOn num1 month num2 -> failure x
 
 transTemporalQuantifier :: AbsCoLa.TemporalQuantifier -> Result
 transTemporalQuantifier x = case x of

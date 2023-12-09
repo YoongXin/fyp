@@ -73,6 +73,7 @@ All other symbols are terminals.
   |  |  **|**  | //SimpleDefinition// ``AND`` //Definition//
   | //SimpleDefinition// | -> | //ID// //Subject// ``IS`` //Subject//
   |  |  **|**  | //ID// //Subject// ``EQUALS`` //NumericalExpression//
+  |  |  **|**  | //ID// //Subject// ``IS`` //Num// //Month// //Num//
   | //NumericalExpression// | -> | //Num//
   |  |  **|**  | //NumericalObject//
   |  |  **|**  | //NumericalExpression// //Operator// //NumericalExpression//
@@ -135,7 +136,7 @@ All other symbols are terminals.
   |  |  **|**  | ``is`` ``forbidden`` ``to``
   | //Obligation// | -> | ``shall``
   |  |  **|**  | ``must``
-  | //Date// | -> | ``on`` ``the`` //Num// //Month// //Num//
+  | //Date// | -> | //SpecificDate//
   |  |  **|**  | ``on`` ``ANYDATE``
   |  |  **|**  | ``on`` ``SOMEDATE`` //Subject//
   |  |  **|**  | ``on`` ``THEDATE`` //Subject//
@@ -146,6 +147,8 @@ All other symbols are terminals.
   |  |  **|**  | //TemporalOffset// //TemporalQuantifier// ``THEDATE`` //Subject//
   |  |  **|**  | //TemporalQuantifier// //TemporalOffset// //TemporalQuantifier// ``SOMEDATE`` //Subject//
   |  |  **|**  | //TemporalQuantifier// //TemporalOffset// //TemporalQuantifier// ``THEDATE`` //Subject//
+  | //SpecificDate// | -> | ``on`` ``the`` //Num// //Month// //Num//
+  |  |  **|**  | ``on`` //Num// //Month// //Num//
   | //TemporalQuantifier// | -> | ``after``
   |  |  **|**  | ``before``
   | //TemporalOffset// | -> | //Num// ``day``

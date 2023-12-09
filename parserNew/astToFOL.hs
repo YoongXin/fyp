@@ -116,6 +116,10 @@ simpleDefinitionToFOL (SimDefEq id subject numericalExpression) =
     let term1 = subjectToTerm subject
         term2 = numericalExpressionToTerm numericalExpression
     in return $ Equal term1 term2
+simpleDefinitionToFOL (SimDefDate id subject day month year) =
+    let term1 = subjectToTerm subject
+        term2 = dateSpeToTerm year month day
+    in return $ Equal term1 term2
 
 getIdentString :: Ident -> String
 getIdentString (Ident str) = str
@@ -283,8 +287,10 @@ checkTempQuanDictionary key intValue = do
         Nothing -> return True -- Key not found, consider it true
 
 simpleStatementToFOL :: SimpleStatement -> State (DateDictionary, TempQuanDictionary) FOLFormula
-simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateSpe day month year)) =
+simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateSpe (DateSpeOnThe day month year))) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
+simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateSpe (DateSpeOn day month year))) =
+        createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver DateAny) =
     createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver 
 simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateSome date)) =
@@ -306,7 +312,9 @@ simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receive
 simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateQuanTheWO temporalOffset tq date)) =
     createFormulaSimpleStatementDQuanSomeTheWO holds modalVerb verb subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
-simpleStatementToFOL (SimStateTwo id holds subject (DateSpe day month year) modalVerb verb object receiver) =
+simpleStatementToFOL (SimStateTwo id holds subject (DateSpe (DateSpeOnThe day month year)) modalVerb verb object receiver) =
+    createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
+simpleStatementToFOL (SimStateTwo id holds subject (DateSpe (DateSpeOn day month year)) modalVerb verb object receiver) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateTwo id holds subject DateAny modalVerb verb object receiver) =
     createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver 
@@ -329,7 +337,9 @@ simpleStatementToFOL (SimStateTwo id holds subject (DateQuanSomeWO temporalOffse
 simpleStatementToFOL (SimStateTwo id holds subject (DateQuanTheWO temporalOffset tq date) modalVerb verb object receiver) =
     createFormulaSimpleStatementDQuanSomeTheWO holds modalVerb verb subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
-simpleStatementToFOL (SimStateThree id holds (DateSpe day month year) subject modalVerb verb object receiver) =
+simpleStatementToFOL (SimStateThree id holds (DateSpe (DateSpeOnThe day month year)) subject modalVerb verb object receiver) =
+    createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
+simpleStatementToFOL (SimStateThree id holds (DateSpe (DateSpeOn day month year)) subject modalVerb verb object receiver) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateThree id holds DateAny subject modalVerb verb object receiver) =
     createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver
@@ -352,7 +362,9 @@ simpleStatementToFOL (SimStateThree id holds (DateQuanSomeWO temporalOffset tq d
 simpleStatementToFOL (SimStateThree id holds (DateQuanTheWO temporalOffset tq date) subject modalVerb verb object receiver) =
     createFormulaSimpleStatementDQuanSomeTheWO holds modalVerb verb subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
-simpleStatementToFOL (SimStateFour id holds subject verbStatus object receiver (DateSpe day month year)) =
+simpleStatementToFOL (SimStateFour id holds subject verbStatus object receiver (DateSpe (DateSpeOnThe day month year))) =
+    createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver day month year
+simpleStatementToFOL (SimStateFour id holds subject verbStatus object receiver (DateSpe (DateSpeOn day month year))) =
     createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver day month year
 simpleStatementToFOL (SimStateFour id holds subject verbStatus object receiver DateAny) =
     createFormulaSimpleConditionDAny holds verbStatus subject object receiver
@@ -375,7 +387,9 @@ simpleStatementToFOL (SimStateFour id holds subject verbStatus object receiver (
 simpleStatementToFOL (SimStateFour id holds subject verbStatus object receiver (DateQuanTheWO temporalOffset tq date)) =
     createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
-simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateSpe day month year)) =
+simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateSpe (DateSpeOnThe day month year))) =
+    createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
+simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateSpe (DateSpeOn day month year))) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver DateAny) =
     createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver
@@ -398,7 +412,9 @@ simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (D
 simpleStatementToFOL (SimStateOneNH id subject modalVerb verb object receiver (DateQuanTheWO temporalOffset tq date)) =
     createFormulaSimpleStatementNHDQuanSomeTheWO modalVerb verb subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
-simpleStatementToFOL (SimStateTwoNH id subject (DateSpe day month year) modalVerb verb object receiver) =
+simpleStatementToFOL (SimStateTwoNH id subject (DateSpe (DateSpeOnThe day month year)) modalVerb verb object receiver) =
+    createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
+simpleStatementToFOL (SimStateTwoNH id subject (DateSpe (DateSpeOn day month year)) modalVerb verb object receiver) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateTwoNH id subject DateAny modalVerb verb object receiver) =
     createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver
@@ -421,7 +437,9 @@ simpleStatementToFOL (SimStateTwoNH id subject (DateQuanSomeWO temporalOffset tq
 simpleStatementToFOL (SimStateTwoNH id subject (DateQuanTheWO temporalOffset tq date) modalVerb verb object receiver) =
     createFormulaSimpleStatementNHDQuanSomeTheWO modalVerb verb subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
     
-simpleStatementToFOL (SimStateThreeNH id (DateSpe day month year) subject modalVerb verb object receiver) =
+simpleStatementToFOL (SimStateThreeNH id (DateSpe (DateSpeOnThe day month year)) subject modalVerb verb object receiver) =
+    createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
+simpleStatementToFOL (SimStateThreeNH id (DateSpe (DateSpeOn day month year)) subject modalVerb verb object receiver) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
 simpleStatementToFOL (SimStateThreeNH id DateAny subject modalVerb verb object receiver) =
     createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver
@@ -444,8 +462,10 @@ simpleStatementToFOL (SimStateThreeNH id (DateQuanSomeWO temporalOffset tq date)
 simpleStatementToFOL (SimStateThreeNH id (DateQuanTheWO temporalOffset tq date) subject modalVerb verb object receiver) =
     createFormulaSimpleStatementNHDQuanSomeTheWO modalVerb verb subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
-simpleStatementToFOL (SimStateFourNH id subject verbStatus object receiver (DateSpe day month year)) =
+simpleStatementToFOL (SimStateFourNH id subject verbStatus object receiver (DateSpe (DateSpeOnThe day month year))) =
     createFormulaSimpleStatementNHDateCheck verbStatus subject object receiver day month year
+simpleStatementToFOL (SimStateFourNH id subject verbStatus object receiver (DateSpe (DateSpeOn day month year))) =
+        createFormulaSimpleStatementNHDateCheck verbStatus subject object receiver day month year 
 simpleStatementToFOL (SimStateFourNH id subject verbStatus object receiver DateAny) =
     createFormulaSimpleConditionNHDAny verbStatus subject object receiver 
 simpleStatementToFOL (SimStateFourNH id subject verbStatus object receiver (DateSome date)) =
@@ -1683,7 +1703,9 @@ objectToString (ObjNonNu (NonNumNamed subject)) = "ObjectNamedObject" ++ subject
 objectToString (ObjNonNu (NonNumOther subject)) = "ObjectOtherObject" ++ subjectToString subject
 
 simpleConditionToFOL :: SimpleCondition -> State (DateDictionary, TempQuanDictionary) FOLFormula
-simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (DateSpe day month year)) =
+simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (DateSpe (DateSpeOnThe day month year))) =
+    createFormulaSimpleCondition holds verbStatus subject object receiver day month year
+simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (DateSpe (DateSpeOn day month year))) =
     createFormulaSimpleCondition holds verbStatus subject object receiver day month year
 simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver DateAny) =
     createFormulaSimpleConditionDAny holds verbStatus subject object receiver
@@ -1706,7 +1728,9 @@ simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (Dat
 simpleConditionToFOL (SimConOne id holds subject verbStatus object receiver (DateQuanTheWO temporalOffset tq date)) =
     createFormulaSimpleConditionDQuanSomeTheWO holds verbStatus subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
-simpleConditionToFOL (SimConTwo id holds subject (DateSpe day month year) verbStatus object receiver) = 
+simpleConditionToFOL (SimConTwo id holds subject (DateSpe (DateSpeOnThe day month year)) verbStatus object receiver) = 
+    createFormulaSimpleCondition holds verbStatus subject object receiver day month year
+simpleConditionToFOL (SimConTwo id holds subject (DateSpe (DateSpeOn day month year)) verbStatus object receiver) = 
     createFormulaSimpleCondition holds verbStatus subject object receiver day month year
 simpleConditionToFOL (SimConTwo id holds subject DateAny verbStatus object receiver) = 
     createFormulaSimpleConditionDAny holds verbStatus subject object receiver
@@ -1729,7 +1753,9 @@ simpleConditionToFOL (SimConTwo id holds subject (DateQuanSomeWO temporalOffset 
 simpleConditionToFOL (SimConTwo id holds subject (DateQuanTheWO temporalOffset tq date) verbStatus object receiver) =
     createFormulaSimpleConditionDQuanSomeTheWO holds verbStatus subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
-simpleConditionToFOL (SimConThree id holds (DateSpe day month year) subject verbStatus object receiver) = 
+simpleConditionToFOL (SimConThree id holds (DateSpe (DateSpeOnThe day month year)) subject verbStatus object receiver) = 
+    createFormulaSimpleCondition holds verbStatus subject object receiver day month year 
+simpleConditionToFOL (SimConThree id holds (DateSpe (DateSpeOn day month year)) subject verbStatus object receiver) = 
     createFormulaSimpleCondition holds verbStatus subject object receiver day month year 
 simpleConditionToFOL (SimConThree id holds DateAny subject verbStatus object receiver) = 
     createFormulaSimpleConditionDAny holds verbStatus subject object receiver
@@ -1752,7 +1778,9 @@ simpleConditionToFOL (SimConThree id holds (DateQuanSomeWO temporalOffset tq dat
 simpleConditionToFOL (SimConThree id holds (DateQuanTheWO temporalOffset tq date) subject verbStatus object receiver) =
     createFormulaSimpleConditionDQuanSomeTheWO holds verbStatus subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
-simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateSpe day month year)) =
+simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateSpe (DateSpeOnThe day month year))) =
+    createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
+simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver (DateSpe (DateSpeOn day month year))) =
     createFormulaSimpleStatement holds modalVerb verb subject object receiver day month year
 simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver DateAny) =
     createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver
@@ -1778,7 +1806,9 @@ simpleConditionToFOL (SimConFour id holds subject modalVerb verb object receiver
 simpleConditionToFOL (SimConFive id HoldYes booleanExpression) = boolExToFOL booleanExpression
 simpleConditionToFOL (SimConFive id HoldNo booleanExpression) = Not <$> (boolExToFOL booleanExpression)
 
-simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateSpe day month year)) =
+simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateSpe (DateSpeOnThe day month year))) =
+    createFormulaSimpleConditionNH verbStatus subject object receiver day month year
+simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateSpe (DateSpeOn day month year))) =
     createFormulaSimpleConditionNH verbStatus subject object receiver day month year
 simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver DateAny) =
     createFormulaSimpleConditionNHDAny verbStatus subject object receiver 
@@ -1801,7 +1831,9 @@ simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateQua
 simpleConditionToFOL (SimConOneNH id subject verbStatus object receiver (DateQuanTheWO temporalOffset tq date)) =
     createFormulaSimpleConditionNHDQuanSomeTheWO verbStatus subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
-simpleConditionToFOL (SimConTwoNH id subject (DateSpe day month year) verbStatus object receiver) = 
+simpleConditionToFOL (SimConTwoNH id subject (DateSpe (DateSpeOnThe day month year)) verbStatus object receiver) = 
+    createFormulaSimpleConditionNH verbStatus subject object receiver day month year
+simpleConditionToFOL (SimConTwoNH id subject (DateSpe (DateSpeOn day month year)) verbStatus object receiver) = 
     createFormulaSimpleConditionNH verbStatus subject object receiver day month year
 simpleConditionToFOL (SimConTwoNH id subject DateAny verbStatus object receiver) = 
     createFormulaSimpleConditionNHDAny verbStatus subject object receiver 
@@ -1824,7 +1856,9 @@ simpleConditionToFOL (SimConTwoNH id subject (DateQuanSomeWO temporalOffset tq d
 simpleConditionToFOL (SimConTwoNH id subject (DateQuanTheWO temporalOffset tq date) verbStatus object receiver) =
     createFormulaSimpleConditionNHDQuanSomeTheWO verbStatus subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
-simpleConditionToFOL (SimConThreeNH id (DateSpe day month year) subject verbStatus object receiver) = 
+simpleConditionToFOL (SimConThreeNH id (DateSpe (DateSpeOnThe day month year)) subject verbStatus object receiver) = 
+    createFormulaSimpleConditionNH verbStatus subject object receiver day month year 
+simpleConditionToFOL (SimConThreeNH id (DateSpe (DateSpeOn day month year)) subject verbStatus object receiver) = 
     createFormulaSimpleConditionNH verbStatus subject object receiver day month year 
 simpleConditionToFOL (SimConThreeNH id DateAny subject verbStatus object receiver) = 
     createFormulaSimpleConditionNHDAny verbStatus subject object receiver
@@ -1847,7 +1881,9 @@ simpleConditionToFOL (SimConThreeNH id (DateQuanSomeWO temporalOffset tq date) s
 simpleConditionToFOL (SimConThreeNH id (DateQuanTheWO temporalOffset tq date) subject verbStatus object receiver) =
     createFormulaSimpleConditionNHDQuanSomeTheWO verbStatus subject object receiver temporalOffset tq date (DateQuanTheWO temporalOffset tq date)
 
-simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateSpe day month year)) =
+simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateSpe (DateSpeOnThe day month year))) =
+    createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
+simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver (DateSpe (DateSpeOn day month year))) =
     createFormulaSimpleStatementNH modalVerb verb subject object receiver day month year
 simpleConditionToFOL (SimConFourNH id subject modalVerb verb object receiver DateAny) =
     createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver
