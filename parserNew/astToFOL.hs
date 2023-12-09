@@ -1900,7 +1900,7 @@ createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver d
                 checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
                 if checkValue
                     then return formula
-                    else return $ And (formula) (Not $ formula)
+                    else return $ Falser
             (HoldNo, VSDel) -> do
                 formula <- noDelivered
                 return formula
@@ -1910,7 +1910,7 @@ createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver d
                 checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
                 if checkValue
                     then return formula
-                    else return $ And (formula) (Not $ formula)
+                    else return $ Falser
             (HoldNo, VSPay) -> do
                 formula <- noPaid
                 return formula
@@ -1920,7 +1920,7 @@ createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver d
                 checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
                 if checkValue
                     then return formula
-                    else return $ And (formula) (Not $ formula)
+                    else return $ Falser
             (HoldNo, VSCharge) -> do
                 formula <- noCharged
                 return formula
@@ -1930,7 +1930,7 @@ createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver d
                 checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
                 if checkValue
                     then return formula
-                    else return $ And (formula) (Not $ formula)
+                    else return $ Falser
             (HoldNo, VSRefund) -> do
                 formula <- noRefunded
                 return formula
@@ -1959,28 +1959,28 @@ createFormulaSimpleStatementNHDateCheck verbStatus subject object receiver day m
                 checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
                 if checkValue
                     then return formula
-                    else return $ And (formula) (Not $ formula)
+                    else return $ Falser
 
             (VSPay) -> do
                 formula <- yesPaid
                 checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
                 if checkValue
                     then return formula
-                    else return $ And (formula) (Not $ formula)
+                    else return $ Falser
 
             (VSCharge) -> do
                 formula <- yesCharged
                 checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
                 if checkValue
                     then return formula
-                    else return $ And (formula) (Not $ formula)
+                    else return $ Falser
 
             (VSRefund) -> do
                 formula <- yesRefunded
                 checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
                 if checkValue
                     then return formula
-                    else return $ And (formula) (Not $ formula)
+                    else return $ Falser
 
 createFormulaSimpleStatementDateCheckSomeThe :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object receiver temporalOffset tq date dateType = do
@@ -2032,7 +2032,7 @@ createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object rec
                     checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
                     if checkValue
                         then return formula
-                        else return $ And (formula) (Not $ formula)
+                        else return $ Falser
                 (HoldNo, VSDel) -> do
                     formula <- noDelivered
                     return formula
@@ -2042,7 +2042,7 @@ createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object rec
                     checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
                     if checkValue
                         then return formula
-                        else return $ And (formula) (Not $ formula)
+                        else return $ Falser
                 (HoldNo, VSPay) -> do
                     formula <- noPaid
                     return formula
@@ -2052,7 +2052,7 @@ createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object rec
                     checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
                     if checkValue
                         then return formula
-                        else return $ And (formula) (Not $ formula)
+                        else return $ Falser
                 (HoldNo, VSCharge) -> do
                     formula <- noCharged
                     return formula
@@ -2062,7 +2062,7 @@ createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object rec
                     checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
                     if checkValue
                         then return formula
-                        else return $ And (formula) (Not $ formula)
+                        else return $ Falser
                 (HoldNo, VSRefund) -> do
                     formula <- noRefunded
                     return formula
@@ -2128,28 +2128,28 @@ createFormulaSimpleStatementNHDateCheckSomeThe verbStatus subject object receive
                     checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
                     if checkValue
                         then return formula
-                        else return $ And (formula) (Not $ formula)
+                        else return $ Falser
 
                 (VSPay) -> do
                     formula <- yesPaid
                     checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
                     if checkValue
                         then return formula
-                        else return $ And (formula) (Not $ formula)
+                        else return $ Falser
 
                 (VSCharge) -> do
                     formula <- yesCharged
                     checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
                     if checkValue
                         then return formula
-                        else return $ And (formula) (Not $ formula)
+                        else return $ Falser
 
                 (VSRefund) -> do
                     formula <- yesRefunded
                     checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
                     if checkValue
                         then return formula
-                        else return $ And (formula) (Not $ formula)
+                        else return $ Falser
 
             where
                 -- Predicates for different cases
