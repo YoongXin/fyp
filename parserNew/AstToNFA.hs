@@ -23,13 +23,32 @@ import Prelude
   , (<=)
   , Bool(..)
   , Ord
+  , zip
   )
 
 import Data.Time
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 import Control.Monad.State
-import Control.Monad.IO.Class (liftIO)
+import Data.List (map) 
+
+-- import Data.GraphViz
+-- import Data.GraphViz.Attributes.Complete
+-- import Data.GraphViz.Printing
+-- import Data.Graph.Inductive.Graph
+-- import Data.Graph.Inductive.PatriciaTree
+-- import qualified Data.Text.Lazy as L
+
+import              Data.Functor                        ((<&>))
+import qualified    Data.Text.Lazy as L                 (pack, unpack)
+import qualified    Data.Text.Lazy.IO as IO             (putStrLn)
+import              Data.Graph.Inductive.Graph          
+import              Data.Graph.Inductive.PatriciaTree   (Gr)
+import              Data.GraphViz                       
+import              Data.GraphViz.Attributes.Complete   
+import              Data.GraphViz.Printing              (renderDot, toDot)
+import Data.Text.Internal.Lazy (Text)
+import Data.Graph.Inductive (LEdge)
 
 import AbsCoLa   
 import LexCoLa   ( Token, mkPosToken )
@@ -41,15 +60,27 @@ type StateDict = Map.Map StateA Event
 
 data StateA 
     = StateA String
-  deriving (Eq, Ord, Show, Read)
+  deriving (Eq, Ord, Read, Show)
 
 data Event
     = Event String
-  deriving (Eq, Ord, Show, Read)
+  deriving (Eq, Ord, Read, Show)
 
 data Transition
     = Transition StateA Event StateA
-  deriving (Eq, Ord, Show, Read)
+  deriving (Eq, Ord, Read, Show)
+
+-- -- Pretty-printing for StateA
+-- instance Show StateA where
+--     show (StateA s) = s
+
+-- -- Pretty-printing for Event
+-- instance Show Event where
+--     show (Event e) = e
+
+-- -- Pretty-printing for Transition
+-- instance Show Transition where
+--     show (Transition from event to) = show from ++ " --(" ++ show event ++ ")--> " ++ show to
 
 data NFA = NFA
     { states :: Set.Set StateA
@@ -58,7 +89,23 @@ data NFA = NFA
     , startStates :: Set.Set StateA
     , acceptingStates :: Set.Set StateA
     } 
-  deriving (Eq, Show, Read)
+  deriving (Eq, Read, Show)
+
+-- -- Pretty-printing for NFA
+-- instance Show NFA where
+--   show nfa =
+--     unlines
+--       [ "States:"
+--       , unlines (map show (Set.toList $ states nfa))
+--       , "Events:"
+--       , unlines (map show (Set.toList $ events nfa))
+--       , "Transitions:"
+--       , unlines (map show (Set.toList $ transitions nfa))
+--       , "Start States:"
+--       , unlines (map show (Set.toList $ startStates nfa))
+--       , "Accepting States:"
+--       , unlines (map show (Set.toList $ acceptingStates nfa))
+--       ]
 
 modifyStateDict :: (StateDict -> StateDict) -> State StateDict ()
 modifyStateDict f = modify f
@@ -68,22 +115,11 @@ addToStateDict :: StateA -> Event -> State StateDict ()
 addToStateDict newState newEvent = do
     modifyStateDict (\dict -> Map.insert newState newEvent dict)
 
--- Helper function to generate transitions for a pair of state sets
--- generateTransitions :: Set.Set StateA -> Set.Set StateA -> State StateDict [Transition]
--- generateTransitions stateSet1 stateSet2 = do
---     updatedMap <- get
---     fmap concat $ forM (Set.toList stateSet1) $ \frontState -> do
---         let transitionEvent = Map.findWithDefault (Event "DefaultEvent") frontState updatedMap
---         fmap concat $ forM (Set.toList stateSet2) $ \backState -> do
---             let newTransition = Transition frontState transitionEvent backState
---             return [newTransition]
-
 generateTransitions :: Set.Set StateA -> Set.Set StateA -> State StateDict [Transition]
 generateTransitions stateSet1 stateSet2 = do
     updatedMap <- get
     let transitionsList = [Transition frontState (Map.findWithDefault (Event "DefaultEvent") frontState updatedMap) backState | frontState <- Set.toList stateSet1, backState <- Set.toList stateSet2]
     return transitionsList
-
 
 subjectToString :: Subject -> String
 subjectToString (SubQuoted str) = str
@@ -106,13 +142,13 @@ numericalExpressionToString (NumExpOp expr1 operator expr2) =
     in str1 ++ operatorStr ++ str2
 
 numericalObjectToString :: NumericalObject -> String
-numericalObjectToString (NumPound _ (NumInt n)) = "Pound " ++ show n
-numericalObjectToString (NumDol _ (NumInt n)) = "Dollar " ++ show n
-numericalObjectToString (NumEur _ (NumInt n)) = "Euro " ++ show n
+numericalObjectToString (NumPound _ (NumInt n)) = "£" ++ show n
+numericalObjectToString (NumDol _ (NumInt n)) = "$" ++ show n
+numericalObjectToString (NumEur _ (NumInt n)) = "€" ++ show n
 numericalObjectToString (NumAmount subject) = subjectToString subject
 
 dateSpeToString :: Num -> Month -> Num -> String
-dateSpeToString (NumInt day) month (NumInt year) = show day ++ monthToString month ++ show year
+dateSpeToString (NumInt day) month (NumInt year) = show day ++ " " ++ monthToString month ++ " " ++ show year
 
 monthToString :: Month -> String
 monthToString MJan = "January"
@@ -135,24 +171,24 @@ verbToString VCharge = "charge"
 verbToString VRefund = "refund"
 
 objectToString :: Object -> String
-objectToString (ObjNu (NumPound _ (NumInt num))) = "Pound " ++ show num
-objectToString (ObjNu (NumDol _ (NumInt num))) = "Dollar " ++ show num
-objectToString (ObjNu (NumEur _ (NumInt num))) = "Euro " ++ show num
-objectToString (ObjNu (NumAmount subject)) = "Amount " ++ subjectToString subject
-objectToString (ObjNonNu (NonNumCurr subject)) = "SomeCurrency " ++ subjectToString subject
-objectToString (ObjNonNu (NonNumRep subject)) = "Report " ++ subjectToString subject
-objectToString (ObjNonNu (NonNumNamed subject)) = "NamedObject " ++ subjectToString subject
-objectToString (ObjNonNu (NonNumOther subject)) = "OtherObject " ++ subjectToString subject
+objectToString (ObjNu (NumPound _ (NumInt num))) = "£" ++ show num
+objectToString (ObjNu (NumDol _ (NumInt num))) = "$" ++ show num
+objectToString (ObjNu (NumEur _ (NumInt num))) = "€" ++ show num
+objectToString (ObjNu (NumAmount subject)) = "Amount \"" ++ subjectToString subject ++ "\""
+objectToString (ObjNonNu (NonNumCurr subject)) = "SomeCurrency \"" ++ subjectToString subject ++ "\""
+objectToString (ObjNonNu (NonNumRep subject)) = "Report \"" ++ subjectToString subject ++ "\""
+objectToString (ObjNonNu (NonNumNamed subject)) = "NamedObject \"" ++ subjectToString subject ++ "\""
+objectToString (ObjNonNu (NonNumOther subject)) = "OtherObject \"" ++ subjectToString subject ++ "\""
 
 receiverToString :: Receiver -> String
 receiverToString (Rec subject) = subjectToString subject
 
 dateToString :: Date -> String
-dateToString (DateSpe (DateSpeOnThe day month year)) = dateSpeToString day month year
-dateToString (DateSpe (DateSpeOn day month year)) = dateSpeToString day month year
-dateToString (DateAny) = "ANYDATE"
-dateToString (DateSome subject) = "SOMEDATE " ++ subjectToString subject
-dateToString (DateThe subject) = "THEDATE " ++ subjectToString subject
+dateToString (DateSpe (DateSpeOnThe day month year)) = "on the " ++ dateSpeToString day month year
+dateToString (DateSpe (DateSpeOn day month year)) = "on " ++ dateSpeToString day month year
+dateToString (DateAny) = "on ANYDATE"
+dateToString (DateSome subject) = "on SOMEDATE " ++ subjectToString subject
+dateToString (DateThe subject) = "on THEDATE " ++ subjectToString subject
 dateToString (DateQuanSpecific tq day month year) = temporalQuantifierToString tq ++ dateSpeToString day month year  
 dateToString (DateQuanSome tq subject) = temporalQuantifierToString tq ++ "SOMEDATE " ++ subjectToString subject
 dateToString (DateQuanThe tq subject) = temporalQuantifierToString tq ++ "THEDATE " ++ subjectToString subject
@@ -756,5 +792,36 @@ noBooleanExpressionToString (BoolEx subject1 verbStatus comparison subject2) =
 runNFAConversion :: Contract -> NFA
 runNFAConversion contract = evalState (contractToNFA contract) (Map.empty)
 
+-- The function is good but there is still a small bug to fix
+-- all transitions is repeated for three times, need to check the loop to see what's wrong
+-- jiayousss
 
+nfaToGraph :: NFA -> Gr Text Text
+nfaToGraph nfa =
+    mkGraph nodes edges
+    where
+        allStates = Set.toList $ states nfa
+        nodeMap = zip allStates [1 ..]
+        nodes = [(nodeId, stateToLabel state) | (state, nodeId) <- nodeMap]
+        edges = [(nodeId1, nodeId2, (eventToLabel event)) |
+                Transition state1 event state2 <- Set.toList $ transitions nfa,
+                (state1, nodeId1) <- nodeMap,
+                (state2, nodeId2) <- nodeMap]
 
+stateToLabel :: StateA -> Text
+stateToLabel (StateA s) = L.pack s
+
+eventToLabel :: Event -> Text
+eventToLabel (Event s) = L.pack s
+
+visualizeGraphText :: Gr Text Text -> IO ()
+visualizeGraphText graph = do
+  let dotGraph = graphToDot labelledNodesParamsText graph :: DotGraph Node
+      dotText = renderDot $ toDot dotGraph
+  putStrLn $ L.unpack dotText
+
+labelledNodesParamsText :: GraphvizParams Node Text Text () Text
+labelledNodesParamsText = nonClusteredParams
+  { fmtNode = \(_, label) -> [Label (StrLabel label)]
+  , fmtEdge = \(_, _, edgeLabel) -> [Label (StrLabel edgeLabel)]
+  }
