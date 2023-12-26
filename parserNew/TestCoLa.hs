@@ -218,4 +218,20 @@ checkInconsistency contractFilePath performanceFilePath = do
     putStrLn "Vampire command output:"
     putStrLn output
     
+convertToNFA :: FilePath -> IO ()
+convertToNFA contractFilePath = do
+    contractString <- readFile contractFilePath
+    let nfa = runNFAConversion (parseSentence contractString)
+    let graph = nfaToGraph nfa
+    let dotFile = visualizeGraph nfa graph
+
+    writeFile "nfa.dot" dotFile
+
+    putStrLn "Dot file written to nfa.dot\n"
+
+    callCommand $ "dot -Tpng nfa.dot -o nfa.png"
+
+    putStrLn "NFA image generated"
+
+
 

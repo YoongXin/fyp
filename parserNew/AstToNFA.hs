@@ -30,25 +30,20 @@ import Data.Time
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 import Control.Monad.State
-import Data.List (map) 
+import Data.List (map, lookup, sort, group, concatMap) 
 
--- import Data.GraphViz
--- import Data.GraphViz.Attributes.Complete
--- import Data.GraphViz.Printing
--- import Data.Graph.Inductive.Graph
--- import Data.Graph.Inductive.PatriciaTree
--- import qualified Data.Text.Lazy as L
-
-import              Data.Functor                        ((<&>))
-import qualified    Data.Text.Lazy as L                 (pack, unpack)
-import qualified    Data.Text.Lazy.IO as IO             (putStrLn)
-import              Data.Graph.Inductive.Graph          
-import              Data.Graph.Inductive.PatriciaTree   (Gr)
-import              Data.GraphViz                       
-import              Data.GraphViz.Attributes.Complete   
-import              Data.GraphViz.Printing              (renderDot, toDot)
+import Data.Functor ((<&>))
+import qualified Data.Text.Lazy as L (pack, unpack)
+import qualified Data.Text.Lazy.IO as IO (putStrLn)
+import Data.Graph.Inductive.Graph          
+import Data.Graph.Inductive.PatriciaTree (Gr)
+import Data.GraphViz                       
+import Data.GraphViz.Attributes (Attribute(..))
+import qualified Data.GraphViz.Attributes.Complete as Gv
+import Data.GraphViz.Printing (renderDot, toDot)
 import Data.Text.Internal.Lazy (Text)
 import Data.Graph.Inductive (LEdge)
+import qualified Data.GraphViz.Attributes.Colors as Gvc
 
 import AbsCoLa   
 import LexCoLa   ( Token, mkPosToken )
@@ -70,18 +65,6 @@ data Transition
     = Transition StateA Event StateA
   deriving (Eq, Ord, Read, Show)
 
--- -- Pretty-printing for StateA
--- instance Show StateA where
---     show (StateA s) = s
-
--- -- Pretty-printing for Event
--- instance Show Event where
---     show (Event e) = e
-
--- -- Pretty-printing for Transition
--- instance Show Transition where
---     show (Transition from event to) = show from ++ " --(" ++ show event ++ ")--> " ++ show to
-
 data NFA = NFA
     { states :: Set.Set StateA
     , events :: Set.Set Event
@@ -91,21 +74,35 @@ data NFA = NFA
     } 
   deriving (Eq, Read, Show)
 
+-- -- Pretty-printing for StateA
+printStateA :: StateA -> String
+printStateA (StateA s) = s
+
+-- -- Pretty-printing for Event
+printEvent :: Event -> String
+printEvent (Event e) = e
+
+-- -- Pretty-printing for Transition
+printTransition :: Transition -> String
+printTransition (Transition from event to) = printStateA from ++ " --(" ++ printEvent event ++ ")--> " ++ printStateA to
+
 -- -- Pretty-printing for NFA
--- instance Show NFA where
---   show nfa =
---     unlines
---       [ "States:"
---       , unlines (map show (Set.toList $ states nfa))
---       , "Events:"
---       , unlines (map show (Set.toList $ events nfa))
---       , "Transitions:"
---       , unlines (map show (Set.toList $ transitions nfa))
---       , "Start States:"
---       , unlines (map show (Set.toList $ startStates nfa))
---       , "Accepting States:"
---       , unlines (map show (Set.toList $ acceptingStates nfa))
---       ]
+printNFA :: NFA -> String
+printNFA nfa =
+    unlines
+        [ "States:"
+        , unlines (map printStateA (Set.toList $ states nfa))
+        , "Events:"
+        , unlines (map printEvent (Set.toList $ events nfa))
+        , "Transitions:"
+        , unlines (map printTransition (Set.toList $ transitions nfa))
+        , "Start States:"
+        , unlines (map printStateA (Set.toList $ startStates nfa))
+        , "Accepting States:"
+        , unlines (map printStateA (Set.toList $ acceptingStates nfa))
+        ]
+
+prettyPrintNFA nfa = putStrLn $ printNFA nfa
 
 modifyStateDict :: (StateDict -> StateDict) -> State StateDict ()
 modifyStateDict f = modify f
@@ -792,10 +789,6 @@ noBooleanExpressionToString (BoolEx subject1 verbStatus comparison subject2) =
 runNFAConversion :: Contract -> NFA
 runNFAConversion contract = evalState (contractToNFA contract) (Map.empty)
 
--- The function is good but there is still a small bug to fix
--- all transitions is repeated for three times, need to check the loop to see what's wrong
--- jiayousss
-
 nfaToGraph :: NFA -> Gr Text Text
 nfaToGraph nfa =
     mkGraph nodes edges
@@ -803,10 +796,18 @@ nfaToGraph nfa =
         allStates = Set.toList $ states nfa
         nodeMap = zip allStates [1 ..]
         nodes = [(nodeId, stateToLabel state) | (state, nodeId) <- nodeMap]
-        edges = [(nodeId1, nodeId2, (eventToLabel event)) |
-                Transition state1 event state2 <- Set.toList $ transitions nfa,
-                (state1, nodeId1) <- nodeMap,
-                (state2, nodeId2) <- nodeMap]
+        
+        sortedTransitions = sort $ Set.toList $ transitions nfa
+        groupedTransitions = group sortedTransitions
+        
+        edges = concatMap (\transGroup -> 
+                    case transGroup of
+                        [] -> []
+                        (Transition state1 event state2 : _) -> 
+                            let (Just nodeId1) = lookup state1 nodeMap
+                                (Just nodeId2) = lookup state2 nodeMap
+                            in [(nodeId1, nodeId2, eventToLabel event)]
+                    ) groupedTransitions
 
 stateToLabel :: StateA -> Text
 stateToLabel (StateA s) = L.pack s
@@ -814,14 +815,29 @@ stateToLabel (StateA s) = L.pack s
 eventToLabel :: Event -> Text
 eventToLabel (Event s) = L.pack s
 
-visualizeGraphText :: Gr Text Text -> IO ()
-visualizeGraphText graph = do
-  let dotGraph = graphToDot labelledNodesParamsText graph :: DotGraph Node
-      dotText = renderDot $ toDot dotGraph
-  putStrLn $ L.unpack dotText
+isAccepting :: Text -> NFA -> Bool
+isAccepting state nfa = (convertStringToState $ L.unpack state) `Set.member` (acceptingStates nfa)
 
-labelledNodesParamsText :: GraphvizParams Node Text Text () Text
-labelledNodesParamsText = nonClusteredParams
-  { fmtNode = \(_, label) -> [Label (StrLabel label)]
-  , fmtEdge = \(_, _, edgeLabel) -> [Label (StrLabel edgeLabel)]
-  }
+convertStringToState :: String -> StateA
+convertStringToState str = StateA str
+
+visualizeGraph :: NFA -> Gr Text Text -> String
+visualizeGraph nfa graph = L.unpack dotText
+    where
+        dotGraph = graphToDot (labelledNodesParams nfa) graph :: DotGraph Node
+        dotText = renderDot $ toDot dotGraph  
+    
+visualizeGraph' :: NFA -> Gr Text Text -> IO ()
+visualizeGraph' nfa graph = do
+    let dotGraph = graphToDot (labelledNodesParams nfa) graph :: DotGraph Node
+        dotText = renderDot $ toDot dotGraph
+    putStrLn $ L.unpack dotText
+
+labelledNodesParams :: NFA -> GraphvizParams Node Text Text () Text
+labelledNodesParams nfa = nonClusteredParams
+    { fmtNode = \(_, label) ->
+        let nodeColor = if (isAccepting label nfa) then Green else LightGray
+        in [Gv.Label (Gv.StrLabel label), Gv.FillColor [Gvc.toWColor nodeColor], Gv.Style [filled]]
+    , fmtEdge = \(_, _, edgeLabel) -> [Gv.Label (Gv.StrLabel edgeLabel)]
+    }
+
