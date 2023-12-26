@@ -26,7 +26,6 @@ import Prelude
   , zip
   )
 
-import Data.Time
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 import Control.Monad.State

@@ -24,8 +24,6 @@ import Prelude
   , Bool(..)
   )
 
-import System.Environment ( getArgs )
-import System.Exit        ( exitFailure )
 import Control.Monad      ( when )
 import Data.Time
 import Control.Monad.State

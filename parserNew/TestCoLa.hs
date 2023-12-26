@@ -26,6 +26,7 @@ import SkelCoLa  ()
 import AstToFOL
 import FOLToTPTP
 import AstToNFA
+import AstToPetriNet
 import qualified Data.Map as Map
 import Control.Monad.State
 import System.IO 
