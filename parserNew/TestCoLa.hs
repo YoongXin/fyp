@@ -27,6 +27,8 @@ import AstToFOL
 import FOLToTPTP
 import AstToNFA
 import AstToPetriNet
+import ExampleContracts
+
 import qualified Data.Map as Map
 import Control.Monad.State
 import System.IO 
@@ -233,6 +235,17 @@ convertToNFA contractFilePath = do
     callCommand $ "dot -Tpng nfa.dot -o nfa.png"
 
     putStrLn "NFA image generated"
+
+convertToPetriNet :: FilePath -> IO()
+convertToPetriNet contractFilePath = do
+    contractString <- readFile contractFilePath
+    let petriNet = printPNContract (contractToPN (parseSentence contractString))
+
+    writeFile "petriNetPythonCode.text" petriNet
+
+    putStrLn "Petri net file written to petriNetPythonCode.text"
+
+    putStrLn "Copy file content to python for visualization"
 
 
 
