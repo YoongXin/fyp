@@ -1,0 +1,2 @@
+IF [1] Alice charged POUNDS 10 to Bob on 1 April 2021 
+THEN [2] Alice must deliver OTHEROBJECT orange to Bob on 4 April 2021 ELSE [3] Alice may refund POUNDS 10 to Bob on the 5 April 2021

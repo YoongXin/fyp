@@ -1,0 +1,17 @@
+digraph {
+    1 [label="Alice DIDN'T charged £10 to Bob on 1 April 2021"
+      ,fillcolor=lightgray
+      ,style=filled];
+    2 [label="Alice MAY refund £10 to Bob on the 5 April 2021"
+      ,fillcolor=green
+      ,style=filled];
+    3 [label="Alice MUST deliver OtherObject \"orange\" to Bob on 4 April 2021"
+      ,fillcolor=green
+      ,style=filled];
+    4 [label="Alice charged £10 to Bob on 1 April 2021"
+      ,fillcolor=lightgray
+      ,style=filled];
+    1 -> 2 [label="Alice DIDN'T charged £10 to Bob on 1 April 2021"];
+    2 -> 2 [label="Alice refunded £10 to Bob on the 5 April 2021"];
+    4 -> 3 [label="Alice charged £10 to Bob on 1 April 2021"];
+}
