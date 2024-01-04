@@ -1,28 +1,16 @@
 module AstToNFA where
 
 import Prelude
-  ( ($), (.), (<$>)
-  , Either(..)
-  , Int, (>)
-  , String, (++), concat, unlines
+  ( ($), (++)
+  , Int
+  , String
   , Show, show
-  , IO, (>>), (>>=), mapM_, putStrLn
-  , FilePath
-  , getContents, readFile
   , Eq
   , Read
-  , Integer
-  , fromInteger
-  , Maybe(..)
-  , (+)
-  , (*)
-  , fst
-  , snd
-  , Bool
-  , (>=)
-  , (<=)
-  , Bool(..)
   , Ord
+  , Bool(..)
+  , IO, putStrLn, unlines
+  , Maybe(..)
   , zip
   )
 

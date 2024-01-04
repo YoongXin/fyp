@@ -1,36 +1,19 @@
 module AstToPetriNet where
 
 import Prelude
-  ( ($), (.), (<$>)
-  , Either(..)
-  , Int, (>)
-  , String, (++), concat, unlines
+  ( ($), (++), (.)
+  , Int
+  , String
   , Show, show
-  , IO, (>>), (>>=), mapM_, putStrLn
-  , FilePath
-  , getContents, readFile, error
   , Eq
   , Read
-  , Integer
-  , fromInteger
-  , Maybe(..)
-  , (+)
-  , (*)
-  , fst
-  , snd
-  , Bool
-  , (>=)
-  , (<=)
-  , Bool(..)
   , Ord
-  , zip
+  , Bool(..)
+  , IO, putStrLn
+  , error
   )
 
 import AbsCoLa   
-import LexCoLa   ( Token, mkPosToken )
-import ParCoLa   ( pContract, myLexer )
-import PrintCoLa ( Print, printTree )
-import SkelCoLa  ()
 
 import Data.List (map, intercalate, concatMap)
 

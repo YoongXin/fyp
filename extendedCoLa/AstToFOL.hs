@@ -1,39 +1,24 @@
 module AstToFOL where
 
 import Prelude
-  ( ($), (.), (<$>)
-  , Either(..)
-  , Int, (>)
-  , String, (++), concat, unlines
+  ( ($), (<$>), (++), (+), (*), (>=), (<=)
+  , Int, Integer, fromInteger
+  , String
   , Show, show
-  , IO, (>>), (>>=), mapM_, putStrLn
-  , FilePath
-  , getContents, readFile
   , Eq
   , Read
-  , Integer
-  , fromInteger
-  , Maybe(..)
-  , (+)
-  , (*)
   , fst
   , snd
-  , Bool
-  , (>=)
-  , (<=)
   , Bool(..)
+  , Maybe(..)
   )
 
-import Control.Monad      ( when )
+import Control.Monad (when)
 import Data.Time
 import Control.Monad.State
 import Control.Monad.IO.Class (liftIO)
 
 import AbsCoLa   
-import LexCoLa   ( Token, mkPosToken )
-import ParCoLa   ( pContract, myLexer )
-import PrintCoLa ( Print, printTree )
-import SkelCoLa  ()
 import qualified Data.Map as Map
 
 type DateDictionary = Map.Map String String
