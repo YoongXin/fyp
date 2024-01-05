@@ -242,11 +242,26 @@ convertToPetriNet contractFilePath = do
     contractString <- readFile contractFilePath
     let petriNet = printPNContract (contractToPN (parseSentence contractString))
 
-    writeFile "petriNetPythonCode.text" petriNet
+    writeFile "petriNetPythonCode.txt" petriNet
 
-    putStrLn "Petri net file written to petriNetPythonCode.text"
+    putStrLn "Petri net file written to petriNetPythonCode.txt"
 
     putStrLn "Copy file content to python for visualization"
+
+checkCompleteness :: FilePath -> IO()
+checkCompleteness contractFilePath = do
+    contractString <- readFile contractFilePath 
+
+    let ast = parseSentence contractString
+        completenessReport = printCompletenessReport $ runCheckCompleteness ast
+
+    writeFile "completenessReport.txt" completenessReport
+
+    putStrLn "Completeness Report Generated"
+
+    putStrLn "Check completenessReport.txt"
+
+
 
 
 

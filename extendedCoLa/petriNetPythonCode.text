@@ -1,5 +1,0 @@
-con = Contract()
-
-con.statement(ConditionalStatement(condition=TemporalActionCondition('"Alice"', 'Charged', '£10', 'to "Bob"', TemporalExpression('ON', '1 April 2021'), test=True), statement=TemporalStatement('"Alice"', 'SHALL', 'Deliver', 'OtherObject ""orange""', 'to "Bob"', TemporalExpression('ON', '4 April 2021'), valid=True)))
-con.statement(ConditionalStatement(condition=TemporalActionCondition('"Alice"', 'Charged', '£10', 'to "Bob"', TemporalExpression('ON', '1 April 2021'), test=False), statement=TemporalStatement('"Alice"', 'MAY', 'Refund', '£10', 'to "Bob"', TemporalExpression('ON', '5 April 2021'), valid=True)))
-con.interactiveSimulation()

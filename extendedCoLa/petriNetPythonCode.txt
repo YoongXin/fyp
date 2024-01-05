@@ -1,0 +1,7 @@
+con = Contract()
+
+con.statement(TemporalStatement('"Bob"', 'MAY', 'Deliver', 'Report ""receipt""', 'to "Alice"', TemporalExpression('On', 'ANYDATE'), valid=True))
+con.statement(TemporalStatement('"Bob"', 'SHANT', 'Charge', 'Amount ""delivery fee""', 'to "Alice"', TemporalExpression('On', 'ANYDATE'), valid=True))
+con.statement(ConditionalStatement(condition=OrCondition(conditions=[TemporalActionCondition('"Alice"', 'Paid', '£100', 'to "Bob"', TemporalExpression('ON', '1 April 2021'), test=True),
+		TemporalActionCondition('"Alice"', 'Paid', '$120', 'to "Bob"', TemporalExpression('ON', '1 April 2021'), test=True)]), statement=TemporalStatement('"Bob"', 'SHALL', 'Deliver', 'OtherObject ""bicycle""', 'to "Alice"', TemporalExpression('ON', '5 April 2021'), valid=True)))
+con.interactiveSimulation()
