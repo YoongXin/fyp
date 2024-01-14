@@ -17,6 +17,7 @@ import Prelude
 import System.Environment ( getArgs )
 import System.Exit        ( exitFailure )
 import Control.Monad      ( when )
+import Data.Graph.Inductive.Graph 
 
 import AbsCoLa   
 import LexCoLa   ( Token, mkPosToken )
@@ -236,6 +237,20 @@ convertToNFA contractFilePath = do
     callCommand $ "dot -Tpng nfa.dot -o nfa.png"
 
     putStrLn "NFA image generated"
+
+findPathInNFA :: FilePath -> Node -> Node -> Int -> IO ()
+findPathInNFA contractFilePath startNode endNode numEdges = do
+    contractString <- readFile contractFilePath
+    let nfa = runNFAConversion (parseSentence contractString)
+    let dotFile = visualisePossiblePath nfa startNode endNode numEdges
+
+    writeFile "nfaWithPathHighlighted.dot" dotFile
+
+    putStrLn "Dot file written to nfaWithPathHighlighted.dot\n"
+
+    callCommand $ "dot -Tpng nfaWithPathHighlighted.dot -o nfaWithPathHighlighted.png"
+
+    putStrLn "NFA image with possible path highlighted generated"
 
 convertToPetriNet :: FilePath -> IO()
 convertToPetriNet contractFilePath = do

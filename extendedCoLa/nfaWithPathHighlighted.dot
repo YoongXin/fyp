@@ -1,18 +1,18 @@
 digraph {
     1 [label="[1] Alice paid $120 to Bob on the 1 April 2021"
-      ,fillcolor=lightgray
+      ,fillcolor=lightblue
       ,style=filled];
     2 [label="[2] Alice paid £100 to Bob on the 1 April 2021"
       ,fillcolor=lightgray
       ,style=filled];
     3 [label="[3] Bob MAY deliver Report \"receipt\" to Alice on ANYDATE"
-      ,fillcolor=green
+      ,fillcolor=lightblue
       ,style=filled];
     4 [label="[4] Bob MUST NOT charge Amount \"delivery fee\" to Alice on ANYDATE"
-      ,fillcolor=green
+      ,fillcolor=lightblue
       ,style=filled];
     5 [label="[5] Bob MUST deliver OtherObject \"bicycle\" to Alice on the 5 April 2021"
-      ,fillcolor=green
+      ,fillcolor=lightblue
       ,style=filled];
     1 -> 5 [label="Alice paid $120 to Bob on the 1 April 2021"];
     2 -> 5 [label="Alice paid £100 to Bob on the 1 April 2021"];
