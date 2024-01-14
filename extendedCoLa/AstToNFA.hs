@@ -1,7 +1,7 @@
 module AstToNFA where
 
 import Prelude
-  ( ($), (++)
+  ( ($), (++), (/=), (==), (+), (||), (-), (&&), (.)
   , Int
   , String
   , Show, show
@@ -12,12 +12,24 @@ import Prelude
   , IO, putStrLn, unlines
   , Maybe(..)
   , zip
+  , foldr, foldl
+  , filter
+  , otherwise
+  , elem
+  , reverse
   )
 
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 import Control.Monad.State
 import Data.List (map, lookup, sort, group, concatMap) 
+import Data.List (subsequences)
+import Data.List (foldl')
+import qualified Data.List as List
+
+import Data.Maybe (fromMaybe)
+
+import Debug.Trace
 
 import Data.Functor ((<&>))
 import qualified Data.Text.Lazy as L (pack, unpack)
@@ -59,7 +71,7 @@ data NFA = NFA
     , startStates :: Set.Set StateA
     , acceptingStates :: Set.Set StateA
     } 
-  deriving (Eq, Read, Show)
+  deriving (Eq, Ord, Read, Show)
 
 -- -- Pretty-printing for StateA
 printStateA :: StateA -> String
@@ -72,6 +84,16 @@ printEvent (Event e) = e
 -- -- Pretty-printing for Transition
 printTransition :: Transition -> String
 printTransition (Transition from event to) = printStateA from ++ " --(" ++ printEvent event ++ ")--> " ++ printStateA to
+
+printTransitions :: Set.Set Transition -> String
+printTransitions transitionSet =
+    unlines $ map printTransition (Set.toList transitionSet)
+
+prettyPrintTransitions :: Set.Set Transition -> IO ()
+prettyPrintTransitions transitions = putStrLn $ printTransitions transitions
+
+prettyPrintListOfSets :: [Set.Set Transition] -> IO ()
+prettyPrintListOfSets listOfSets = mapM_ prettyPrintTransitions listOfSets
 
 -- -- Pretty-printing for NFA
 printNFA :: NFA -> String
@@ -90,6 +112,26 @@ printNFA nfa =
         ]
 
 prettyPrintNFA nfa = putStrLn $ printNFA nfa
+
+-- prettyPrintNFAs :: Set.Set NFA -> String
+-- prettyPrintNFAs nfaSet =
+--     unlines $ concatMap prettyPrintNFA' (Set.toList nfaSet)
+
+-- prettyPrintNFA' :: NFA -> [String]
+-- prettyPrintNFA' nfa =
+--     [ "NFA:"
+--     , "States:"
+--     ] ++
+--     map ("  " ++) (map printStateA (Set.toList $ states nfa)) ++
+--     [ "Events:"
+--     , "  " ++ unlines (map printEvent (Set.toList $ events nfa))
+--     , "Transitions:"
+--     , "  " ++ unlines (map printTransition (Set.toList $ transitions nfa))
+--     , "Start States:"
+--     , "  " ++ unlines (map printStateA (Set.toList $ startStates nfa))
+--     , "Accepting States:"
+--     , "  " ++ unlines (map printStateA (Set.toList $ acceptingStates nfa))
+--     ]
 
 modifyStateDict :: (StateDict -> StateDict) -> State StateDict ()
 modifyStateDict f = modify f
@@ -1195,4 +1237,144 @@ labelledNodesParams nfa = nonClusteredParams
         in [Gv.Label (Gv.StrLabel label), Gv.FillColor [Gvc.toWColor nodeColor], Gv.Style [filled]]
     , fmtEdge = \(_, _, edgeLabel) -> [Gv.Label (Gv.StrLabel edgeLabel)]
     }
+
+getReachableStates :: NFA -> Set.Set StateA -> Set.Set StateA -> Set.Set StateA
+getReachableStates nfa currentStates visitedStates
+    | Set.null currentStates = visitedStates
+    | otherwise =
+        let newVisitedStates = Set.union visitedStates currentStates
+            allTransitionsFromCurrentStates = Set.filter (\(Transition from _ _) -> from `Set.member` currentStates) (transitions nfa)
+            nextStates = Set.fromList [to | Transition _ _ to <- Set.toList allTransitionsFromCurrentStates]
+            remainingStates = Set.difference nextStates newVisitedStates
+        in getReachableStates nfa remainingStates newVisitedStates
+
+eliminateUnwantedTransition :: StateA -> Set.Set Transition -> Transition -> Set.Set Transition
+eliminateUnwantedTransition state transitionSet excludedTransition =
+    Set.filter (\t@(Transition _ _ toState) -> toState /= state || t == excludedTransition) transitionSet
+
+getReachableStateAndTransition :: StateA -> Set.Set Transition -> Maybe (StateA, Transition)
+getReachableStateAndTransition startState transitionSet =
+    case Set.lookupMin $ Set.filter (\(Transition from _ _) -> from == startState) transitionSet of
+        Just transition@(Transition _ _ toState) -> Just (toState, transition)
+        _                                        -> Nothing
+
+getAllReachableStatesAndTransitions :: StateA -> Set.Set Transition -> [(StateA, Transition)]
+getAllReachableStatesAndTransitions startState transitionSet =
+    [ (toState, transition)
+    | Transition _ _ toState <- Set.toList $ Set.filter (\(Transition from _ _) -> from == startState) transitionSet
+    , let transition = Set.findMin $ Set.filter (\(Transition from _ to) -> from == startState && to == toState) transitionSet
+    ]
+
+-- Function to perform the iterative elimination and retrieval process
+iterateElimination ::
+    Int -> StateA -> Set.Set Transition -> Transition -> Set.Set Transition
+iterateElimination 0 _ transitionSet _ = transitionSet
+iterateElimination numTimes startState transitionSet excludedTransition =
+    let transitionSet' = eliminateUnwantedTransition startState transitionSet excludedTransition
+    in case getReachableStateAndTransition startState transitionSet' of
+        Just (state, excludedTransition') ->
+            iterateElimination (numTimes - 1) state transitionSet' excludedTransition'
+        Nothing -> transitionSet'
+
+-- Function to run the iterative process
+runIterativeElimination ::
+    Int -> StateA -> Set.Set Transition -> Transition -> Set.Set Transition
+runIterativeElimination numTimes startState transitionSet excludedTransition =
+    iterateElimination numTimes startState transitionSet excludedTransition
+
+convertToDFA :: NFA -> StateA -> NFA
+convertToDFA nfa startState =
+    let numberOfTimes = Set.size (states nfa) + 1
+        reachableStates = getReachableStates nfa (Set.singleton startState) Set.empty
+        newStartStates = Set.singleton startState 
+        finalTransitions = runIterativeElimination numberOfTimes startState (transitions nfa) nullTransition
+    in NFA
+        { states = reachableStates
+        , events = events nfa
+        , transitions = finalTransitions
+        , startStates = newStartStates
+        , acceptingStates = acceptingStates nfa
+        }
+
+nullTransition = Transition (StateA "E") (Event "E") (StateA "E")
+
+removeSelfLoopingTransitions :: NFA -> NFA
+removeSelfLoopingTransitions nfa =
+    let noSelfLoopingTransitions = Set.filter (\(Transition from _ to) -> from /= to) (transitions nfa)
+    in nfa { transitions = noSelfLoopingTransitions }
+
+findPaths :: Gr Text Text -> Node -> Node -> Int -> [[Node]]
+findPaths graph startNode endNode maxEdges = dfs startNode [startNode] 0
+    where
+    -- Helper function for DFS
+    dfs :: Node -> [Node] -> Int -> [[Node]]
+    dfs currentNode path edges
+        | currentNode == endNode && edges == maxEdges = [reverse path]
+        | edges == maxEdges = []  -- Reached the maximum number of edges without reaching the endNode
+        | otherwise = concatMap (dfsNext currentNode path edges) (neighbors graph currentNode)
+
+    -- Helper function to explore next nodes in DFS
+    dfsNext :: Node -> [Node] -> Int -> Node -> [[Node]]
+    dfsNext currentNode path edges nextNode
+        | nextNode `elem` path = []  -- Avoid revisiting nodes
+        | otherwise = dfs nextNode (nextNode : path) (edges + 1)
+
+
+-- map text to numbers for the nodes
+-- change colour of nodes and edges
+
+
+-- Function to find paths between two nodes with a specified number of edges
+findPathsBFS :: NFA -> StateA -> StateA -> Int -> [Set.Set Transition]
+findPathsBFS nfa startState endState numEdges =
+    bfs [(startState, Set.empty)] Set.empty
+  where
+    -- Breadth-first search function
+    bfs :: [(StateA, Set.Set Transition)] -> Set.Set StateA -> [Set.Set Transition]
+    -- If the queue is empty, return an empty path (no paths found)
+    bfs [] _ = [Set.singleton (Transition (StateA "test") (Event "empty") (StateA "test"))]
+    -- Process the current node and path in the queue
+    bfs ((currentNode, currentPath):queue) visited
+        -- If we reach the end state and the path has the required number of edges, add it to the result
+        | currentNode == endState && Set.size currentPath == numEdges = trace "Calling bfs currentNode" $ currentPath : restOfPaths
+        -- Otherwise, continue BFS
+        | otherwise =
+            let
+                -- Get neighbors of the current node along with the updated path
+                neighbors = getNeighbors nfa currentNode currentPath
+                -- Filter out already visited neighbors
+                newPaths = filter (\(neighbor, _) -> neighbor `Set.notMember` visited) neighbors
+                -- Mark the current node as visited
+                updatedVisited = Set.insert currentNode visited
+                -- Enqueue the new paths with updated current nodes
+                updatedQueue = queue ++ [(neighbor, path) | (neighbor, path) <- newPaths]
+            in
+                -- Continue BFS with the updated queue and visited set
+                trace ("Calling bfs otherwise" ++ printStateA currentNode) $ bfs updatedQueue updatedVisited
+      where
+        -- Recursively process the rest of the paths in the queue
+        restOfPaths = bfs queue visited
+
+    -- Helper function to get neighbors of a node with the updated path
+    getNeighbors :: NFA -> StateA -> Set.Set Transition -> [(StateA, Set.Set Transition)]
+    getNeighbors nfa currentNode currentPath =
+        fromMaybe [] $ do
+            -- Find transitions starting from the current node
+            let transitionsFromCurrent = Set.filter (\(from, _) -> from == currentNode) (transitionsMap nfa)
+            -- Generate neighbors with updated paths
+            let neighbors = [(toState, Set.insert transition currentPath) | (toState, transitions) <- Set.toList transitionsFromCurrent, transition <- Set.toList transitions]
+            return neighbors
+
+    -- Helper function to create a map from nodes to transitions starting from them
+    transitionsMap :: NFA -> Set.Set (StateA, Set.Set Transition)
+    --transitionsMap = Set.fromList . map (\t@(Transition from _ _) -> (from, Set.singleton t)) . Set.toList . transitions
+    transitionsMap  = trace "Calling transitionsMap" $
+        Set.fromList . map (\t@(Transition from _ _) -> (from, Set.singleton t)) . Set.toList . transitions 
+
+
+
+
+
+
+
 
