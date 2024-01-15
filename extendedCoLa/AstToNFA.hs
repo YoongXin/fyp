@@ -48,6 +48,7 @@ import Data.Text.Internal.Lazy (Text)
 import Data.Graph.Inductive (LEdge)
 import qualified Data.GraphViz.Attributes.Colors as Gvc
 
+
 import AbsCoLa   
 import LexCoLa   ( Token, mkPosToken )
 import ParCoLa   ( pContract, myLexer )
@@ -1212,7 +1213,7 @@ nfaToGraph nfa =
                     ) groupedTransitions
 
 labelWithId :: Node -> Text -> Text
-labelWithId nodeId label = L.pack "[" <> L.pack (show nodeId) <> L.pack "] " <> label
+labelWithId nodeId label = L.pack "(" <> L.pack (show nodeId) <> L.pack ") " <> label
                     
 stateToLabel :: StateA -> Text
 stateToLabel (StateA s) = L.pack s
@@ -1229,9 +1230,9 @@ convertStringToState str = StateA (removeFirstSpace (stripIntegerLabel str))
 -- Function to strip off "[integer]" from a string
 stripIntegerLabel :: String -> String
 stripIntegerLabel str =
-    case stripPrefix "[" str of
-        Just rest -> case break (== ']') rest of
-            (number, ']':remainder) -> stripIntegerLabel remainder
+    case stripPrefix "(" str of
+        Just rest -> case break (== ')') rest of
+            (number, ')':remainder) -> stripIntegerLabel remainder
             _                       -> str
         Nothing   -> str
 
@@ -1287,10 +1288,8 @@ nodesToEdges nodes = zip nodes (tail nodes)
 nodesListsToEdgesLists :: [[Node]] -> [[Edge]]
 nodesListsToEdgesLists = map nodesToEdges
 
-
 countOccurrences :: (Eq a) => a -> [[a]] -> Int
 countOccurrences elem = length . filter (any (elem ==))
-
 
 checkNodeOccurrences :: [[Node]] -> Node -> Int
 checkNodeOccurrences listsOfNodes node =
@@ -1298,6 +1297,13 @@ checkNodeOccurrences listsOfNodes node =
     0 -> 0  -- Node is not in any list
     1 -> 1  -- Node is in exactly one list
     _ -> 2  -- Node is in more than one list
+
+checkEdgeOccurrences :: [[Edge]] -> Edge -> Int
+checkEdgeOccurrences listsOfEdges edge =
+  case countOccurrences edge listsOfEdges of
+    0 -> 0  -- Edge is not in any list
+    1 -> 1  -- Edge is in exactly one list
+    _ -> 2  -- Edge is in more than one list
 
 visualizeGraphPP :: [[Node]] -> Gr Text Text -> String
 visualizeGraphPP pathNodes graph = L.unpack dotText
@@ -1313,7 +1319,18 @@ labelledNodesParamsPP pathNodes = nonClusteredParams
                 | checkNodeOccurrences pathNodes nodeId == 1 = LightBlue
                 | checkNodeOccurrences pathNodes nodeId == 2 = Orange
         in [Gv.Label (Gv.StrLabel label), Gv.FillColor [Gvc.toWColor nodeColor], Gv.Style [filled]]
-    , fmtEdge = \(_, _, edgeLabel) -> [Gv.Label (Gv.StrLabel edgeLabel)]
+    , fmtEdge = \(nodeId1, nodeId2, edgeLabel) -> 
+        let edge = (nodeId1, nodeId2)
+            pathEdges = nodesListsToEdgesLists pathNodes
+            edgeColor
+                | checkEdgeOccurrences pathEdges edge == 0 = LightGray
+                | checkEdgeOccurrences pathEdges edge == 1 = Blue
+                | checkEdgeOccurrences pathEdges edge == 2 = Orange
+            fontColor 
+                | checkEdgeOccurrences pathEdges edge == 0 = Gvc.X11Color LightGray
+                | checkEdgeOccurrences pathEdges edge == 1 = Gvc.X11Color Blue
+                | checkEdgeOccurrences pathEdges edge == 2 = Gvc.X11Color Orange
+        in [Gv.Label (Gv.StrLabel edgeLabel), Gv.FillColor [Gvc.toWColor edgeColor], Gv.FontColor fontColor, Gv.Color [Gvc.toWColor edgeColor]]
     }
 
 visualisePossiblePath :: NFA -> Node -> Node -> Int -> String
