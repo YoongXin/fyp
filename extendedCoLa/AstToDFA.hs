@@ -1,8 +1,8 @@
 module AstToDFA where
 
 import Prelude
-  ( ($), (++), (||), (==)
-  , Int
+  ( ($), (++), (||), (==), (+)
+  , Int, Integer, fromInteger, toInteger, fromIntegral
   , String
   , Show, show
   , Eq
@@ -24,6 +24,7 @@ import Control.Monad.State
 import Data.List (map, lookup, sort, group, concatMap, intercalate, find) 
 import qualified Data.List as List
 import Data.Maybe (catMaybes)
+import Data.Time
 
 import Data.Functor ((<&>))
 import qualified Data.Text.Lazy as L (pack, unpack)
@@ -43,6 +44,7 @@ import LexCoLa   ( Token, mkPosToken )
 import ParCoLa   ( pContract, myLexer )
 import PrintCoLa ( Print, printTree )
 import SkelCoLa  ()
+import ToStringFunctions
 
 type StateDictionary = Map.Map StateAD (Set.Set EventD, Int)
 type SelfLoopingEvents = [EventD]
@@ -135,6 +137,14 @@ generateThenState ifEvents thenEvents = do
     addToStateDictionary thenState thenEvents 1
     
     return thenState
+
+generateThenBreachState :: Set.Set EventD -> Set.Set EventD -> State (StateDictionary, SelfLoopingEvents) StateAD
+generateThenBreachState ifEvents thenEvents = do
+    originalStateDictionary <- gets fst
+    let thenState = StateAD $ combineSets " OR " ifEvents `combine` combineSets " OR " thenEvents
+    addToStateDictionary thenState thenEvents 2
+    
+    return thenState
   
 combineSets :: String -> Set.Set EventD -> String
 combineSets separator events = foldr (\(EventD s) acc -> s ++ if null acc then "" else separator ++ acc) "" (Set.toList events)
@@ -149,6 +159,10 @@ generateAndEvent events1 events2 =
 generateAndState :: Set.Set StateAD -> Set.Set StateAD -> StateAD
 generateAndState states1 states2 =
     StateAD $ intercalate " AND " $ map (\(StateAD s) -> s) (Set.toList states1 ++ Set.toList states2)
+
+generateOrState :: Set.Set StateAD -> Set.Set StateAD -> StateAD
+generateOrState states1 states2 =
+    StateAD $ intercalate " OR " $ map (\(StateAD s) -> s) (Set.toList states1 ++ Set.toList states2)  
 
 removeSelfLoopingEvents :: Set.Set EventD -> [EventD] -> Set.Set EventD
 removeSelfLoopingEvents eventsSet eventList = Set.difference eventsSet (Set.fromList eventList)
@@ -242,6 +256,152 @@ exampleStateDict = Map.fromList
     , (StateAD "hate", (Set.fromList [EventD "mad", EventD "everyone"], 1))
     ]
 
+dateSpeToInt :: Num -> Month -> Num -> Integer
+dateSpeToInt (NumInt year) month (NumInt day) = dateToInt year (monthToInt month) (fromInteger day)
+
+dateToInt :: Integer -> Int -> Int -> Integer
+dateToInt year month day = toModifiedJulianDay (fromGregorian year month day)
+
+monthToInt :: Month -> Int
+monthToInt MJan = 1
+monthToInt MFeb = 1
+monthToInt MMar = 3
+monthToInt MApr = 4
+monthToInt MMay = 5
+monthToInt MJun = 6
+monthToInt MJul = 7
+monthToInt MAug = 8
+monthToInt MSep = 9
+monthToInt MOct = 10
+monthToInt MNov = 11
+monthToInt MDec = 12
+
+intToMonth :: Int -> Month
+intToMonth 1 = MJan
+intToMonth 2 = MFeb 
+intToMonth 3 = MMar
+intToMonth 4 = MApr 
+intToMonth 5 = MMay 
+intToMonth 6 = MJun
+intToMonth 7 = MJul
+intToMonth 8 = MAug 
+intToMonth 9 = MSep
+intToMonth 10 = MOct
+intToMonth 11 = MNov 
+intToMonth 12 = MDec
+
+intToDate :: Integer -> (Int, Int, Int)
+intToDate dateInt = 
+    let (y, m, d) = toGregorian $ ModifiedJulianDay $ fromInteger dateInt
+        year = fromInteger y
+    in (year, m, d)
+
+dateToDateSpe :: (Int, Int, Int) -> Date
+dateToDateSpe (year, month, day) =
+    DateSpe (DateSpeOnThe (NumInt $ toInteger day) (intToMonth month) (NumInt $ toInteger year))
+
+generateNextDay :: Date -> Date
+generateNextDay (DateSpe (DateSpeOnThe day month year)) =
+    let theDayInt = dateSpeToInt year month day
+        theNextDay = dateToDateSpe (intToDate (theDayInt + 1))
+    in theNextDay
+generateNextDay (DateSpe (DateSpeOn day month year)) =
+    let theDayInt = dateSpeToInt year month day
+        theNextDay = dateToDateSpe (intToDate (theDayInt + 1))
+    in theNextDay
+
+generateBreachEvent :: Subject -> Verb -> Object -> Receiver -> Date -> EventD
+generateBreachEvent subject verb object receiver date = 
+    case (date) of
+        (DateSpe _) -> specificDate 
+        (DateAny) -> anyDate
+        (DateSome some) -> someDate some
+        (DateThe the) -> theDate the
+        (DateQuanSpecific tq day month year) -> baSpecificDate tq day month year
+        (DateQuanSome tq some) -> baSomeDate tq some
+        (DateQuanThe tq the) -> baTheDate tq the
+        (DateQuanSomeWO to tq some) -> baoSomeDate to tq some
+        (DateQuanTheWO to tq the) -> baoTheDate to tq the
+        (DateQuanTempSome tq to tq1 some) -> baobaSomeDate tq to tq1 some
+        (DateQuanTempThe tq to tq1 the) -> baobaTheDate tq to tq1 the
+    where
+        specificDate = 
+            let nextDay = generateNextDay date
+                dateStr = dateToString' nextDay
+                eventStr = "Occurence of " ++ dateStr
+            in EventD eventStr
+        anyDate = 
+            let eventStr = subjectToString subject ++ " DIDN'T " ++ verbToString verb ++ " to " ++ receiverToString receiver
+            in EventD eventStr
+        someDate some =
+            let eventStr = "Occurence of one day after SOMEDATE " ++ subjectToString some
+            in EventD eventStr
+        theDate the =
+            let eventStr = "Occurence of one day after THEDATE " ++ subjectToString the
+            in EventD eventStr
+        baSpecificDate tq day month year =
+            case (tq) of
+                (TempAfter) -> afterCase
+                (TempBefore) -> beforeCase
+            where
+                afterCase =
+                    let eventStr = subjectToString subject ++ "DIDN'T" ++ verbToString verb ++ " to " ++ receiverToString receiver
+                    in EventD eventStr
+                beforeCase = 
+                    let dateStr = dateSpeToString day month year
+                        eventStr = "Occurence of " ++ dateStr
+                    in EventD eventStr
+        baSomeDate tq some =
+            case (tq) of
+                (TempAfter) -> afterCase
+                (TempBefore) -> beforeCase
+            where
+                afterCase =
+                    let eventStr = subjectToString subject ++ "DIDN'T" ++ verbToString verb ++ " to " ++ receiverToString receiver
+                    in EventD eventStr
+                beforeCase = 
+                    let eventStr = "Occurence of SOMEDATE " ++ subjectToString some
+                    in EventD eventStr
+        baTheDate tq the =
+            case (tq) of
+                (TempAfter) -> afterCase
+                (TempBefore) -> beforeCase
+            where
+                afterCase =
+                    let eventStr = subjectToString subject ++ "DIDN'T" ++ verbToString verb ++ " to " ++ receiverToString receiver
+                    in EventD eventStr
+                beforeCase = 
+                    let eventStr = "Occurence of THEDATE " ++ subjectToString the
+                    in EventD eventStr
+        baoSomeDate to tq some =
+            let eventStr = "Occurence of " ++ temporalOffsetToString to ++ " " ++ temporalQuantifierToString tq ++ " SOMEDATE" ++ subjectToString some
+            in EventD eventStr
+        baoTheDate to tq the =
+            let eventStr = "Occurence of " ++ temporalOffsetToString to ++ " " ++ temporalQuantifierToString tq ++ " THEDATE" ++ subjectToString the
+            in EventD eventStr   
+        baobaSomeDate tq to tq1 some =
+            case (tq) of
+                (TempAfter) -> afterCase
+                (TempBefore) -> beforeCase
+            where
+                afterCase =
+                    let eventStr = subjectToString subject ++ "DIDN'T" ++ verbToString verb ++ " to " ++ receiverToString receiver
+                    in EventD eventStr
+                beforeCase = 
+                    let eventStr = "Occurence of " ++ temporalOffsetToString to ++ " " ++ temporalQuantifierToString tq1 ++ " SOMEDATE " ++ subjectToString some
+                    in EventD eventStr
+        baobaTheDate tq to tq1 the =
+            case (tq) of
+                (TempAfter) -> afterCase
+                (TempBefore) -> beforeCase
+            where
+                afterCase =
+                    let eventStr = subjectToString subject ++ "DIDN'T" ++ verbToString verb ++ " to " ++ receiverToString receiver
+                    in EventD eventStr
+                beforeCase = 
+                    let eventStr = "Occurence of " ++ temporalOffsetToString to ++ " " ++ temporalQuantifierToString tq1 ++ " THEDATE " ++ subjectToString the
+                    in EventD eventStr
+
 contractToDFA :: Contract -> State (StateDictionary, SelfLoopingEvents) DFA
 contractToDFA (ConEmpty) = return $ DFA 
     { states = Set.singleton $ StateAD "Empty"
@@ -310,6 +470,8 @@ conditionalDefinitionToDFA (ConDefIf definition condition) = do
         definitionState = evalState (generateThenState conditionEvents definitionEvents) (oriDict, oriList)
         conditionState = getNonBreachState conditionStates oriDict
 
+    addToStateDictionary definitionState definitionEvents 1
+
     newTransitions <- generateTransition conditionState definitionState
 
     return $ DFA
@@ -333,6 +495,8 @@ conditionalDefinitionToDFA (ConDefIfThen condition definition) = do
         definitionEvents = events dfaDef
         definitionState = evalState (generateThenState conditionEvents definitionEvents) (oriDict, oriList)
         conditionState = getNonBreachState conditionStates oriDict
+
+    addToStateDictionary definitionState definitionEvents 1
 
     newTransitions <- generateTransition conditionState definitionState
 
@@ -365,6 +529,9 @@ conditionalDefinitionToDFA (ConDefIfElse definition1 condition definition2) = do
         definitionEvents2 = events dfaDef2
         definitionState2 = evalState (generateThenState nonConditionEvents definitionEvents2) (oriDict, oriList)
 
+    addToStateDictionary definitionState1 definitionEvents1 1
+    addToStateDictionary definitionState2 definitionEvents2 1
+
     newTransitions1 <- generateTransition conditionState definitionState1
     newTransitions2 <- generateTransition nonConditionState definitionState2
 
@@ -396,6 +563,9 @@ conditionalDefinitionToDFA (ConDefIfThenElse condition definition1 definition2) 
         nonConditionEvents = getBreachEvents allConditionEvents oriDict
         definitionEvents2 = events dfaDef2
         definitionState2 = evalState (generateThenState nonConditionEvents definitionEvents2) (oriDict, oriList)
+
+    addToStateDictionary definitionState1 definitionEvents1 1
+    addToStateDictionary definitionState2 definitionEvents2 1
 
     newTransitions1 <- generateTransition conditionState definitionState1
     newTransitions2 <- generateTransition nonConditionState definitionState2
@@ -475,7 +645,6 @@ statementToDFA' (StateAnd simpleStatement statement) =
             let combinedStates = Set.union (states dfa1) (states dfa2)
                 combinedEvents = Set.union (events dfa1) (events dfa2)
                 combinedTransitions = Set.union (transitions dfa1) (transitions dfa2)
-                combinedAccepting = Set.union (acceptingStates dfa1) (acceptingStates dfa2)
                 statementStatesNB = getNonBreachStates combinedStates oriDict
                 statementEventsNB = getNonBreachEvents combinedEvents oriDict
                 statementStatesB = getBreachStates combinedStates oriDict
@@ -486,15 +655,15 @@ statementToDFA' (StateAnd simpleStatement statement) =
 
                 cleanedTransitions = removeNonBreachTransitions combinedTransitions statementEventsNB
 
-                addToStateDictionary combinedState (Set.singleton combinedEvents) 1
-                removeFromStateDictionary statementStatesNB
+            addToStateDictionary combinedStateNB (Set.singleton $ combinedEventNB) 1
+            removeFromStateDictionary statementStatesNB
 
             return $ DFA
                 { states = Set.union (statementStatesB) (Set.singleton combinedStateNB)
                 , events = Set.union (statementEventsB) (Set.singleton combinedEventNB)
                 , transitions = cleanedTransitions
                 , startStates = Set.singleton $ StateAD "Start"
-                , acceptingStates = combinedAccepting
+                , acceptingStates = Set.empty
                 }
         caseTwo = do
             dfa1 <- simpleStatementToDFA simpleStatement
@@ -506,13 +675,43 @@ statementToDFA' (StateAnd simpleStatement statement) =
                 statementStates2NB = getNonBreachStates (states dfa2) oriDict
                 statementEvents2NB = getNonBreachEvents (events dfa2) oriDict
 
+                statementStates2NB1 = if Set.null statementStates2NB
+                                        then Set.empty
+                                        else Set.singleton (head (Set.toList statementStates2NB))
+                statementStates2NB2 = case Set.toList statementStates2NB of
+                                        [_, lastState] -> Set.singleton lastState
+                                        _              -> Set.empty
+                combinedStateNB1 = generateAndState statementStates1NB statementStates2NB1
+                combinedStateNB2 = generateAndState statementStates1NB statementStates2NB2
+
+                statementEvents2NB1 = if Set.null statementEvents2NB
+                                        then Set.empty
+                                        else Set.singleton (head (Set.toList statementEvents2NB))
+                statementEvents2NB2 = case Set.toList statementEvents2NB of
+                                        [_, lastState] -> Set.singleton lastState
+                                        _              -> Set.empty
+                combinedEventNB1 = generateAndEvent statementEvents1NB statementEvents2NB1
+                combinedEventNB2 = generateAndEvent statementEvents1NB statementEvents2NB2
+
+                combinedStates = Set.union (states dfa1) (states dfa2)
+                combinedEvents = Set.union (events dfa1) (events dfa2)
+                statementStatesB = getBreachStates combinedStates oriDict
+                statementEventsB = getBreachEvents combinedEvents oriDict
+                combinedTransitions = Set.union (transitions dfa1) (transitions dfa2)
+                cleanedTransitions = removeNonBreachTransitions combinedTransitions (Set.union (statementEvents1NB) (statementEvents2NB))
+                statementStatesNB = getNonBreachStates combinedStates oriDict
+
+            addToStateDictionary combinedStateNB1 (Set.singleton $ combinedEventNB1) 1
+            addToStateDictionary combinedStateNB2 (Set.singleton $ combinedEventNB2) 1
+
+            removeFromStateDictionary statementStatesNB
 
             return $ DFA
-                { states = Set.union (statementStatesB) (Set.singleton combinedStateNB)
-                , events = Set.union (statementEventsB) (Set.singleton combinedEventNB)
+                { states = Set.unions [(statementStatesB), (Set.singleton combinedStateNB1), (Set.singleton combinedStateNB1)]
+                , events = Set.unions [(statementEventsB), (Set.singleton combinedEventNB1), (Set.singleton combinedEventNB1)]
                 , transitions = cleanedTransitions
                 , startStates = Set.singleton $ StateAD "Start"
-                , acceptingStates = combinedAccepting
+                , acceptingStates = Set.empty
                 }
 
 conditionalStatementToDFA :: ConditionalStatement -> State (StateDictionary, SelfLoopingEvents) DFA
@@ -522,89 +721,585 @@ conditionalStatementToDFA (ConStateIf statement condition) = do
     oriDict <- gets fst
     oriList <- gets snd
 
-    let combinedStates = Set.union (states dfaCon) (states dfaState)
-        combinedEvents = Set.union (events dfaCon) (events dfaState)
-        combinedTransitions = Set.union (transitions dfaCon) (transitions dfaState)
-        conditionStates = states dfaCon
-        conditionEvents = events dfaCon
-        statementEvents = events dfaState
-        statementState = evalState (generateThenState conditionEvents definitionEvents) (oriDict, oriList)
-        conditionState = head (Set.toList conditionStates)
+    let conditionStates = states dfaCon
+        allConditionEvents = events dfaCon
 
-    newTransitions <- generateTransition conditionState statementState
+        conditionState = getNonBreachState conditionStates oriDict
+        conditionEvents = getNonBreachEvents allConditionEvents oriDict
+        statementEvents = getNonBreachEvents (events dfaState) oriDict
+        statementState = evalState (generateThenState conditionEvents statementEvents) (oriDict, oriList)
+        
+        statementBreachEvents = getBreachEvents (events dfaState) oriDict
+        statementBreachState = evalState (generateThenBreachState conditionEvents statementBreachEvents) (oriDict, oriList)
+
+    addToStateDictionary statementState statementEvents 1
+    addToStateDictionary statementBreachState statementBreachEvents 2
+        
+    newTransitions1 <- generateTransition conditionState statementState
+    newTransitions2 <- generateTransition conditionState statementBreachState 
 
     return $ DFA
-        { states = Set.union (combinedStates) (Set.singleton $ StateAD "Start")
-        , events = combinedEvents
-        , transitions = Set.union (combinedTransitions) (Set.fromList newTransitions)
+        { states = Set.unions [(conditionStates), (Set.singleton $ StateAD "Start"), (Set.singleton $ statementState), (Set.singleton $ statementBreachState)]
+        , events = Set.unions [(allConditionEvents), (statementEvents), (statementBreachEvents)]
+        , transitions = Set.unions [(transitions dfaCon), (Set.fromList newTransitions1), (Set.fromList newTransitions2)]
         , startStates = Set.singleton $ StateAD "Start"
         , acceptingStates = Set.singleton $ statementState
         }
 
 conditionalStatementToDFA (ConStateIfThen condition statement) = do
     dfaCon <- conditionToDFA condition
-    dfaState <- statementToDFA statement
+    dfaState <- statementToDFA' statement
+    oriDict <- gets fst
+    oriList <- gets snd
 
-    let combinedStates = Set.union (states dfaCon) (states dfaState)
-        combinedEvents = Set.union (events dfaCon) (events dfaState)
-        combinedTransitions = Set.union (transitions dfaCon) (transitions dfaState)
-        conditionStates = states dfaCon
-        statementStates = states dfaState
+    let conditionStates = states dfaCon
+        allConditionEvents = events dfaCon
 
-    newTransitions <- generateTransitions conditionStates statementStates 
+        conditionState = getNonBreachState conditionStates oriDict
+        conditionEvents = getNonBreachEvents allConditionEvents oriDict
+        statementEvents = getNonBreachEvents (events dfaState) oriDict
+        statementState = evalState (generateThenState conditionEvents statementEvents) (oriDict, oriList)
+        
+        statementBreachEvents = getBreachEvents (events dfaState) oriDict
+        statementBreachState = evalState (generateThenBreachState conditionEvents statementBreachEvents) (oriDict, oriList)
+
+    addToStateDictionary statementState statementEvents 1
+    addToStateDictionary statementBreachState statementBreachEvents 2
+        
+    newTransitions1 <- generateTransition conditionState statementState
+    newTransitions2 <- generateTransition conditionState statementBreachState 
 
     return $ DFA
-        { states = combinedStates
-        , events = combinedEvents
-        , transitions = Set.union (combinedTransitions) (Set.fromList newTransitions)
-        , startStates = conditionStates
-        , acceptingStates = statementStates
+        { states = Set.unions [(conditionStates), (Set.singleton $ StateAD "Start"), (Set.singleton $ statementState), (Set.singleton $ statementBreachState)]
+        , events = Set.unions [(allConditionEvents), (statementEvents), (statementBreachEvents)]
+        , transitions = Set.unions [(transitions dfaCon), (Set.fromList newTransitions1), (Set.fromList newTransitions2)]
+        , startStates = Set.singleton $ StateAD "Start"
+        , acceptingStates = Set.singleton $ statementState
         }
+
 conditionalStatementToDFA (ConStateIfElse statement1 condition statement2) = do
     dfaCon <- conditionToDFA condition
-    dfaState1 <- statementToDFA statement1
-    dfaConNot <- notConditionToDFA condition
-    dfaState2 <- statementToDFA statement2
+    dfaState1 <- statementToDFA' statement1
+    dfaState2 <- statementToDFA' statement2
+    oriDict <- gets fst
+    oriList <- gets snd
 
-    let combinedStates = Set.unions [(states dfaCon), (states dfaState1), (states dfaConNot), (states dfaState2)]
-        combinedEvents = Set.unions [(events dfaCon), (events dfaState1), (events dfaConNot), (events dfaState2)]
-        combinedTransitions = Set.unions [(transitions dfaCon), (transitions dfaState1), (transitions dfaConNot), (transitions dfaState2)]
-        conditionStates = states dfaCon
-        statementStates1 = states dfaState1
-        nonConditionStates = states dfaConNot
-        statementStates2 = states dfaState2
+    let conditionStates = states dfaCon
+        allConditionEvents = events dfaCon
 
-    newTransitions1 <- generateTransitions conditionStates statementStates1
-    newTransitions2 <- generateTransitions nonConditionStates statementStates2
+        conditionState = getNonBreachState conditionStates oriDict
+        conditionEvents = getNonBreachEvents allConditionEvents oriDict
+        statementEvents1 = getNonBreachEvents (events dfaState1) oriDict
+        statementState1 = evalState (generateThenState conditionEvents statementEvents1) (oriDict, oriList)
+        
+        statementBreachEvents1 = getBreachEvents (events dfaState1) oriDict
+        statementBreachState1 = evalState (generateThenBreachState conditionEvents statementBreachEvents1) (oriDict, oriList)
+
+        nonConditionState = getBreachState conditionStates oriDict
+        nonConditionEvents = getBreachEvents allConditionEvents oriDict
+        statementEvents2 = getNonBreachEvents (events dfaState2) oriDict
+        statementState2 = evalState (generateThenState nonConditionEvents statementEvents2) (oriDict, oriList)
+
+        statementBreachEvents2 = getBreachEvents (events dfaState2) oriDict
+        statementBreachState2 = evalState (generateThenBreachState conditionEvents statementBreachEvents2) (oriDict, oriList)
+
+    addToStateDictionary statementState1 statementEvents1 1
+    addToStateDictionary statementBreachState1 statementBreachEvents1 2
+    addToStateDictionary statementState2 statementEvents2 1
+    addToStateDictionary statementBreachState2 statementBreachEvents2 2
+        
+    newTransitions1 <- generateTransition conditionState statementState1
+    newTransitions2 <- generateTransition conditionState statementBreachState1
+    newTransitions3 <- generateTransition nonConditionState statementState2
+    newTransitions4 <- generateTransition nonConditionState statementBreachState2
 
     return $ DFA
-        { states = combinedStates
-        , events = combinedEvents
-        , transitions = Set.unions [(combinedTransitions), (Set.fromList newTransitions1), (Set.fromList newTransitions2)]
-        , startStates = Set.union conditionStates nonConditionStates
-        , acceptingStates = Set.union statementStates1 statementStates2
+        { states = Set.unions [(conditionStates), (Set.singleton $ StateAD "Start"), (Set.singleton $ statementState1), (Set.singleton $ statementBreachState1), (Set.singleton $ statementState2), (Set.singleton $ statementBreachState2)]
+        , events = Set.unions [(allConditionEvents), (statementEvents1), (statementBreachEvents1), (statementEvents2), (statementBreachEvents2)]
+        , transitions = Set.unions [(transitions dfaCon), (Set.fromList newTransitions1), (Set.fromList newTransitions2), (Set.fromList newTransitions3), (Set.fromList newTransitions4)]
+        , startStates = Set.singleton $ StateAD "Start"
+        , acceptingStates = Set.union (Set.singleton $ statementState1) (Set.singleton $ statementState2)
         }
+
 conditionalStatementToDFA (ConStateIfThenElse condition statement1 statement2) = do
     dfaCon <- conditionToDFA condition
-    dfaState1 <- statementToDFA statement1
-    dfaConNot <- notConditionToDFA condition
-    dfaState2 <- statementToDFA statement2
+    dfaState1 <- statementToDFA' statement1
+    dfaState2 <- statementToDFA' statement2
+    oriDict <- gets fst
+    oriList <- gets snd
 
-    let combinedStates = Set.unions [(states dfaCon), (states dfaState1), (states dfaConNot), (states dfaState2)]
-        combinedEvents = Set.unions [(events dfaCon), (events dfaState1), (events dfaConNot), (events dfaState2)]
-        combinedTransitions = Set.unions [(transitions dfaCon), (transitions dfaState1), (transitions dfaConNot), (transitions dfaState2)]
-        conditionStates = states dfaCon
-        statementStates1 = states dfaState1
-        nonConditionStates = states dfaConNot
-        statementStates2 = states dfaState2
+    let conditionStates = states dfaCon
+        allConditionEvents = events dfaCon
 
-    newTransitions1 <- generateTransitions conditionStates statementStates1
-    newTransitions2 <- generateTransitions nonConditionStates statementStates2
+        conditionState = getNonBreachState conditionStates oriDict
+        conditionEvents = getNonBreachEvents allConditionEvents oriDict
+        statementEvents1 = getNonBreachEvents (events dfaState1) oriDict
+        statementState1 = evalState (generateThenState conditionEvents statementEvents1) (oriDict, oriList)
+        
+        statementBreachEvents1 = getBreachEvents (events dfaState1) oriDict
+        statementBreachState1 = evalState (generateThenBreachState conditionEvents statementBreachEvents1) (oriDict, oriList)
+
+        nonConditionState = getBreachState conditionStates oriDict
+        nonConditionEvents = getBreachEvents allConditionEvents oriDict
+        statementEvents2 = getNonBreachEvents (events dfaState2) oriDict
+        statementState2 = evalState (generateThenState nonConditionEvents statementEvents2) (oriDict, oriList)
+
+        statementBreachEvents2 = getBreachEvents (events dfaState2) oriDict
+        statementBreachState2 = evalState (generateThenBreachState conditionEvents statementBreachEvents2) (oriDict, oriList)
+
+    addToStateDictionary statementState1 statementEvents1 1
+    addToStateDictionary statementBreachState1 statementBreachEvents1 2
+    addToStateDictionary statementState2 statementEvents2 1
+    addToStateDictionary statementBreachState2 statementBreachEvents2 2
+        
+    newTransitions1 <- generateTransition conditionState statementState1
+    newTransitions2 <- generateTransition conditionState statementBreachState1
+    newTransitions3 <- generateTransition nonConditionState statementState2
+    newTransitions4 <- generateTransition nonConditionState statementBreachState2
 
     return $ DFA
-        { states = combinedStates
-        , events = combinedEvents
-        , transitions = Set.unions [(combinedTransitions), (Set.fromList newTransitions1), (Set.fromList newTransitions2)]
-        , startStates = Set.union conditionStates nonConditionStates
-        , acceptingStates = Set.union statementStates1 statementStates2
+        { states = Set.unions [(conditionStates), (Set.singleton $ StateAD "Start"), (Set.singleton $ statementState1), (Set.singleton $ statementBreachState1), (Set.singleton $ statementState2), (Set.singleton $ statementBreachState2)]
+        , events = Set.unions [(allConditionEvents), (statementEvents1), (statementBreachEvents1), (statementEvents2), (statementBreachEvents2)]
+        , transitions = Set.unions [(transitions dfaCon), (Set.fromList newTransitions1), (Set.fromList newTransitions2), (Set.fromList newTransitions3), (Set.fromList newTransitions4)]
+        , startStates = Set.singleton $ StateAD "Start"
+        , acceptingStates = Set.union (Set.singleton $ statementState1) (Set.singleton $ statementState2)
         }
+
+simpleDefinitionToDFA :: SimpleDefinition -> State (StateDictionary, SelfLoopingEvents) DFA
+simpleDefinitionToDFA (SimDefIs id subject1 subject2) = do
+    let subjectStr1 = subjectToString subject1
+        subjectStr2 = subjectToString subject2
+        eventStr = subjectStr1 ++ " IS " ++ subjectStr2
+
+        simDefEvent = EventD eventStr
+
+    addSelfLoopingEvents simDefEvent
+
+    return $ DFA
+        { states = Set.singleton $ StateAD "Start"
+        , events = Set.singleton simDefEvent
+        , transitions = Set.empty
+        , startStates = Set.singleton $ StateAD "Start"
+        , acceptingStates = Set.empty
+        }
+simpleDefinitionToDFA (SimDefEq id subject numericalExpression) = do
+    let subjectStr = subjectToString subject
+        numExpStr = numericalExpressionToString numericalExpression
+        eventStr = subjectStr ++ " EQUALS " ++ numExpStr
+
+        simDefEvent = EventD eventStr
+
+    addSelfLoopingEvents simDefEvent
+
+    return $ DFA
+        { states = Set.singleton $ StateAD "Start"
+        , events = Set.singleton simDefEvent
+        , transitions = Set.empty
+        , startStates = Set.singleton $ StateAD "Start"
+        , acceptingStates = Set.empty
+        }
+simpleDefinitionToDFA (SimDefDate id subject day month year) = do
+    let subjectStr = subjectToString subject
+        dateStr = dateSpeToString day month year
+        eventStr = subjectStr ++ " IS " ++ dateStr
+
+        simDefEvent = EventD eventStr
+
+    addSelfLoopingEvents simDefEvent
+
+    return $ DFA
+        { states = Set.singleton $ StateAD "Start"
+        , events = Set.singleton simDefEvent
+        , transitions = Set.empty
+        , startStates = Set.singleton $ StateAD "Start"
+        , acceptingStates = Set.empty
+        }
+
+conditionToDFA :: Condition -> State (StateDictionary, SelfLoopingEvents) DFA
+conditionToDFA (CondiSim simpleCondition) = simpleConditionToDFA simpleCondition
+conditionToDFA (CondiOr simpleCondition condition) = do
+    dfa1 <- simpleConditionToDFA simpleCondition
+    dfa2 <- conditionToDFA condition
+    oriDict <- gets fst
+
+    let combinedStates = Set.union (states dfa1) (states dfa2)
+        combinedEvents = Set.union (events dfa1) (events dfa2)
+
+        allNonBreachStates = getNonBreachStates combinedStates oriDict
+        allNonBreachEvents = getNonBreachEvents combinedEvents oriDict
+        combinedNonBreachState = generateOrState allNonBreachStates Set.empty
+
+        allBreachStates = getBreachStates combinedStates oriDict
+        allBreachEvents = getBreachEvents combinedEvents oriDict
+        combinedBreachState = generateAndState allBreachStates Set.empty
+        combinedBreachEvent = generateAndEvent allBreachEvents Set.empty
+
+    addToStateDictionary combinedNonBreachState allNonBreachEvents 1
+    addToStateDictionary combinedBreachState (Set.singleton $ combinedBreachEvent) 2
+        
+    newTransitions1 <- generateTransition (StateAD "Start") combinedNonBreachState
+    newTransitions2 <- generateTransition (StateAD "Start") combinedBreachState
+
+    return $ DFA
+        { states = Set.fromList [combinedBreachState, combinedNonBreachState, StateAD "Start"]
+        , events = Set.union (allNonBreachEvents) (Set.singleton combinedBreachEvent)
+        , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
+        , startStates = Set.singleton $ StateAD "Start"
+        , acceptingStates = Set.empty
+        }
+
+conditionToDFA (CondiAnd simpleCondition condition) = do
+    dfa1 <- simpleConditionToDFA simpleCondition
+    dfa2 <- conditionToDFA condition
+    oriDict <- gets fst
+
+    let combinedStates = Set.union (states dfa1) (states dfa2)
+        combinedEvents = Set.union (events dfa1) (events dfa2)
+
+        allNonBreachStates = getNonBreachStates combinedStates oriDict
+        allNonBreachEvents = getNonBreachEvents combinedEvents oriDict
+        combinedNonBreachState = generateAndState allNonBreachStates Set.empty
+        combinedNonBreachEvent = generateAndEvent allNonBreachEvents Set.empty
+
+        allBreachStates = getBreachStates combinedStates oriDict
+        allBreachEvents = getNonBreachEvents combinedEvents oriDict
+        combinedBreachState = generateOrState allBreachStates Set.empty
+
+    addToStateDictionary combinedNonBreachState (Set.singleton $ combinedNonBreachEvent) 1
+    addToStateDictionary combinedBreachState allBreachEvents 2
+        
+    newTransitions1 <- generateTransition (StateAD "Start") combinedNonBreachState
+    newTransitions2 <- generateTransition (StateAD "Start") combinedBreachState
+
+    return $ DFA
+        { states = Set.fromList [combinedBreachState, combinedNonBreachState, StateAD "Start"]
+        , events = Set.union (Set.singleton $ combinedNonBreachEvent) allBreachEvents
+        , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
+        , startStates = Set.singleton $ StateAD "Start"
+        , acceptingStates = Set.empty
+        }
+
+simpleStatementToDFA :: SimpleStatement -> State (StateDictionary, SelfLoopingEvents) DFA
+simpleStatementToDFA (SimStateOne id holds subject modalVerb verb object receiver date) = 
+    createDFASimpleStatement holds subject modalVerb verb object receiver date
+simpleStatementToDFA (SimStateTwo id holds subject date modalVerb verb object receiver) =
+    createDFASimpleStatement holds subject modalVerb verb object receiver date
+simpleStatementToDFA (SimStateThree id holds date subject modalVerb verb object receiver) =
+    createDFASimpleStatement holds subject modalVerb verb object receiver date
+simpleStatementToDFA (SimStateFour id holds subject verbStatus object receiver date) =
+    createDFASimpleCondition holds subject verbStatus object receiver date
+simpleStatementToDFA (SimStateOneNH id subject modalVerb verb object receiver date) = 
+    createDFASimpleStatementNH subject modalVerb verb object receiver date
+simpleStatementToDFA (SimStateTwoNH id subject date modalVerb verb object receiver) =
+    createDFASimpleStatementNH subject modalVerb verb object receiver date
+simpleStatementToDFA (SimStateThreeNH id date subject modalVerb verb object receiver) =
+    createDFASimpleStatementNH subject modalVerb verb object receiver date
+simpleStatementToDFA (SimStateFourNH id subject verbStatus object receiver date) =
+    createDFASimpleConditionNH subject verbStatus object receiver date
+
+createDFASimpleStatement :: Holds -> Subject -> ModalVerb -> Verb -> Object -> Receiver -> Date -> State (StateDictionary, SelfLoopingEvents) DFA
+createDFASimpleStatement holds subject modalVerb verb object receiver date = 
+    case (holds, modalVerb) of
+         (HoldYes, ModalObli _) -> must
+         (HoldNo, ModalObli _) -> may
+         (HoldYes, ModalPermi) -> may
+         (HoldNo, ModalPermi) -> mustNot
+         (HoldYes, ModalForbi) -> mustNot
+         (HoldNo, ModalForbi) -> may
+
+    where
+        mustStateStrNB = objectToString object ++ " " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        mustEventStrNB = subjectToString subject ++ " " ++ verbToVerbStatusString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+        mustStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        mustEventB = generateBreachEvent subject verb object receiver date
+        mustStateNB = StateAD mustStateStrNB
+        mustEventNB = EventD mustEventStrNB
+        mustStateB = StateAD mustStateStrB
+
+        mayEventStr = subjectToString subject ++ " " ++ verbToVerbStatusString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+        mayEvent = EventD mayEventStr
+
+        mustNotStateStrNB = objectToString object ++ " not " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver
+        mustNotEventStrNB = subjectToString subject ++ " DIDN'T " ++ verbToString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+        mustNotStateStrB = "BREACH: " ++ objectToString object ++ " " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver
+        mustNotEventStrB = subjectToString subject ++ " " ++ verbToVerbStatusString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+        mustNotStateNB = StateAD mustNotStateStrNB
+        mustNotEventNB = EventD mustNotEventStrNB
+        mustNotStateB = StateAD mustNotStateStrB
+        mustNotEventB = EventD mustNotEventStrB
+
+        must = do
+            addToStateDictionary mustStateNB (Set.singleton $ mustEventNB) 1
+            addToStateDictionary mustStateB (Set.singleton $ mustEventB) 2
+            newTransitions1 <- generateTransition (StateAD "Start") mustStateNB
+            newTransitions2 <- generateTransition (StateAD "Start") mustStateB
+            return $ DFA
+                { states = Set.fromList [mustStateNB, mustStateB, StateAD "Start"]
+                , events = Set.fromList [mustEventNB, mustEventB]
+                , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
+                , startStates = Set.singleton $ StateAD "Start"
+                , acceptingStates = Set.singleton mustStateNB
+                }
+    
+        may = do
+            addSelfLoopingEvents mayEvent
+            return $ DFA
+                { states = Set.singleton $ StateAD "Start"
+                , events = Set.singleton $ mayEvent
+                , transitions = Set.empty
+                , startStates = Set.singleton $ StateAD "Start"
+                , acceptingStates = Set.empty
+                }
+    
+        mustNot = do
+            addToStateDictionary mustNotStateNB (Set.singleton $ mustNotEventNB) 1
+            addToStateDictionary mustNotStateB (Set.singleton $ mustNotEventB) 2
+            newTransitions1 <- generateTransition (StateAD "Start") mustNotStateNB
+            newTransitions2 <- generateTransition (StateAD "Start") mustNotStateB
+            return $ DFA
+                { states = Set.fromList [mustNotStateNB, mustNotStateB, StateAD "Start"]
+                , events = Set.fromList [mustNotEventNB, mustNotEventB]
+                , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
+                , startStates = Set.singleton $ StateAD "Start"
+                , acceptingStates = Set.singleton mustNotStateNB
+                }
+
+createDFASimpleStatementNH :: Subject -> ModalVerb -> Verb -> Object -> Receiver -> Date ->  State (StateDictionary, SelfLoopingEvents) DFA
+createDFASimpleStatementNH subject modalVerb verb object receiver date = 
+    case (modalVerb) of
+         (ModalObli _) -> must
+         (ModalPermi) -> may
+         (ModalForbi) -> mustNot
+
+    where
+        mustStateStrNB = objectToString object ++ " " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        mustEventStrNB = subjectToString subject ++ " " ++ verbToVerbStatusString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+        mustStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        mustEventB = generateBreachEvent subject verb object receiver date
+        mustStateNB = StateAD mustStateStrNB
+        mustEventNB = EventD mustEventStrNB
+        mustStateB = StateAD mustStateStrB
+
+        mayEventStr = subjectToString subject ++ " " ++ verbToVerbStatusString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+        mayEvent = EventD mayEventStr
+
+        mustNotStateStrNB = objectToString object ++ " not " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver
+        mustNotEventStrNB = subjectToString subject ++ " DIDN'T " ++ verbToString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+        mustNotStateStrB = "BREACH: " ++ objectToString object ++ " " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver
+        mustNotEventStrB = subjectToString subject ++ " " ++ verbToVerbStatusString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+        mustNotStateNB = StateAD mustNotStateStrNB
+        mustNotEventNB = EventD mustNotEventStrNB
+        mustNotStateB = StateAD mustNotStateStrB
+        mustNotEventB = EventD mustNotEventStrB
+
+        must = do
+            addToStateDictionary mustStateNB (Set.singleton $ mustEventNB) 1
+            addToStateDictionary mustStateB (Set.singleton $ mustEventB) 2
+            newTransitions1 <- generateTransition (StateAD "Start") mustStateNB
+            newTransitions2 <- generateTransition (StateAD "Start") mustStateB
+            return $ DFA
+                { states = Set.fromList [mustStateNB, mustStateB, StateAD "Start"]
+                , events = Set.fromList [mustEventNB, mustEventB]
+                , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
+                , startStates = Set.singleton $ StateAD "Start"
+                , acceptingStates = Set.singleton mustStateNB
+                }
+
+        may = do
+            addSelfLoopingEvents mayEvent
+            return $ DFA
+                { states = Set.singleton $ StateAD "Start"
+                , events = Set.singleton $ mayEvent
+                , transitions = Set.empty
+                , startStates = Set.singleton $ StateAD "Start"
+                , acceptingStates = Set.empty
+                }
+
+        mustNot = do
+            addToStateDictionary mustNotStateNB (Set.singleton $ mustNotEventNB) 1
+            addToStateDictionary mustNotStateB (Set.singleton $ mustNotEventB) 2
+            newTransitions1 <- generateTransition (StateAD "Start") mustNotStateNB
+            newTransitions2 <- generateTransition (StateAD "Start") mustNotStateB
+            return $ DFA
+                { states = Set.fromList [mustNotStateNB, mustNotStateB, StateAD "Start"]
+                , events = Set.fromList [mustNotEventNB, mustNotEventB]
+                , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
+                , startStates = Set.singleton $ StateAD "Start"
+                , acceptingStates = Set.singleton mustNotStateNB
+                }
+
+simpleConditionToDFA :: SimpleCondition -> State (StateDictionary, SelfLoopingEvents) DFA
+simpleConditionToDFA (SimConOne id holds subject verbStatus object receiver date) =
+    createDFASimpleCondition holds subject verbStatus object receiver date
+simpleConditionToDFA (SimConTwo id holds subject date verbStatus object receiver) =
+    createDFASimpleCondition holds subject verbStatus object receiver date
+simpleConditionToDFA (SimConThree id holds date subject verbStatus object receiver) =
+    createDFASimpleCondition holds subject verbStatus object receiver date
+simpleConditionToDFA (SimConFour id holds subject modalVerb verb object receiver date) =
+    createDFASimpleStatement holds subject modalVerb verb object receiver date
+simpleConditionToDFA (SimConFive id holds booleanExpression) =
+    createDFABooleanExpression holds booleanExpression
+simpleConditionToDFA (SimConOneNH id subject verbStatus object receiver date) =
+    createDFASimpleConditionNH subject verbStatus object receiver date
+simpleConditionToDFA (SimConTwoNH id subject date verbStatus object receiver) =
+    createDFASimpleConditionNH subject verbStatus object receiver date
+simpleConditionToDFA (SimConThreeNH id date subject verbStatus object receiver) =
+    createDFASimpleConditionNH subject verbStatus object receiver date
+simpleConditionToDFA (SimConFourNH id subject modalVerb verb object receiver date) =
+    createDFASimpleStatementNH subject modalVerb verb object receiver date
+simpleConditionToDFA (SimConFiveNH id booleanExpression) =
+    createDFABooleanExpressionNH booleanExpression
+
+createDFASimpleCondition :: Holds -> Subject -> VerbStatus -> Object -> Receiver -> Date -> State (StateDictionary, SelfLoopingEvents) DFA
+createDFASimpleCondition holds subject verbStatus object receiver date = 
+    case holds of
+        (HoldYes) -> did
+        (HoldNo) -> didNot
+
+    where 
+        didStateStrNB = objectToString object ++ " " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        didEventStrNB = subjectToString subject ++ " " ++ verbStatusToString verbStatus ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+        didStateNB = StateAD didStateStrNB
+        didEventNB = EventD didEventStrNB
+        
+        didStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        didEventB = generateBreachEvent subject (verbStatusToVerb verbStatus) object receiver date
+        didStateB = StateAD didStateStrB
+
+        didNotStateStrNB =  objectToString object ++ " not " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ dateToString date
+        didNotEventStrNB = subjectToString subject ++ " DIDN'T " ++ verbStatusToVerbString verbStatus ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+        didNotStateStrB = "BREACH: " ++ objectToString object ++ " " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+        didNotEventStrB = subjectToString subject ++ " " ++ verbStatusToString verbStatus ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+
+        didNotStateNB = StateAD didNotStateStrNB
+        didNotEventNB = EventD didNotEventStrNB
+        didNotStateB = StateAD didNotStateStrB
+        didNotEventB = EventD didNotEventStrB
+
+        did = do
+            addToStateDictionary didStateNB (Set.singleton $ didEventNB) 1
+            addToStateDictionary didStateB (Set.singleton $ didEventB) 2
+            newTransitions1 <- generateTransition (StateAD "Start") didStateNB
+            newTransitions2 <- generateTransition (StateAD "Start") didStateB
+            return $ DFA
+                { states = Set.fromList [didStateNB, didStateB, StateAD "Start"]
+                , events = Set.fromList [didEventNB, didEventB]
+                , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
+                , startStates = Set.singleton $ StateAD "Start"
+                , acceptingStates = Set.singleton didStateNB
+                }
+        didNot = do
+            addToStateDictionary didNotStateNB (Set.singleton $ didNotEventNB) 1
+            addToStateDictionary didNotStateB (Set.singleton $ didNotEventB) 2
+            newTransitions1 <- generateTransition (StateAD "Start") didNotStateNB
+            newTransitions2 <- generateTransition (StateAD "Start") didNotStateB
+            return $ DFA
+                { states = Set.fromList [didNotStateNB, didNotStateB, StateAD "Start"]
+                , events = Set.fromList [didNotEventNB, didNotEventB]
+                , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
+                , startStates = Set.singleton $ StateAD "Start"
+                , acceptingStates = Set.singleton $ didNotStateNB
+                }
+
+createDFASimpleConditionNH :: Subject -> VerbStatus -> Object -> Receiver -> Date -> State (StateDictionary, SelfLoopingEvents) DFA
+createDFASimpleConditionNH subject verbStatus object receiver date = do
+    let didStateStrNB = objectToString object ++ " " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        didEventStrNB = subjectToString subject ++ " " ++ verbStatusToString verbStatus ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
+        didStateNB = StateAD didStateStrNB
+        didEventNB = EventD didEventStrNB
+        
+        didStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ "to " ++ receiverToString receiver ++ " on time"
+        didEventB = generateBreachEvent subject (verbStatusToVerb verbStatus) object receiver date
+        didStateB = StateAD didStateStrB
+
+    addToStateDictionary didStateNB (Set.singleton $ didEventNB) 1
+    addToStateDictionary didStateB (Set.singleton $ didEventB) 2
+    newTransitions1 <- generateTransition (StateAD "Start") didStateNB
+    newTransitions2 <- generateTransition (StateAD "Start") didStateB
+
+    return $ DFA
+        { states = Set.fromList [didStateNB, didStateB, StateAD "Start"]
+        , events = Set.fromList [didEventNB, didEventB]
+        , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
+        , startStates = Set.singleton $ StateAD "Start"
+        , acceptingStates = Set.singleton didStateNB
+        }
+
+createDFABooleanExpression :: Holds -> BooleanExpression -> State (StateDictionary, SelfLoopingEvents) DFA
+createDFABooleanExpression holds boolEx = 
+    case holds of
+      (HoldYes) -> yes
+      (HoldNo) -> no
+
+    where 
+        yesStateStrNB = yesBooleanExpressionToString boolEx
+        yesEventStrNB = yesBooleanExpressionToString boolEx
+        yesStateNB = StateAD yesStateStrNB
+        yesEventNB = EventD yesEventStrNB
+
+        yesStateStrB = "BREACH: " ++ noBooleanExpressionToString boolEx
+        yesEventStrB = noBooleanExpressionToString boolEx
+        yesStateB = StateAD yesStateStrB
+        yesEventB = EventD yesEventStrB
+
+        noStateStrNB = noBooleanExpressionToString boolEx
+        noEventStrNB = noBooleanExpressionToString boolEx
+        noStateNB = StateAD noStateStrNB
+        noEventNB = EventD noEventStrNB
+
+        noStateStrB = "BREACH: " ++ yesBooleanExpressionToString boolEx
+        noEventStrB = yesBooleanExpressionToString boolEx
+        noStateB = StateAD noStateStrB
+        noEventB = EventD noEventStrB
+
+        yes = do
+            addToStateDictionary yesStateNB (Set.singleton $ yesEventNB) 1
+            addToStateDictionary yesStateB (Set.singleton $ yesEventB) 2
+            newTransitions1 <- generateTransition (StateAD "Start") yesStateNB
+            newTransitions2 <- generateTransition (StateAD "Start") yesStateB
+            return $ DFA
+                { states = Set.fromList [yesStateNB, yesStateB, StateAD "Start"]
+                , events = Set.fromList [yesEventNB, yesEventB]
+                , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
+                , startStates = Set.singleton $ StateAD "Start"
+                , acceptingStates = Set.empty
+                }
+        no = do
+            addToStateDictionary noStateNB (Set.singleton $ noEventNB) 1
+            addToStateDictionary noStateB (Set.singleton $ noEventB) 2
+            newTransitions1 <- generateTransition (StateAD "Start") noStateNB
+            newTransitions2 <- generateTransition (StateAD "Start") noStateB
+            return $ DFA
+                { states = Set.fromList [noStateNB, noStateB, StateAD "Start"]
+                , events = Set.fromList [noEventNB, noEventB]
+                , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
+                , startStates = Set.singleton $ StateAD "Start"
+                , acceptingStates = Set.empty
+                }
+
+createDFABooleanExpressionNH :: BooleanExpression -> State (StateDictionary, SelfLoopingEvents) DFA
+createDFABooleanExpressionNH boolEx = do
+    let yesStateStrNB = yesBooleanExpressionToString boolEx
+        yesEventStrNB = yesBooleanExpressionToString boolEx
+        yesStateNB = StateAD yesStateStrNB
+        yesEventNB = EventD yesEventStrNB
+
+        yesStateStrB = "BREACH: " ++ noBooleanExpressionToString boolEx
+        yesEventStrB = noBooleanExpressionToString boolEx
+        yesStateB = StateAD yesStateStrB
+        yesEventB = EventD yesEventStrB
+
+    addToStateDictionary yesStateNB (Set.singleton $ yesEventNB) 1
+    addToStateDictionary yesStateB (Set.singleton $ yesEventB) 2
+    newTransitions1 <- generateTransition (StateAD "Start") yesStateNB
+    newTransitions2 <- generateTransition (StateAD "Start") yesStateB
+    return $ DFA
+        { states = Set.fromList [yesStateNB, yesStateB, StateAD "Start"]
+        , events = Set.fromList [yesEventNB, yesEventB]
+        , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
+        , startStates = Set.singleton $ StateAD "Start"
+        , acceptingStates = Set.empty
+        }
+
+runDFAConversion :: Contract -> DFA
+runDFAConversion contract = evalState (contractToDFA contract) (Map.empty, [])
