@@ -26,7 +26,6 @@ import qualified Data.Set as Set
 import qualified Data.Map as Map
 import Control.Monad.State
 import Data.List (map, lookup, sort, group, concatMap) 
-import Data.List (subsequences)
 import Data.List (foldl')
 import Data.List (stripPrefix)
 import qualified Data.List as List
@@ -117,26 +116,6 @@ printNFA nfa =
         ]
 
 prettyPrintNFA nfa = putStrLn $ printNFA nfa
-
--- prettyPrintNFAs :: Set.Set NFA -> String
--- prettyPrintNFAs nfaSet =
---     unlines $ concatMap prettyPrintNFA' (Set.toList nfaSet)
-
--- prettyPrintNFA' :: NFA -> [String]
--- prettyPrintNFA' nfa =
---     [ "NFA:"
---     , "States:"
---     ] ++
---     map ("  " ++) (map printStateA (Set.toList $ states nfa)) ++
---     [ "Events:"
---     , "  " ++ unlines (map printEvent (Set.toList $ events nfa))
---     , "Transitions:"
---     , "  " ++ unlines (map printTransition (Set.toList $ transitions nfa))
---     , "Start States:"
---     , "  " ++ unlines (map printStateA (Set.toList $ startStates nfa))
---     , "Accepting States:"
---     , "  " ++ unlines (map printStateA (Set.toList $ acceptingStates nfa))
---     ]
 
 modifyStateDict :: (StateDict -> StateDict) -> State StateDict ()
 modifyStateDict f = modify f

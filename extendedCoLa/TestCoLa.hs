@@ -277,7 +277,19 @@ checkCompleteness contractFilePath = do
 
     putStrLn "Check completenessReport.txt"
 
+convertToDFA :: FilePath -> IO ()
+convertToDFA contractFilePath = do
+    contractString <- readFile contractFilePath
+    let dfa = runDFAConversionFinal (parseSentence contractString)
+    let graph = dfaToGraph dfa
+    let dotFile = visualizeGraphDFA dfa graph
 
+    writeFile "dfa.dot" dotFile
 
+    putStrLn "Dot file written to dfa.dot\n"
+
+    callCommand $ "dot -Tpng dfa.dot -o dfa.png"
+
+    putStrLn "DFA image generated"
 
 

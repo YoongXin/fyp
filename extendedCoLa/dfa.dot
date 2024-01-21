@@ -1,0 +1,34 @@
+digraph {
+    1 [label="$120 paid by Alice to\nBob on time OR £100\npaid by Alice to Bob\non time"
+      ,fillcolor=lightgray
+      ,style=filled];
+    2 [label="$120 paid by Alice to\nBob on time OR £100\npaid by Alice to Bob\non time AND BREACH: OtherObject\n\"bicycle\" not delivered by Bob\nto Alice on time"
+      ,fillcolor=lightsalmon
+      ,style=filled];
+    3 [label="$120 paid by Alice to\nBob on time OR £100\npaid by Alice to Bob\non time AND OtherObject \"bicycle\"\ndelivered by Bob to Alice\non time"
+      ,fillcolor=green
+      ,style=filled];
+    4 [label="BREACH: $120 not paid by\nAlice to Bob on time\nAND BREACH: £100 not paid\nby Alice to Bob on\ntime"
+      ,fillcolor=lightsalmon
+      ,style=filled];
+    5 [label="BREACH: Amount \"delivery fee\" charged\nby Bob to Alice"
+      ,fillcolor=lightsalmon
+      ,style=filled];
+    6 [label=Start
+      ,fillcolor=lightgray
+      ,style=filled];
+    1 -> 1 [label="Bob delivered Report \"receipt\" to Alice on ANYDATE"];
+    1 -> 2 [label="Occurence of 6 April 2021"];
+    1 -> 3 [label="Bob delivered OtherObject \"bicycle\" to Alice on the 5 April 2021"];
+    1 -> 5 [label="Bob charged Amount \"delivery fee\" to Alice on ANYDATE"];
+    2 -> 2 [label="Bob delivered Report \"receipt\" to Alice on ANYDATE"];
+    3 -> 3 [label="Bob delivered Report \"receipt\" to Alice on ANYDATE"];
+    3 -> 5 [label="Bob charged Amount \"delivery fee\" to Alice on ANYDATE"];
+    4 -> 4 [label="Bob delivered Report \"receipt\" to Alice on ANYDATE"];
+    5 -> 5 [label="Bob delivered Report \"receipt\" to Alice on ANYDATE"];
+    6 -> 1 [label="Alice paid £100 to Bob on the 1 April 2021"];
+    6 -> 1 [label="Alice paid $120 to Bob on the 1 April 2021"];
+    6 -> 4 [label="Occurence of 2 April 2021"];
+    6 -> 5 [label="Bob charged Amount \"delivery fee\" to Alice on ANYDATE"];
+    6 -> 6 [label="Bob delivered Report \"receipt\" to Alice on ANYDATE"];
+}
