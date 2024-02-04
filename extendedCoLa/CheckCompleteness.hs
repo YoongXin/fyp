@@ -503,20 +503,23 @@ runCheckCompleteness contract = evalState (checkContractCompleteness contract) (
 
 printCompletenessReport :: CompletenessReport -> String
 printCompletenessReport (IncompleteItems (scs, sds, sccs, sss, beDict)) =
-    "\n===================================\n" ++
+    "\n=======================================================\n" ++
     "Incomplete Conditional Definitions (If without \"else\"):\n" ++
+    "=======================================================\n" ++
     "\nConditions:\n" ++
     intercalate "\n" (map printSimpleCondition scs) ++
     "\n\nDefinitions:\n" ++
     intercalate "\n" (map printSimpleDefinition sds) ++
 
-    "\n\n===================================\n" ++
+    "\n\n======================================================\n" ++
     "Incomplete Conditional Statements (If without \"else\"):\n" ++
+    "======================================================\n" ++
     "\nConditions:\n" ++
     intercalate "\n" (map printSimpleCondition sccs) ++
     "\n\nStatements:\n" ++
     intercalate "\n" (map printSimpleStatement sss) ++
 
-    "\n\n===================================\n" ++
-    "Incomplete Boolean Expressions (Value test that doesn't consider all values):\n\n" ++
+    "\n\n============================================================================\n" ++
+    "Incomplete Boolean Expressions (Value test that doesn't consider all values):\n" ++
+    "============================================================================\n\n" ++
     printBoolExDictionary beDict

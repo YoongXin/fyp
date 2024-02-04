@@ -27,6 +27,7 @@ import AstToPetriNet
 import ExampleContracts
 import CheckCompleteness
 import AstToDFA
+import ComplexityAnalysis
 
 import qualified Data.Map as Map
 import Control.Monad.State
@@ -288,4 +289,5 @@ convertToDFA contractFilePath = do
 
     putStrLn "DFA image generated"
 
-
+-- occurrence spelling (dfa)
+-- other object spelling (fol)

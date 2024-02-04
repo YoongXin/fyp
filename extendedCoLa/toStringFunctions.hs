@@ -90,12 +90,12 @@ temporalQuantifierToString TempAfter = " AFTER "
 temporalQuantifierToString TempBefore = " BEFORE "
 
 temporalOffsetToString :: TemporalOffset -> String
-temporalOffsetToString (TempOffDay num) = show num ++ " day"
-temporalOffsetToString (TempOffYear num) = show num ++ " year"
-temporalOffsetToString (TempOffWeek num) = show num ++ " week"
-temporalOffsetToString (TempOffDays num) = show num ++ " days"
-temporalOffsetToString (TempOffYears num) = show num ++ " years"
-temporalOffsetToString (TempOffWeeks num) = show num ++ " weeks"
+temporalOffsetToString (TempOffDay (NumInt num)) = show num ++ " day"
+temporalOffsetToString (TempOffYear (NumInt num)) = show num ++ " year"
+temporalOffsetToString (TempOffWeek (NumInt num)) = show num ++ " week"
+temporalOffsetToString (TempOffDays (NumInt num)) = show num ++ " days"
+temporalOffsetToString (TempOffYears (NumInt num)) = show num ++ " years"
+temporalOffsetToString (TempOffWeeks (NumInt num)) = show num ++ " weeks"
 
 verbToVerbStatusString :: Verb -> String
 verbToVerbStatusString VDel = "delivered"

@@ -374,10 +374,10 @@ generateBreachEvent subject verb object receiver date =
                     let eventStr = "Occurence of THEDATE " ++ subjectToString the
                     in EventD eventStr
         baoSomeDate to tq some =
-            let eventStr = "Occurence of " ++ temporalOffsetToString to ++ " " ++ temporalQuantifierToString tq ++ " SOMEDATE" ++ subjectToString some
+            let eventStr = "Occurence of " ++ temporalOffsetToString to ++ temporalQuantifierToString tq ++ "SOMEDATE " ++ subjectToString some
             in EventD eventStr
         baoTheDate to tq the =
-            let eventStr = "Occurence of " ++ temporalOffsetToString to ++ " " ++ temporalQuantifierToString tq ++ " THEDATE" ++ subjectToString the
+            let eventStr = "Occurence of " ++ temporalOffsetToString to ++ temporalQuantifierToString tq ++ "THEDATE" ++ subjectToString the
             in EventD eventStr   
         baobaSomeDate tq to tq1 some =
             case (tq) of
@@ -1380,6 +1380,12 @@ runDFAConversionFinal contract =
         , startStates = Set.singleton $ StateAD "Start"
         , acceptingStates = acceptingStates dfa
         }
+
+getNumberOfStates :: DFA -> Integer
+getNumberOfStates dfa = fromIntegral $ Set.size $ states dfa
+
+getNumberOfTransitions :: DFA -> Integer
+getNumberOfTransitions dfa = fromIntegral $ Set.size $ transitions dfa
 
 dfaToGraph :: DFA -> Gr Text Text
 dfaToGraph dfa =

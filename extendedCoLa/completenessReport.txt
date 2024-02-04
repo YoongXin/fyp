@@ -1,6 +1,7 @@
 
-===================================
+=======================================================
 Incomplete Conditional Definitions (If without "else"):
+=======================================================
 
 Conditions:
 
@@ -8,19 +9,18 @@ Conditions:
 Definitions:
 
 
-===================================
+======================================================
 Incomplete Conditional Statements (If without "else"):
+======================================================
 
 Conditions:
-[1] it is the case that Alice paid more than Bob
-[3] it is the case that Carol refunded less than David
+[1] it is the case that Alice paid £100 Bob on the 1 April 2021
+[2] it is the case that Alice paid $120 Bob on the 1 April 2021
 
 Statements:
-[2] it is the case that Bob must refund Amount "excessAmount" Alice on ANYDATE
-[4] it is the case that David must pay £100 Carol on the 11 January 2023
+[3] it is the case that Bob must deliver OtherObject "bicycle" Alice on the 5 April 2021
 
-===================================
+============================================================================
 Incomplete Boolean Expressions (Value test that doesn't consider all values):
+============================================================================
 
-[3] it is the case that Carol refunded less than David
-[1] it is the case that Alice paid more than Bob
