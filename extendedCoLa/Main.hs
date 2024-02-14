@@ -266,7 +266,9 @@ checkCompleteness contractFilePath = do
     contractString <- readFile contractFilePath 
 
     let ast = parseSentence contractString
-        completenessReport = printCompletenessReport $ runCheckCompleteness ast
+        completenessReport' = runCheckCompleteness ast
+        completenessScore = generateCompletenessScoring ast completenessReport'
+        completenessReport = printCompletenessReport completenessReport' completenessScore
 
     writeFile "completenessReport.txt" completenessReport
 

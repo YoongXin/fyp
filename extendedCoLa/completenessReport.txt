@@ -3,11 +3,7 @@
 Incomplete Conditional Definitions (If without "else"):
 =======================================================
 
-Conditions:
-
-
-Definitions:
-
+None
 
 ======================================================
 Incomplete Conditional Statements (If without "else"):
@@ -20,7 +16,14 @@ Conditions:
 Statements:
 [3] it is the case that Bob must deliver OtherObject "bicycle" Alice on the 5 April 2021
 
-============================================================================
+=============================================================================
 Incomplete Boolean Expressions (Value test that doesn't consider all values):
-============================================================================
+=============================================================================
 
+None
+
+===================
+Completeness Score:
+===================
+
+4

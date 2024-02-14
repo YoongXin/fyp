@@ -1,8 +1,8 @@
 module CheckCompleteness where
 
 import Prelude
-  ( ($), (++), (<), (.)
-  , Int
+  ( ($), (++), (<), (.), (+), (-)
+  , Int, Integer, toInteger
   , String
   , Show, show
   , Read
@@ -11,12 +11,13 @@ import Prelude
   , IO, putStrLn
   , words, unwords
   , init, last
-  , length
+  , length, null
   , map, fst, snd
   , zipWith, concat
   )
 
-import AbsCoLa   
+import AbsCoLa
+import AstToDFA   
 
 import qualified Data.Map as Map
 import qualified Data.List as List
@@ -498,28 +499,44 @@ updateBoolExDict sentence comparison id = do
 
     return newDict 
 
+generateCompletenessScoring :: Contract -> CompletenessReport -> Integer
+generateCompletenessScoring contract (IncompleteItems (scs, sds, sccs, sss, beDict)) =
+    let dfa = runDFAConversionFinal contract
+        positiveScore = getNumberOfStates dfa
+        negativeScore = length scs + length sccs + Map.size beDict
+        finalScore = positiveScore - toInteger negativeScore
+
+    in finalScore
+
 runCheckCompleteness :: Contract -> CompletenessReport
 runCheckCompleteness contract = evalState (checkContractCompleteness contract) (Map.empty)
 
-printCompletenessReport :: CompletenessReport -> String
-printCompletenessReport (IncompleteItems (scs, sds, sccs, sss, beDict)) =
+printCompletenessReport :: CompletenessReport -> Integer -> String
+printCompletenessReport (IncompleteItems (scs, sds, sccs, sss, beDict)) completenessScore =
     "\n=======================================================\n" ++
     "Incomplete Conditional Definitions (If without \"else\"):\n" ++
     "=======================================================\n" ++
-    "\nConditions:\n" ++
-    intercalate "\n" (map printSimpleCondition scs) ++
-    "\n\nDefinitions:\n" ++
-    intercalate "\n" (map printSimpleDefinition sds) ++
+    (if null scs
+        then "\nNone"
+        else "\nConditions:\n" ++ intercalate "\n" (map printSimpleCondition scs) ++
+             "\n\nDefinitions:\n" ++ intercalate "\n" (map printSimpleDefinition sds)) ++
 
     "\n\n======================================================\n" ++
     "Incomplete Conditional Statements (If without \"else\"):\n" ++
     "======================================================\n" ++
-    "\nConditions:\n" ++
-    intercalate "\n" (map printSimpleCondition sccs) ++
-    "\n\nStatements:\n" ++
-    intercalate "\n" (map printSimpleStatement sss) ++
+    (if null sccs
+        then "\nNone"
+        else "\nConditions:\n" ++ intercalate "\n" (map printSimpleCondition sccs) ++
+             "\n\nStatements:\n" ++ intercalate "\n" (map printSimpleStatement sss)) ++
 
-    "\n\n============================================================================\n" ++
+    "\n\n=============================================================================\n" ++
     "Incomplete Boolean Expressions (Value test that doesn't consider all values):\n" ++
-    "============================================================================\n\n" ++
-    printBoolExDictionary beDict
+    "=============================================================================\n\n" ++
+    (if Map.null beDict
+        then "None"
+        else printBoolExDictionary beDict) ++
+
+    "\n\n===================\n" ++
+    "Completeness Score:\n" ++
+    "===================\n\n" ++
+    show completenessScore
