@@ -7,7 +7,7 @@ import ExampleContracts
 
 prop_parseSentence :: String -> Contract -> Property
 prop_parseSentence input expectedContract =
-    CoLaParser.parseSentence input === expectedContract
+    CoLaParser.parseContract input === expectedContract
 
 bikeDeliveryAST = ConAnd (ComConState (ConStateIfThen (CondiOr (SimConOne (IDSim (NumInt 1)) HoldYes (SubUnQuoted (Ident "Alice")) VSPay (ObjNu (NumPound PoundTwo (NumInt 100))) (Rec (SubUnQuoted (Ident "Bob"))) (DateSpe (DateSpeOnThe (NumInt 1) MApr (NumInt 2021)))) (CondiSim (SimConOne (IDSim (NumInt 2)) HoldYes (SubUnQuoted (Ident "Alice")) VSPay (ObjNu (NumDol DollarTwo (NumInt 120))) (Rec (SubUnQuoted (Ident "Bob"))) (DateSpe (DateSpeOnThe (NumInt 1) MApr (NumInt 2021)))))) (StateSim (SimStateOne (IDSim (NumInt 3)) HoldYes (SubUnQuoted (Ident "Bob")) (ModalObli ObliTwo) VDel (ObjNonNu (NonNumOther (SubUnQuoted (Ident "bicycle")))) (Rec (SubUnQuoted (Ident "Alice"))) (DateSpe (DateSpeOnThe (NumInt 5) MApr (NumInt 2021))))))) (ConComp (ComState (StateAnd (SimStateOne (IDSim (NumInt 4)) HoldYes (SubUnQuoted (Ident "Bob")) ModalPermi VDel (ObjNonNu (NonNumRep (SubUnQuoted (Ident "receipt")))) (Rec (SubUnQuoted (Ident "Alice"))) DateAny) (StateSim (SimStateOne (IDSim (NumInt 5)) HoldYes (SubUnQuoted (Ident "Bob")) ModalForbi VCharge (ObjNu (NumAmount (SubQuoted "delivery fee"))) (Rec (SubUnQuoted (Ident "Alice"))) DateAny)))))
 

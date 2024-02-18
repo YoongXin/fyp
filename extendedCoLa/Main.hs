@@ -20,6 +20,7 @@ import LexCoLa   ( Token, mkPosToken )
 import ParCoLa   ( pContract, myLexer )
 import PrintCoLa ( Print, printTree )
 import SkelCoLa  ()
+import GenerateAST
 import AstToFOL
 import FOLToTPTP
 import AstToNFA
@@ -34,68 +35,19 @@ import Control.Monad.State
 import System.IO 
 import System.Process
 
-type Err        = Either String
-type ParseFun a = [Token] -> Err a
-type Verbosity  = Int
-
-putStrV :: Verbosity -> String -> IO ()
-putStrV v s = when (v > 1) $ putStrLn s
-
-runFile :: (Print a, Show a) => Verbosity -> ParseFun a -> FilePath -> IO ()
-runFile v p f = putStrLn f >> readFile f >>= run v p
-
-run :: (Print a, Show a) => Verbosity -> ParseFun a -> String -> IO ()
-run v p s =
-  case p ts of
-    Left err -> do
-      putStrLn "\nParse              Failed...\n"
-      putStrV v "Tokens:"
-      mapM_ (putStrV v . showPosToken . mkPosToken) ts
-      putStrLn err
-      exitFailure
-    Right tree -> do
-      putStrLn "\nParse Successful!"
-      showTree v tree
-  where
-  ts = myLexer s
-  showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]
-
-runAST :: ParseFun Contract -> String -> Either String Contract
-runAST p s = case p ts of
-  Right contract -> Right contract
-  Left parseError -> Left $ "Parse failed: " 
-  where
-    ts = myLexer s
-
-parseSentence :: String -> Contract
-parseSentence sentence =
-  case runAST pContract sentence of
+parseContract :: String -> Contract
+parseContract contractString =
+  case runAST pContract contractString of
     Left errMsg -> error ("Parsing failed: " ++ errMsg)
     Right parsedContract -> parsedContract
 
-showTree :: (Show a, Print a) => Int -> a -> IO ()
-showTree v tree = do
-  putStrV v $ "\n[Abstract Syntax]\n\n" ++ show tree
-  putStrV v $ "\n[Linearized tree]\n\n" ++ printTree tree
-
-usage :: IO ()
-usage = do
-  putStrLn $ unlines
-    [ "usage: Call with one of the following argument combinations:"
-    , "  --help          Display this help message."
-    , "  (no arguments)  Parse stdin verbosely."
-    , "  (files)         Parse content of files verbosely."
-    , "  -s (files)      Silent mode. Parse content of files silently."
-    ]
-
 main :: IO ()
 main = do
-  args <- getArgs
-  case args of
-    ["--help"] -> usage
-    []         -> getContents >>= run 2 pContract
-    "-s":fs    -> mapM_ (runFile 0 pContract) fs
-    fs         -> mapM_ (runFile 2 pContract) fs
+    putStrLn "Enter the contract string:"
+    contractString <- getLine
+    let parsedContract = parseContract contractString
+    putStrLn "Parsed contract:"
+    print parsedContract
 
 -- Function to interactively get user input for a contract or performance
 getUserInput :: String -> IO String
@@ -105,18 +57,17 @@ getUserInput prompt = do
   hFlush stdout
   getLine
 
-
 checkInconsistencyCL :: IO ()
 checkInconsistencyCL = do
 
     contractString <- getUserInput "Enter a contract:"
-    let (contract, dateDictionary, tempQuanDictionary) = runFOLConversion' (parseSentence contractString)
+    let (contract, dateDictionary, tempQuanDictionary) = runFOLConversion' (parseContract contractString)
     let tptpContract = folToTPTPString "contract" contract
 
     putStrLn "\n"
 
     performanceString <- getUserInput "Enter a performance:"
-    let performance = evalState (contractToFOLWithCheck (parseSentence performanceString)) (dateDictionary, tempQuanDictionary)
+    let performance = evalState (contractToFOLWithCheck (parseContract performanceString)) (dateDictionary, tempQuanDictionary)
     let tptpPerformance = folToTPTPString "performance" performance
 
     putStrLn "%TPTP representation for the contract:"
@@ -164,13 +115,13 @@ checkInconsistencyCL = do
 checkInconsistency :: FilePath -> FilePath -> IO ()
 checkInconsistency contractFilePath performanceFilePath = do
     contractString <- readFile contractFilePath
-    let (contract, dateDictionary, tempQuanDictionary) = runFOLConversion' (parseSentence contractString)
+    let (contract, dateDictionary, tempQuanDictionary) = runFOLConversion' (parseContract contractString)
     let tptpContract = folToTPTPString "contract" contract
     let contractComment = "%TPTP representation for the contract:"
     let contractFullForm = contractComment ++ "\n\n" ++ tptpContract
 
     performanceString <- readFile performanceFilePath
-    let performance = evalState (contractToFOLWithCheck (parseSentence performanceString)) (dateDictionary, tempQuanDictionary)
+    let performance = evalState (contractToFOLWithCheck (parseContract performanceString)) (dateDictionary, tempQuanDictionary)
     let tptpPerformance = folToTPTPString "performance" performance
     let performanceComment = "%TPTP representation for the performance:"
     let performanceFullForm = performanceComment ++ "\n\n" ++ tptpPerformance
@@ -224,7 +175,7 @@ checkInconsistency contractFilePath performanceFilePath = do
 convertToNFA :: FilePath -> IO ()
 convertToNFA contractFilePath = do
     contractString <- readFile contractFilePath
-    let nfa = runNFAConversion (parseSentence contractString)
+    let nfa = runNFAConversion (parseContract contractString)
     let graph = nfaToGraph nfa
     let dotFile = visualizeGraph nfa graph
 
@@ -239,7 +190,7 @@ convertToNFA contractFilePath = do
 findPathInNFA :: FilePath -> Node -> Node -> Int -> IO ()
 findPathInNFA contractFilePath startNode endNode numEdges = do
     contractString <- readFile contractFilePath
-    let nfa = runNFAConversion (parseSentence contractString)
+    let nfa = runNFAConversion (parseContract contractString)
     let dotFile = visualisePossiblePath nfa startNode endNode numEdges
 
     writeFile "nfaWithPathHighlighted.dot" dotFile
@@ -253,7 +204,7 @@ findPathInNFA contractFilePath startNode endNode numEdges = do
 convertToPetriNet :: FilePath -> IO()
 convertToPetriNet contractFilePath = do
     contractString <- readFile contractFilePath
-    let petriNet = printPNContract (contractToPN (parseSentence contractString))
+    let petriNet = printPNContract (contractToPN (parseContract contractString))
 
     writeFile "petriNetPythonCode.txt" petriNet
 
@@ -265,7 +216,7 @@ checkCompleteness :: FilePath -> IO()
 checkCompleteness contractFilePath = do
     contractString <- readFile contractFilePath 
 
-    let ast = parseSentence contractString
+    let ast = parseContract contractString
         completenessReport' = runCheckCompleteness ast
         completenessScore = generateCompletenessScoring ast completenessReport'
         completenessReport = printCompletenessReport completenessReport' completenessScore
@@ -279,7 +230,7 @@ checkCompleteness contractFilePath = do
 convertToDFA :: FilePath -> IO ()
 convertToDFA contractFilePath = do
     contractString <- readFile contractFilePath
-    let dfa = runDFAConversionFinal (parseSentence contractString)
+    let dfa = runDFAConversionFinal (parseContract contractString)
     let graph = dfaToGraph dfa
     let dotFile = visualizeGraphDFA dfa graph
 
@@ -291,5 +242,4 @@ convertToDFA contractFilePath = do
 
     putStrLn "DFA image generated"
 
--- occurrence spelling (dfa)
 -- other object spelling (fol)

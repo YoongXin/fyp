@@ -328,16 +328,16 @@ generateBreachEvent subject verb object receiver date =
         specificDate = 
             let nextDay = generateNextDay date
                 dateStr = dateToString' nextDay
-                eventStr = "Occurence of " ++ dateStr
+                eventStr = "Occurrence of " ++ dateStr
             in EventD eventStr
         anyDate = 
             let eventStr = subjectToString subject ++ " DIDN'T " ++ verbToString verb ++ " to " ++ receiverToString receiver
             in EventD eventStr
         someDate some =
-            let eventStr = "Occurence of one day after SOMEDATE " ++ subjectToString some
+            let eventStr = "Occurrence of one day after SOMEDATE " ++ subjectToString some
             in EventD eventStr
         theDate the =
-            let eventStr = "Occurence of one day after THEDATE " ++ subjectToString the
+            let eventStr = "Occurrence of one day after THEDATE " ++ subjectToString the
             in EventD eventStr
         baSpecificDate tq day month year =
             case (tq) of
@@ -349,7 +349,7 @@ generateBreachEvent subject verb object receiver date =
                     in EventD eventStr
                 beforeCase = 
                     let dateStr = dateSpeToString day month year
-                        eventStr = "Occurence of " ++ dateStr
+                        eventStr = "Occurrence of " ++ dateStr
                     in EventD eventStr
         baSomeDate tq some =
             case (tq) of
@@ -360,7 +360,7 @@ generateBreachEvent subject verb object receiver date =
                     let eventStr = subjectToString subject ++ "DIDN'T" ++ verbToString verb ++ " to " ++ receiverToString receiver
                     in EventD eventStr
                 beforeCase = 
-                    let eventStr = "Occurence of SOMEDATE " ++ subjectToString some
+                    let eventStr = "Occurrence of SOMEDATE " ++ subjectToString some
                     in EventD eventStr
         baTheDate tq the =
             case (tq) of
@@ -371,13 +371,13 @@ generateBreachEvent subject verb object receiver date =
                     let eventStr = subjectToString subject ++ "DIDN'T" ++ verbToString verb ++ " to " ++ receiverToString receiver
                     in EventD eventStr
                 beforeCase = 
-                    let eventStr = "Occurence of THEDATE " ++ subjectToString the
+                    let eventStr = "Occurrence of THEDATE " ++ subjectToString the
                     in EventD eventStr
         baoSomeDate to tq some =
-            let eventStr = "Occurence of " ++ temporalOffsetToString to ++ temporalQuantifierToString tq ++ "SOMEDATE " ++ subjectToString some
+            let eventStr = "Occurrence of " ++ temporalOffsetToString to ++ temporalQuantifierToString tq ++ "SOMEDATE " ++ subjectToString some
             in EventD eventStr
         baoTheDate to tq the =
-            let eventStr = "Occurence of " ++ temporalOffsetToString to ++ temporalQuantifierToString tq ++ "THEDATE" ++ subjectToString the
+            let eventStr = "Occurrence of " ++ temporalOffsetToString to ++ temporalQuantifierToString tq ++ "THEDATE" ++ subjectToString the
             in EventD eventStr   
         baobaSomeDate tq to tq1 some =
             case (tq) of
@@ -388,7 +388,7 @@ generateBreachEvent subject verb object receiver date =
                     let eventStr = subjectToString subject ++ "DIDN'T" ++ verbToString verb ++ " to " ++ receiverToString receiver
                     in EventD eventStr
                 beforeCase = 
-                    let eventStr = "Occurence of " ++ temporalOffsetToString to ++ " " ++ temporalQuantifierToString tq1 ++ " SOMEDATE " ++ subjectToString some
+                    let eventStr = "Occurrence of " ++ temporalOffsetToString to ++ " " ++ temporalQuantifierToString tq1 ++ " SOMEDATE " ++ subjectToString some
                     in EventD eventStr
         baobaTheDate tq to tq1 the =
             case (tq) of
@@ -399,7 +399,7 @@ generateBreachEvent subject verb object receiver date =
                     let eventStr = subjectToString subject ++ "DIDN'T" ++ verbToString verb ++ " to " ++ receiverToString receiver
                     in EventD eventStr
                 beforeCase = 
-                    let eventStr = "Occurence of " ++ temporalOffsetToString to ++ " " ++ temporalQuantifierToString tq1 ++ " THEDATE " ++ subjectToString the
+                    let eventStr = "Occurrence of " ++ temporalOffsetToString to ++ " " ++ temporalQuantifierToString tq1 ++ " THEDATE " ++ subjectToString the
                     in EventD eventStr
 
 contractToDFA :: Contract -> State (StateDictionary, SelfLoopingEvents) DFA
