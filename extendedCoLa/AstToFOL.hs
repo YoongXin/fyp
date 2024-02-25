@@ -1,7 +1,7 @@
 module AstToFOL where
 
 import Prelude
-  ( ($), (<$>), (++), (+), (*), (>=), (<=)
+  ( ($), (<$>), (++), (+), (*), (>=), (<=), (&&)
   , Int, Integer, fromInteger
   , String
   , Show, show
@@ -221,21 +221,6 @@ dateSpeToTerm (NumInt year) month (NumInt day) = Var $ show $ dateToInt year (mo
 dateSpeToInt :: Num -> Month -> Num -> Integer
 dateSpeToInt (NumInt year) month (NumInt day) = dateToInt year (monthToInt month) (fromInteger day)
 
--- lookupDate :: String -> State DateDictionary String
--- lookupDate date = do
---     -- Get the current state of the date dictionary
---     dateDictionary <- get
-
---     -- Check if the date is already in the dictionary
---     case Map.lookup date dateDictionary of
---         Just value -> return value
---         Nothing -> do
---             -- If it doesn't exist, add a new entry to the dictionary
---             let newValue = "D" ++ show (Map.size dateDictionary + 1)
---             let newDateDict = Map.insert date newValue dateDictionary
---             put newDateDict
---             return newValue
-
 lookupDate :: String -> State (DateDictionary, TempQuanDictionary) String
 lookupDate date = do
     -- Get the current state of the dictionaries
@@ -275,7 +260,21 @@ checkTempQuanDictionary key intValue = do
             case tempStr of
                 "Before" -> return (intValue <= tempInt)
                 "After"  -> return (intValue >= tempInt)
-        Nothing -> return True -- Key not found, consider it true
+        Nothing -> return True
+
+checkTempQuanDictionary' :: String -> Integer -> State (DateDictionary, TempQuanDictionary) Bool
+checkTempQuanDictionary' key intValue = do
+    -- Get the current state of the TempQuanDictionary
+    (dateDictionary, tempQuanDictionary) <- get
+
+    -- Check if the key exists in the TempQuanDictionary
+    case Map.lookup key tempQuanDictionary of
+        Just (tempStr, tempInt) -> do
+            -- Compare based on the specified condition
+            case tempStr of
+                "Before" -> return (intValue >= tempInt)
+                "After"  -> return (intValue <= tempInt)
+        Nothing -> return True
 
 simpleStatementToFOL :: SimpleStatement -> State (DateDictionary, TempQuanDictionary) FOLFormula
 simpleStatementToFOL (SimStateOne id holds subject modalVerb verb object receiver (DateSpe (DateSpeOnThe day month year))) =
@@ -1924,8 +1923,9 @@ createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver d
         case (holds, verbStatus) of
             (HoldYes, VSDel) -> do
                 formula <- yesDelivered
-                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
-                if checkValue
+                checkValue1 <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ (connectTerms subject (verbStatusToVerb verbStatus) receiver object)) (dateSpeToInt year month day)
+                if checkValue1 && checkValue2
                     then return formula
                     else return $ Falser
             (HoldNo, VSDel) -> do
@@ -1934,8 +1934,9 @@ createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver d
 
             (HoldYes, VSPay) -> do
                 formula <- yesPaid
-                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
-                if checkValue
+                checkValue1 <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ (connectTerms subject (verbStatusToVerb verbStatus) receiver object)) (dateSpeToInt year month day)
+                if checkValue1 && checkValue2
                     then return formula
                     else return $ Falser
             (HoldNo, VSPay) -> do
@@ -1944,8 +1945,9 @@ createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver d
 
             (HoldYes, VSCharge) -> do
                 formula <- yesCharged
-                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
-                if checkValue
+                checkValue1 <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ (connectTerms subject (verbStatusToVerb verbStatus) receiver object)) (dateSpeToInt year month day)
+                if checkValue1 && checkValue2
                     then return formula
                     else return $ Falser
             (HoldNo, VSCharge) -> do
@@ -1954,8 +1956,9 @@ createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver d
 
             (HoldYes, VSRefund) -> do
                 formula <- yesRefunded
-                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
-                if checkValue
+                checkValue1 <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ (connectTerms subject (verbStatusToVerb verbStatus) receiver object)) (dateSpeToInt year month day)
+                if checkValue1 && checkValue2
                     then return formula
                     else return $ Falser
             (HoldNo, VSRefund) -> do
@@ -1983,29 +1986,33 @@ createFormulaSimpleStatementNHDateCheck verbStatus subject object receiver day m
         case (verbStatus) of
             (VSDel) -> do
                 formula <- yesDelivered
-                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
-                if checkValue
+                checkValue1 <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ (connectTerms subject (verbStatusToVerb verbStatus) receiver object)) (dateSpeToInt year month day)
+                if checkValue1 && checkValue2
                     then return formula
                     else return $ Falser
 
             (VSPay) -> do
                 formula <- yesPaid
-                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
-                if checkValue
+                checkValue1 <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ (connectTerms subject (verbStatusToVerb verbStatus) receiver object)) (dateSpeToInt year month day)
+                if checkValue1 && checkValue2
                     then return formula
                     else return $ Falser
 
             (VSCharge) -> do
                 formula <- yesCharged
-                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
-                if checkValue
+                checkValue1 <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ (connectTerms subject (verbStatusToVerb verbStatus) receiver object)) (dateSpeToInt year month day)
+                if checkValue1 && checkValue2
                     then return formula
                     else return $ Falser
 
             (VSRefund) -> do
                 formula <- yesRefunded
-                checkValue <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
-                if checkValue
+                checkValue1 <- checkTempQuanDictionary (connectTerms subject (verbStatusToVerb verbStatus) receiver object) (dateSpeToInt year month day)
+                checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ (connectTerms subject (verbStatusToVerb verbStatus) receiver object)) (dateSpeToInt year month day)
+                if checkValue1 && checkValue2
                     then return formula
                     else return $ Falser
 
@@ -2056,8 +2063,9 @@ createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object rec
             case (holds, verbStatus) of
                 (HoldYes, VSDel) -> do
                     formula <- yesDelivered
-                    checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
-                    if checkValue
+                    checkValue1 <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
+                    checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe")) (temporalOffsetToInt temporalOffset)
+                    if checkValue1 && checkValue2
                         then return formula
                         else return $ Falser
                 (HoldNo, VSDel) -> do
@@ -2066,8 +2074,9 @@ createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object rec
 
                 (HoldYes, VSPay) -> do
                     formula <- yesPaid
-                    checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
-                    if checkValue
+                    checkValue1 <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
+                    checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe")) (temporalOffsetToInt temporalOffset)
+                    if checkValue1 && checkValue2
                         then return formula
                         else return $ Falser
                 (HoldNo, VSPay) -> do
@@ -2076,8 +2085,9 @@ createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object rec
 
                 (HoldYes, VSCharge) -> do
                     formula <- yesCharged
-                    checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
-                    if checkValue
+                    checkValue1 <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
+                    checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe")) (temporalOffsetToInt temporalOffset)
+                    if checkValue1 && checkValue2
                         then return formula
                         else return $ Falser
                 (HoldNo, VSCharge) -> do
@@ -2086,8 +2096,9 @@ createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object rec
 
                 (HoldYes, VSRefund) -> do
                     formula <- yesRefunded
-                    checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
-                    if checkValue
+                    checkValue1 <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
+                    checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe")) (temporalOffsetToInt temporalOffset)
+                    if checkValue1 && checkValue2
                         then return formula
                         else return $ Falser
                 (HoldNo, VSRefund) -> do
@@ -2152,29 +2163,33 @@ createFormulaSimpleStatementNHDateCheckSomeThe verbStatus subject object receive
             case (verbStatus) of
                 (VSDel) -> do
                     formula <- yesDelivered
-                    checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
-                    if checkValue
+                    checkValue1 <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
+                    checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe")) (temporalOffsetToInt temporalOffset)
+                    if checkValue1 && checkValue2
                         then return formula
                         else return $ Falser
 
                 (VSPay) -> do
                     formula <- yesPaid
-                    checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
-                    if checkValue
+                    checkValue1 <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
+                    checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe")) (temporalOffsetToInt temporalOffset)
+                    if checkValue1 && checkValue2
                         then return formula
                         else return $ Falser
 
                 (VSCharge) -> do
                     formula <- yesCharged
-                    checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
-                    if checkValue
+                    checkValue1 <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
+                    checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe")) (temporalOffsetToInt temporalOffset)
+                    if checkValue1 && checkValue2
                         then return formula
                         else return $ Falser
 
                 (VSRefund) -> do
                     formula <- yesRefunded
-                    checkValue <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
-                    if checkValue
+                    checkValue1 <- checkTempQuanDictionary ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe") (temporalOffsetToInt temporalOffset)
+                    checkValue2 <- checkTempQuanDictionary' ("Cannot" ++ ((connectTerms subject (verbStatusToVerb verbStatus) receiver object) ++ "SomeThe")) (temporalOffsetToInt temporalOffset)
+                    if checkValue1 && checkValue2
                         then return formula
                         else return $ Falser
 
@@ -2869,6 +2884,11 @@ runFOLConversion' contract = (result, newDateDict, newTempQuanDict)
     -- Run the conversion and get the result and the updated state
     (result, (newDateDict, newTempQuanDict)) = runState (contractToFOLWithCheck contract) (Map.empty, Map.empty)
 
+getTempQuanDictAfterConversion :: Contract -> TempQuanDictionary
+getTempQuanDictAfterConversion contract = newTempQuanDict
+    where
+        (_, (_, newTempQuanDict)) = runState (contractToFOLWithCheck contract) (Map.empty, Map.empty)
+
 -- Updated function to convert the contract to FOL formula with date dictionary check
 contractToFOLWithCheck :: Contract -> State (DateDictionary, TempQuanDictionary) FOLFormula
 contractToFOLWithCheck contract = do
@@ -2888,10 +2908,3 @@ addDateDictionaryCheck' folFormula dateVars =
     case dateVars of
         [] -> folFormula
         _ -> ForAll dateVars $ Brackets $ folFormula
-
--- Function to add temp quan dictionary check to the FOL formula
--- addDateDictionaryCheck :: FOLFormula -> State (DateDictionary, TempQuanDictionary) FOLFormula
--- addDateDictionaryCheck folFormula = do
---     dateDict <- gets snd
---     let dateVars = Map.elems (Map.mapWithKey (\key (_, intValue) -> Var key) dateDict)
---     return $ addDateDictionaryCheck' folFormula dateVars

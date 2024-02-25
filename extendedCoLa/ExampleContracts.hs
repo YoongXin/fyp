@@ -86,6 +86,17 @@ definitionAndStatementAndConditionalStatement = "[1] DateOne IS 11 May 2021 C-AN
 definitionAndConditionalStatementAndConditionalDefinition = "[1] AmountOne EQUALS POUNDS 75 C-AND IF [2] Alice paid AMOUNT AmountOne to Bob on the 5 December 2023 THEN [3] Bob must deliver OTHEROBJECT ring to Alice on the 10 December 2023 C-AND IF [4] Neo paid more than Will THEN [5] PartyA IS Neo"
 allFourComponentsAnd = "[1] PartyA IS Alice C-AND [2] Alice is forbidden to charge AMOUNT \"delivery fee\" to Bob on ANYDATE C-AND IF [3] Natalie paid more than Rachel THEN [4] Natalie IS PartyB C-AND IF [5] Viola paid POUNDS 20 to Leo on the 30 April 2023 THEN [6] it is the case that Leo may deliver REPORT receipt to Viola on ANYDATE"
 
+consistencyContract1 = "IF [1] it is the case that Carol paid EUROS 30 to David before 20 September 2023 THEN [2] David must deliver OTHEROBJECT orange to Carol before 27 September 2023"
+consistencyContract2 = "IF [1] Emily paid DOLLARS 45 to Frank on the 30 November 2023 THEN [2] Frank must deliver OTHEROBJECT notebook to Emily on ANYDATE"
+consistencyContract3 = "IF [1] it is the case that Grace refunded POUNDS 20 to Helena on the 6 July 2021 THEN [2] Helena must deliver REPORT \"financial report\" to Grace on SOMEDATE unknownOne"
+consistencyContract4 = "IF [1] it is the case that Ivana charged DOLLARS 13 to Jess before SOMEDATE unknownOne THEN [2] it is the case that Ivana must deliver OTHEROBJECT dress to Jess after THEDATE unknownOne"
+consistencyContract5 = "IF [1] it is the case that Kathy paid EUROS 3 to Lily on SOMEDATE unknownOne THEN [2] it is the case that Lily must deliver OTHEROBJECT bicycle to Kathy before 7 days after SOMEDATE unknownOne"
+consistencyContract6 = "IF [1] Mandy paid POUNDS 17 to Nancy on 7 April 2021 THEN [2] Nancy must deliver OTHEROBJECT bag to Mandy on SOMEDATE unknownOne C-AND [3] unknownOne IS 9 April 2021"
+consistencyContract7 = "IF [1] it is the case that Alice paid POUNDS 100 to Bob on the 1 April 2021 OR [4] it is the case that Alice paid DOLLARS 120 to Bob on the 1 April 2021 THEN [2] it is the case that Bob must deliver OTHEROBJECT bicycle to Alice on the 5 April 2021 ELSE [3] it is the case that Bob must deliver OTHEROBJECT orange to Alice on the 5 April 2021"
+
+tqTestContract1 = "IF [1] it is the case that Alice paid POUNDS 3 to Bob before 3 January 2024 THEN [2] it is the case that Bob must deliver OTHEROBJECT watermelon to Alice before 10 January 2024"
+tqTestContract2 = "[1] Cindy must deliver REPORT receipt to Alex after 8 September 2023 IF [2] Alex paid EUROS 10 to Cindy after 1 September 2023 ELSE [3] Cindy is forbidden to refund EUROS 10 to Alex before 10 September 2023"
+
 bikeDeliveryOriginal =
     " IF    [1] it is the case that Alice paid POUNDS 100 to Bob on the 1 April 2021 " ++ 
     "       OR " ++
