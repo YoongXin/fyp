@@ -665,7 +665,11 @@ createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier sub
         (HoldNo, ModalObli _, VDel, TempBefore) -> noMustDelBefore
         (HoldYes, ModalPermi, VDel, TempBefore) -> yesMayDelBefore
         (HoldNo, ModalPermi, VDel, TempBefore) -> noMayDelBefore
-        (HoldYes, ModalForbi, VDel, TempBefore) -> noMayDelBefore
+        (HoldYes, ModalForbi, VDel, TempBefore) -> do
+            let formula = noMayDelBefore
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
+
         (HoldNo, ModalForbi, VDel, TempBefore) -> yesMayDelBefore
 
         (HoldYes, ModalObli _, VPay, TempBefore) -> do
@@ -676,7 +680,11 @@ createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier sub
         (HoldNo, ModalObli _, VPay, TempBefore) -> noMustPayBefore
         (HoldYes, ModalPermi, VPay, TempBefore) -> yesMayPayBefore
         (HoldNo, ModalPermi, VPay, TempBefore) -> noMayPayBefore
-        (HoldYes, ModalForbi, VPay, TempBefore) -> noMayPayBefore
+        (HoldYes, ModalForbi, VPay, TempBefore) -> do
+            let formula = noMayPayBefore
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
+
         (HoldNo, ModalForbi, VPay, TempBefore) -> yesMayPayBefore
 
         (HoldYes, ModalObli _, VCharge, TempBefore) -> do
@@ -687,7 +695,11 @@ createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier sub
         (HoldNo, ModalObli _, VCharge, TempBefore) -> noMustChargeBefore
         (HoldYes, ModalPermi, VCharge, TempBefore) -> yesMayChargeBefore
         (HoldNo, ModalPermi, VCharge, TempBefore) -> noMayChargeBefore
-        (HoldYes, ModalForbi, VCharge, TempBefore) -> noMayChargeBefore
+        (HoldYes, ModalForbi, VCharge, TempBefore) -> do
+            let formula = noMayChargeBefore
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
+
         (HoldNo, ModalForbi, VCharge, TempBefore) -> yesMayChargeBefore
 
         (HoldYes, ModalObli _, VRefund, TempBefore) -> do
@@ -698,7 +710,11 @@ createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier sub
         (HoldNo, ModalObli _, VRefund, TempBefore) -> noMustRefundBefore
         (HoldYes, ModalPermi, VRefund, TempBefore) -> yesMayRefundBefore
         (HoldNo, ModalPermi, VRefund, TempBefore) -> noMayRefundBefore
-        (HoldYes, ModalForbi, VRefund, TempBefore) -> noMayRefundBefore
+        (HoldYes, ModalForbi, VRefund, TempBefore) -> do 
+            let formula = noMayRefundBefore
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
+
         (HoldNo, ModalForbi, VRefund, TempBefore) -> yesMayRefundBefore
 
         (HoldYes, ModalObli _, VDel, TempAfter) -> do
@@ -709,7 +725,11 @@ createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier sub
         (HoldNo, ModalObli _, VDel, TempAfter) -> noMustDelAfter
         (HoldYes, ModalPermi, VDel, TempAfter) -> yesMayDelAfter
         (HoldNo, ModalPermi, VDel, TempAfter) -> noMayDelAfter
-        (HoldYes, ModalForbi, VDel, TempAfter) -> noMayDelAfter
+        (HoldYes, ModalForbi, VDel, TempAfter) -> do
+            let formula = noMayDelAfter
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
+
         (HoldNo, ModalForbi, VDel, TempAfter) -> yesMayDelAfter
 
         (HoldYes, ModalObli _, VPay, TempAfter) -> do
@@ -720,7 +740,11 @@ createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier sub
         (HoldNo, ModalObli _, VPay, TempAfter) -> noMustPayAfter 
         (HoldYes, ModalPermi, VPay, TempAfter) -> yesMayPayAfter
         (HoldNo, ModalPermi, VPay, TempAfter) -> noMayPayAfter 
-        (HoldYes, ModalForbi, VPay, TempAfter) -> noMayPayAfter
+        (HoldYes, ModalForbi, VPay, TempAfter) -> do
+            let formula = noMayPayAfter
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
+
         (HoldNo, ModalForbi, VPay, TempAfter) -> yesMayPayAfter
 
         (HoldYes, ModalObli _, VCharge, TempAfter) -> do
@@ -731,7 +755,11 @@ createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier sub
         (HoldNo, ModalObli _, VCharge, TempAfter) -> noMustChargeAfter
         (HoldYes, ModalPermi, VCharge, TempAfter) -> yesMayChargeAfter
         (HoldNo, ModalPermi, VCharge, TempAfter) -> noMayChargeAfter
-        (HoldYes, ModalForbi, VCharge, TempAfter) -> noMayChargeAfter
+        (HoldYes, ModalForbi, VCharge, TempAfter) -> do
+            let formula = noMayChargeAfter
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
+
         (HoldNo, ModalForbi, VCharge, TempAfter) -> yesMayChargeAfter
 
         (HoldYes, ModalObli _, VRefund, TempAfter) -> do
@@ -742,7 +770,11 @@ createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier sub
         (HoldNo, ModalObli _, VRefund, TempAfter) -> noMustRefundAfter
         (HoldYes, ModalPermi, VRefund, TempAfter) -> yesMayRefundAfter
         (HoldNo, ModalPermi, VRefund, TempAfter) -> noMayRefundAfter
-        (HoldYes, ModalForbi, VRefund, TempAfter) -> noMayRefundAfter
+        (HoldYes, ModalForbi, VRefund, TempAfter) -> do
+            let formula = noMayRefundAfter
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
+
         (HoldNo, ModalForbi, VRefund, TempAfter) -> yesMayRefundAfter
 
     where
@@ -950,7 +982,11 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
                 (HoldNo, ModalObli _, VDel, TempBefore) -> noMustDelBefore
                 (HoldYes, ModalPermi, VDel, TempBefore) -> yesMayDelBefore
                 (HoldNo, ModalPermi, VDel, TempBefore) -> noMayDelBefore
-                (HoldYes, ModalForbi, VDel, TempBefore) -> noMayDelBefore
+                (HoldYes, ModalForbi, VDel, TempBefore) -> do
+                    let formula = noMayDelBefore
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
+
                 (HoldNo, ModalForbi, VDel, TempBefore) -> yesMayDelBefore
 
                 (HoldYes, ModalObli _, VPay, TempBefore) -> do
@@ -961,7 +997,11 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
                 (HoldNo, ModalObli _, VPay, TempBefore) -> noMustPayBefore
                 (HoldYes, ModalPermi, VPay, TempBefore) -> yesMayPayBefore
                 (HoldNo, ModalPermi, VPay, TempBefore) -> noMayPayBefore
-                (HoldYes, ModalForbi, VPay, TempBefore) -> noMayPayBefore
+                (HoldYes, ModalForbi, VPay, TempBefore) -> do
+                    let formula = noMayPayBefore
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
+
                 (HoldNo, ModalForbi, VPay, TempBefore) -> yesMayPayBefore
 
                 (HoldYes, ModalObli _, VCharge, TempBefore) -> do
@@ -972,7 +1012,11 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
                 (HoldNo, ModalObli _, VCharge, TempBefore) -> noMustChargeBefore
                 (HoldYes, ModalPermi, VCharge, TempBefore) -> yesMayChargeBefore
                 (HoldNo, ModalPermi, VCharge, TempBefore) -> noMayChargeBefore
-                (HoldYes, ModalForbi, VCharge, TempBefore) -> noMayChargeBefore
+                (HoldYes, ModalForbi, VCharge, TempBefore) -> do
+                    let formula = noMayChargeBefore
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
+
                 (HoldNo, ModalForbi, VCharge, TempBefore) -> yesMayChargeBefore
 
                 (HoldYes, ModalObli _, VRefund, TempBefore) -> do
@@ -983,7 +1027,11 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
                 (HoldNo, ModalObli _, VRefund, TempBefore) -> noMustRefundBefore
                 (HoldYes, ModalPermi, VRefund, TempBefore) -> yesMayRefundBefore
                 (HoldNo, ModalPermi, VRefund, TempBefore) -> noMayRefundBefore
-                (HoldYes, ModalForbi, VRefund, TempBefore) -> noMayRefundBefore
+                (HoldYes, ModalForbi, VRefund, TempBefore) -> do
+                    let formula = noMayRefundBefore
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
+
                 (HoldNo, ModalForbi, VRefund, TempBefore) -> yesMayRefundBefore
 
                 (HoldYes, ModalObli _, VDel, TempAfter) -> do 
@@ -994,7 +1042,11 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
                 (HoldNo, ModalObli _, VDel, TempAfter) -> noMustDelAfter
                 (HoldYes, ModalPermi, VDel, TempAfter) -> yesMayDelAfter
                 (HoldNo, ModalPermi, VDel, TempAfter) -> noMayDelAfter
-                (HoldYes, ModalForbi, VDel, TempAfter) -> noMayDelAfter
+                (HoldYes, ModalForbi, VDel, TempAfter) -> do
+                    let formula = noMayDelAfter
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
+
                 (HoldNo, ModalForbi, VDel, TempAfter) -> yesMayDelAfter
 
                 (HoldYes, ModalObli _, VPay, TempAfter) -> do
@@ -1005,7 +1057,11 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
                 (HoldNo, ModalObli _, VPay, TempAfter) -> noMustPayAfter 
                 (HoldYes, ModalPermi, VPay, TempAfter) -> yesMayPayAfter
                 (HoldNo, ModalPermi, VPay, TempAfter) -> noMayPayAfter 
-                (HoldYes, ModalForbi, VPay, TempAfter) -> noMayPayAfter
+                (HoldYes, ModalForbi, VPay, TempAfter) -> do
+                    let formula = noMayPayAfter
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
+
                 (HoldNo, ModalForbi, VPay, TempAfter) -> yesMayPayAfter
 
                 (HoldYes, ModalObli _, VCharge, TempAfter) -> do
@@ -1016,7 +1072,11 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
                 (HoldNo, ModalObli _, VCharge, TempAfter) -> noMustChargeAfter
                 (HoldYes, ModalPermi, VCharge, TempAfter) -> yesMayChargeAfter
                 (HoldNo, ModalPermi, VCharge, TempAfter) -> noMayChargeAfter
-                (HoldYes, ModalForbi, VCharge, TempAfter) -> noMayChargeAfter
+                (HoldYes, ModalForbi, VCharge, TempAfter) -> do
+                    let formula = noMayChargeAfter
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
+
                 (HoldNo, ModalForbi, VCharge, TempAfter) -> yesMayChargeAfter
 
                 (HoldYes, ModalObli _, VRefund, TempAfter) -> do
@@ -1027,7 +1087,11 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
                 (HoldNo, ModalObli _, VRefund, TempAfter) -> noMustRefundAfter
                 (HoldYes, ModalPermi, VRefund, TempAfter) -> yesMayRefundAfter
                 (HoldNo, ModalPermi, VRefund, TempAfter) -> noMayRefundAfter
-                (HoldYes, ModalForbi, VRefund, TempAfter) -> noMayRefundAfter
+                (HoldYes, ModalForbi, VRefund, TempAfter) -> do
+                    let formula = noMayRefundAfter
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
+
                 (HoldNo, ModalForbi, VRefund, TempAfter) -> yesMayRefundAfter
 
             where
@@ -1292,7 +1356,10 @@ createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject
             formula
 
         (ModalPermi, VDel, TempBefore) -> yesMayDelBefore
-        (ModalForbi, VDel, TempBefore) -> noMayDelBefore
+        (ModalForbi, VDel, TempBefore) -> do
+            let formula = noMayDelBefore
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
 
         (ModalObli _, VPay, TempBefore) -> do
             let formula = yesMustPayBefore
@@ -1300,7 +1367,10 @@ createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject
             formula
 
         (ModalPermi, VPay, TempBefore) -> yesMayPayBefore
-        (ModalForbi, VPay, TempBefore) -> noMayPayBefore
+        (ModalForbi, VPay, TempBefore) -> do
+            let formula = noMayPayBefore
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
 
         (ModalObli _, VCharge, TempBefore) -> do
             let formula = yesMustChargeBefore
@@ -1308,7 +1378,10 @@ createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject
             formula
 
         (ModalPermi, VCharge, TempBefore) -> yesMayChargeBefore
-        (ModalForbi, VCharge, TempBefore) -> noMayChargeBefore
+        (ModalForbi, VCharge, TempBefore) -> do
+            let formula = noMayChargeBefore
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
 
         (ModalObli _, VRefund, TempBefore) -> do
             let formula = yesMustRefundBefore
@@ -1316,7 +1389,10 @@ createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject
             formula
 
         (ModalPermi, VRefund, TempBefore) -> yesMayRefundBefore
-        (ModalForbi, VRefund, TempBefore) -> noMayRefundBefore
+        (ModalForbi, VRefund, TempBefore) -> do
+            let formula = noMayRefundBefore
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
 
         (ModalObli _, VDel, TempAfter) -> do
             let formula = yesMustDelAfter
@@ -1324,7 +1400,10 @@ createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject
             formula 
 
         (ModalPermi, VDel, TempAfter) -> yesMayDelAfter
-        (ModalForbi, VDel, TempAfter) -> noMayDelAfter
+        (ModalForbi, VDel, TempAfter) -> do
+            let formula = noMayDelAfter
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
 
         (ModalObli _, VPay, TempAfter) -> do
             let formula = yesMustPayAfter
@@ -1332,7 +1411,10 @@ createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject
             formula 
 
         (ModalPermi, VPay, TempAfter) -> yesMayPayAfter
-        (ModalForbi, VPay, TempAfter) -> noMayPayAfter
+        (ModalForbi, VPay, TempAfter) -> do
+            let formula = noMayPayAfter
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
 
         (ModalObli _, VCharge, TempAfter) -> do
             let formula = yesMustChargeAfter
@@ -1340,7 +1422,10 @@ createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject
             formula 
 
         (ModalPermi, VCharge, TempAfter) -> yesMayChargeAfter
-        (ModalForbi, VCharge, TempAfter) -> noMayChargeAfter
+        (ModalForbi, VCharge, TempAfter) -> do
+            let formula = noMayChargeAfter
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
 
         (ModalObli _, VRefund, TempAfter) -> do
             let formula = yesMustRefundAfter
@@ -1348,7 +1433,10 @@ createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject
             formula 
 
         (ModalPermi, VRefund, TempAfter) -> yesMayRefundAfter
-        (ModalForbi, VRefund, TempAfter) -> noMayRefundAfter
+        (ModalForbi, VRefund, TempAfter) -> do
+            let formula = noMayRefundAfter
+            updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object)) (temporalQuantifierToString temporalQuantifier) (dateSpeToInt year month day)
+            formula
 
     where
         -- Common base predicates
@@ -1513,7 +1601,10 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
                     formula
 
                 (ModalPermi, VDel, TempBefore) -> yesMayDelBefore
-                (ModalForbi, VDel, TempBefore) -> noMayDelBefore
+                (ModalForbi, VDel, TempBefore) -> do
+                    let formula = noMayDelBefore
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
 
                 (ModalObli _, VPay, TempBefore) -> do
                     let formula = yesMustPayBefore
@@ -1521,7 +1612,10 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
                     formula
 
                 (ModalPermi, VPay, TempBefore) -> yesMayPayBefore
-                (ModalForbi, VPay, TempBefore) -> noMayPayBefore
+                (ModalForbi, VPay, TempBefore) -> do
+                    let formula = noMayPayBefore
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
                 
                 (ModalObli _, VCharge, TempBefore) -> do
                     let formula = yesMustChargeBefore
@@ -1529,7 +1623,10 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
                     formula
 
                 (ModalPermi, VCharge, TempBefore) -> yesMayChargeBefore
-                (ModalForbi, VCharge, TempBefore) -> noMayChargeBefore
+                (ModalForbi, VCharge, TempBefore) -> do
+                    let formula = noMayChargeBefore
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
 
                 (ModalObli _, VRefund, TempBefore) -> do
                     let formula = yesMustRefundBefore
@@ -1537,7 +1634,10 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
                     formula
 
                 (ModalPermi, VRefund, TempBefore) -> yesMayRefundBefore
-                (ModalForbi, VRefund, TempBefore) -> noMayRefundBefore
+                (ModalForbi, VRefund, TempBefore) -> do
+                    let formula = noMayRefundBefore
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
 
                 (ModalObli _, VDel, TempAfter) -> do 
                     let formula = yesMustDelAfter
@@ -1545,7 +1645,10 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
                     formula
 
                 (ModalPermi, VDel, TempAfter) -> yesMayDelAfter
-                (ModalForbi, VDel, TempAfter) -> noMayDelAfter
+                (ModalForbi, VDel, TempAfter) -> do
+                    let formula = noMayDelAfter
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
 
                 (ModalObli _, VPay, TempAfter) -> do 
                     let formula = yesMustPayAfter
@@ -1553,7 +1656,10 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
                     formula
 
                 (ModalPermi, VPay, TempAfter) -> yesMayPayAfter
-                (ModalForbi, VPay, TempAfter) -> noMayPayAfter
+                (ModalForbi, VPay, TempAfter) -> do
+                    let formula = noMayPayAfter
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
 
                 (ModalObli _, VCharge, TempAfter) -> do
                     let formula = yesMustChargeAfter
@@ -1561,7 +1667,10 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
                     formula
 
                 (ModalPermi, VCharge, TempAfter) -> yesMayChargeAfter
-                (ModalForbi, VCharge, TempAfter) -> noMayChargeAfter
+                (ModalForbi, VCharge, TempAfter) -> do
+                    let formula = noMayChargeAfter
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
 
                 (ModalObli _, VRefund, TempAfter) -> do
                     let formula = yesMustRefundAfter
@@ -1569,7 +1678,10 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
                     formula
 
                 (ModalPermi, VRefund, TempAfter) -> yesMayRefundAfter
-                (ModalForbi, VRefund, TempAfter) -> noMayRefundAfter
+                (ModalForbi, VRefund, TempAfter) -> do
+                    let formula = noMayRefundAfter
+                    updateTempQuanDictionary ("Cannot" ++ (connectTerms subject verb receiver object) ++ "SomeThe") (temporalQuantifierToString temporalQuantifier) (temporalOffsetToInt temporalOffset)
+                    formula
 
             where
                 -- Predicates for different cases
