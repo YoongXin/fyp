@@ -1,6 +1,7 @@
 module Test.AstToFolTest where
     
 import Test.QuickCheck
+import qualified Data.Map as Map
 import qualified Main as CoLaParser
 import AstToFOL
 import AbsCoLa 
@@ -38,13 +39,13 @@ isdaOriginalFOL = ForAll [Var "D1"] (Brackets (And (Brackets (Implies (And (ForA
 isdaModifiedFOL = ForAll [Var "D1"] (Brackets (And (Brackets (Implies (And (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "PartyA"]) (Pred "name" [Var "Y",Var "PartyB"])) (Pred "date" [Var "D",Var "40587"])) (Pred "objectAmount" [Var "O",Var "AmountA"])) (Pred "mustPay" [Var "X",Var "Y",Var "O",Var "D"])))) (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "PartyB"]) (Pred "name" [Var "Y",Var "PartyA"])) (Pred "date" [Var "D",Var "40587"])) (Pred "objectAmount" [Var "O",Var "AmountB"])) (Pred "mustPay" [Var "X",Var "Y",Var "O",Var "D"]))))) (And (Not (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "PartyA"]) (Pred "name" [Var "Y",Var "PartyB"])) (Pred "date" [Var "D",Var "40587"])) (Pred "objectAmount" [Var "O",Var "AmountA"])) (Pred "mustPay" [Var "X",Var "Y",Var "O",Var "D"]))))) (And (Not (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "PartyB"]) (Pred "name" [Var "Y",Var "PartyA"])) (Pred "date" [Var "D",Var "40587"])) (Pred "objectAmount" [Var "O",Var "AmountB"])) (Pred "mustPay" [Var "X",Var "Y",Var "O",Var "D"]))))) (ForAll [Var "X",Var "Y",Var "O"] (Brackets (And (And (And (Pred "name" [Var "X",Var "Excessparty"]) (Pred "name" [Var "Y",Var "AnotherParty"])) (Pred "objectAmount" [Var "O",Var "ExcessAmount"])) (Pred "mustPay" [Var "X",Var "Y",Var "O",Var "D1"])))))))) (Brackets (And (Brackets (Implies (ForAll [Var "X",Var "Y"] (Brackets (And (And (Pred "name" [Var "X",Var "PartyA"]) (Pred "name" [Var "Y",Var "PartyB"])) (Pred "paidMore" [Var "X",Var "Y"])))) (And (Equal (Var "ExcessParty") (Var "PartyA")) (Equal (Var "ExcessAmount") (AstToFOL.Fun "minus" [Var "AmountA",Var "AmountB"]))))) (Brackets (Implies (ForAll [Var "X",Var "Y"] (Brackets (And (And (Pred "name" [Var "X",Var "PartyB"]) (Pred "name" [Var "Y",Var "PartyA"])) (Pred "paidMore" [Var "X",Var "Y"])))) (And (Equal (Var "ExcessParty") (Var "PartyA")) (Equal (Var "ExcessAmount") (AstToFOL.Fun "minus" [Var "AmountB",Var "AmountA"])))))))))
 guarantorFOL = And (Brackets (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "Landlord"]) (Pred "name" [Var "Y",Var "Tenant"])) (Pred "date" [Var "D",Var "60036"])) (Pred "objectOtherObject" [Var "O",Var "property"])) (Pred "mustDeliver" [Var "X",Var "Y",Var "O",Var "D"]))))) (Brackets (And (Brackets (Implies (And (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "Landlord"]) (Pred "name" [Var "Y",Var "Tenant"])) (Pred "date" [Var "D",Var "60036"])) (Pred "objectOtherObject" [Var "O",Var "demandOfTenantPayment"])) (Pred "delivered" [Var "X",Var "Y",Var "O",Var "D"])))) (Not (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "Tenant"]) (Pred "name" [Var "Y",Var "Landlord"])) (Pred "date" [Var "D",Var "60039"])) (Pred "objectAmount" [Var "O",Var "AmountA"])) (Pred "paidBefore" [Var "X",Var "Y",Var "O",Var "D"])))))) (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "Landlord"]) (Pred "name" [Var "Y",Var "Tenant"])) (Pred "date" [Var "D",Var "60040"])) (Pred "objectOtherObject" [Var "O",Var "demandOfGuarantorPayment"])) (Pred "mayDeliver" [Var "X",Var "Y",Var "O",Var "D"])))))) (Brackets (And (Brackets (Implies (And (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "Landlord"]) (Pred "name" [Var "Y",Var "Tenant"])) (Pred "date" [Var "D",Var "60036"])) (Pred "objectOtherObject" [Var "O",Var "demandOfTenantPayment"])) (Pred "delivered" [Var "X",Var "Y",Var "O",Var "D"])))) (And (Not (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "Tenant"]) (Pred "name" [Var "Y",Var "Landlord"])) (Pred "date" [Var "D",Var "60044"])) (Pred "objectAmount" [Var "O",Var "AmountA"])) (Pred "paidBefore" [Var "X",Var "Y",Var "O",Var "D"]))))) (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "Landlord"]) (Pred "name" [Var "Y",Var "Tenant"])) (Pred "date" [Var "D",Var "60040"])) (Pred "objectOtherObject" [Var "O",Var "demandOfGuarantorPayment"])) (Pred "delivered" [Var "X",Var "Y",Var "O",Var "D"])))))) (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "Guarantor"]) (Pred "name" [Var "Y",Var "Landlord"])) (Pred "date" [Var "D",Var "60045"])) (Pred "objectAmount" [Var "O",Var "AmountA"])) (Pred "mustPay" [Var "X",Var "Y",Var "O",Var "D"])))))) (Brackets (And (Brackets (Implies (Not (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "Tenant"]) (Pred "name" [Var "Y",Var "Landlord"])) (Pred "date" [Var "D",Var "60198"])) (Pred "objectAmount" [Var "O",Var "AmountB"])) (Pred "paidBefore" [Var "X",Var "Y",Var "O",Var "D"]))))) (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "Guarantor"]) (Pred "name" [Var "Y",Var "Landlord"])) (Pred "date" [Var "D",Var "60199"])) (Pred "objectAmount" [Var "O",Var "AmountB"])) (Pred "mustPay" [Var "X",Var "Y",Var "O",Var "D"])))))) (Brackets (Implies (And (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "HousingBenefitScheme"]) (Pred "name" [Var "Y",Var "Tenant"])) (Pred "date" [Var "D",Var "60310"])) (Pred "objectAmount" [Var "O",Var "AmountC"])) (Pred "paid" [Var "X",Var "Y",Var "O",Var "D"])))) (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "LocalAuthority"]) (Pred "name" [Var "Y",Var "Tenant"])) (Pred "date" [Var "D",Var "60316"])) (Pred "objectOtherObject" [Var "O",Var "overpaymentClaim"])) (Pred "delivered" [Var "X",Var "Y",Var "O",Var "D"]))))) (ForAll [Var "X",Var "Y",Var "O",Var "D"] (Brackets (And (And (And (And (Pred "name" [Var "X",Var "Guarantor"]) (Pred "name" [Var "Y",Var "Landlord"])) (Pred "date" [Var "D",Var "60319"])) (Pred "objectAmount" [Var "O",Var "AmountC"])) (Pred "mustPayBefore" [Var "X",Var "Y",Var "O",Var "D"]))))))))))))
 
-tqDict1 = fromList [("BobDeliverAliceObjectOtherObjectwatermelon",("Before",60319))]
-tqDict2 =
-tqDict3 = 
+tqDict1 = Map.fromList [("BobDeliverAliceObjectOtherObjectwatermelon",("Before",60319))]
+tqDict2 = Map.fromList [("CannotCindyRefundAlexObjectEuro10",("Before",60197)),("CindyDeliverAlexObjectReportreceipt",("After",60195))]
+tqDict3 = Map.fromList []
 
 folSampleTests :: [(String, FOLFormula)]
 folSampleTests = 
-    [ (emptyContract, emptyContractFOL)
+    [(emptyContract, emptyContractFOL)
     , (simpleDefinition1, simpleDefinitionFOL)
     , (andDefinition4, andDefinitionFOL)
     , (conditionalDefinition8, conditionalDefinitionFOL)
@@ -65,6 +66,12 @@ folSampleTests =
     , (isdaOriginal, isdaOriginalFOL)
     , (isdaModified, isdaModifiedFOL)
     , (guarantor, guarantorFOL)]
+
+tqDictSampleTests :: [(String, TempQuanDictionary)]
+tqDictSampleTests = 
+    [(tqTestContract1, tqDict1)
+    , (tqTestContract2, tqDict2)
+    , (tqTestContract3, tqDict3)]
 
 folConversionTest :: IO ()
 folConversionTest = do

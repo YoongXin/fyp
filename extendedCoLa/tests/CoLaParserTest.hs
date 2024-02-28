@@ -95,7 +95,7 @@ definitionAndStatementAndConditionalStatementAST = ConAnd (ComDef (DefSim (SimDe
 definitionAndConditionalStatementAndConditionalDefinitionAST = ConAnd (ComDef (DefSim (SimDefEq (IDSim (NumInt 1)) (SubUnQuoted (Ident "AmountOne")) (NumExpObj (NumPound PoundTwo (NumInt 75)))))) (ConAnd (ComConState (ConStateIfThen (CondiSim (SimConOneNH (IDSim (NumInt 2)) (SubUnQuoted (Ident "Alice")) VSPay (ObjNu (NumAmount (SubUnQuoted (Ident "AmountOne")))) (Rec (SubUnQuoted (Ident "Bob"))) (DateSpe (DateSpeOnThe (NumInt 5) MDec (NumInt 2023))))) (StateSim (SimStateOneNH (IDSim (NumInt 3)) (SubUnQuoted (Ident "Bob")) (ModalObli ObliTwo) VDel (ObjNonNu (NonNumOther (SubUnQuoted (Ident "ring")))) (Rec (SubUnQuoted (Ident "Alice"))) (DateSpe (DateSpeOnThe (NumInt 10) MDec (NumInt 2023))))))) (ConComp (ComConDef (ConDefIfThen (CondiSim (SimConFiveNH (IDSim (NumInt 4)) (BoolEx (SubUnQuoted (Ident "Neo")) VSPay (CompareMore MoreOne) (SubUnQuoted (Ident "Will"))))) (DefSim (SimDefIs (IDSim (NumInt 5)) (SubUnQuoted (Ident "PartyA")) (SubUnQuoted (Ident "Neo"))))))))
 allFourComponentsAndAST = ConAnd (ComDef (DefSim (SimDefIs (IDSim (NumInt 1)) (SubUnQuoted (Ident "PartyA")) (SubUnQuoted (Ident "Alice"))))) (ConAnd (ComState (StateSim (SimStateOneNH (IDSim (NumInt 2)) (SubUnQuoted (Ident "Alice")) ModalForbi VCharge (ObjNu (NumAmount (SubQuoted "delivery fee"))) (Rec (SubUnQuoted (Ident "Bob"))) DateAny))) (ConAnd (ComConDef (ConDefIfThen (CondiSim (SimConFiveNH (IDSim (NumInt 3)) (BoolEx (SubUnQuoted (Ident "Natalie")) VSPay (CompareMore MoreOne) (SubUnQuoted (Ident "Rachel"))))) (DefSim (SimDefIs (IDSim (NumInt 4)) (SubUnQuoted (Ident "Natalie")) (SubUnQuoted (Ident "PartyB")))))) (ConComp (ComConState (ConStateIfThen (CondiSim (SimConOneNH (IDSim (NumInt 5)) (SubUnQuoted (Ident "Viola")) VSPay (ObjNu (NumPound PoundTwo (NumInt 20))) (Rec (SubUnQuoted (Ident "Leo"))) (DateSpe (DateSpeOnThe (NumInt 30) MApr (NumInt 2023))))) (StateSim (SimStateOne (IDSim (NumInt 6)) HoldYes (SubUnQuoted (Ident "Leo")) ModalPermi VDel (ObjNonNu (NonNumRep (SubUnQuoted (Ident "receipt")))) (Rec (SubUnQuoted (Ident "Viola"))) DateAny)))))))
 
-bikeDeliveryAST = ConAnd (ComConState (ConStateIfThen (CondiOr (SimConOne (IDSim (NumInt 1)) HoldYes (SubUnQuoted (Ident "Alice")) VSPay (ObjNu (NumPound PoundTwo (NumInt 100))) (Rec (SubUnQuoted (Ident "Bob"))) (DateSpe (DateSpeOnThe (NumInt 1) MApr (NumInt 2021)))) (CondiSim (SimConOne (IDSim (NumInt 2)) HoldYes (SubUnQuoted (Ident "Alice")) VSPay (ObjNu (NumDol DollarTwo (NumInt 120))) (Rec (SubUnQuoted (Ident "Bob"))) (DateSpe (DateSpeOnThe (NumInt 1) MApr (NumInt 2021)))))) (StateSim (SimStateOne (IDSim (NumInt 3)) HoldYes (SubUnQuoted (Ident "Bob")) (ModalObli ObliTwo) VDel (ObjNonNu (NonNumOther (SubUnQuoted (Ident "bicycle")))) (Rec (SubUnQuoted (Ident "Alice"))) (DateSpe (DateSpeOnThe (NumInt 5) MApr (NumInt 2021))))))) (ConComp (ComState (StateAnd (SimStateOne (IDSim (NumInt 4)) HoldYes (SubUnQuoted (Ident "Bob")) ModalPermi VDel (ObjNonNu (NonNumRep (SubUnQuoted (Ident "receipt")))) (Rec (SubUnQuoted (Ident "Alice"))) DateAny) (StateSim (SimStateOne (IDSim (NumInt 5)) HoldYes (SubUnQuoted (Ident "Bob")) ModalForbi VCharge (ObjNu (NumAmount (SubQuoted "delivery fee"))) (Rec (SubUnQuoted (Ident "Alice"))) DateAny)))))
+bikeDeliveryOriginalAST = ConAnd (ComConState (ConStateIfThen (CondiOr (SimConOne (IDSim (NumInt 1)) HoldYes (SubUnQuoted (Ident "Alice")) VSPay (ObjNu (NumPound PoundTwo (NumInt 100))) (Rec (SubUnQuoted (Ident "Bob"))) (DateSpe (DateSpeOnThe (NumInt 1) MApr (NumInt 2021)))) (CondiSim (SimConOne (IDSim (NumInt 2)) HoldYes (SubUnQuoted (Ident "Alice")) VSPay (ObjNu (NumDol DollarTwo (NumInt 120))) (Rec (SubUnQuoted (Ident "Bob"))) (DateSpe (DateSpeOnThe (NumInt 1) MApr (NumInt 2021)))))) (StateSim (SimStateOne (IDSim (NumInt 3)) HoldYes (SubUnQuoted (Ident "Bob")) (ModalObli ObliTwo) VDel (ObjNonNu (NonNumOther (SubUnQuoted (Ident "bicycle")))) (Rec (SubUnQuoted (Ident "Alice"))) (DateSpe (DateSpeOnThe (NumInt 5) MApr (NumInt 2021))))))) (ConComp (ComState (StateAnd (SimStateOne (IDSim (NumInt 4)) HoldYes (SubUnQuoted (Ident "Bob")) ModalPermi VDel (ObjNonNu (NonNumRep (SubUnQuoted (Ident "receipt")))) (Rec (SubUnQuoted (Ident "Alice"))) DateAny) (StateSim (SimStateOne (IDSim (NumInt 5)) HoldYes (SubUnQuoted (Ident "Bob")) ModalForbi VCharge (ObjNu (NumAmount (SubQuoted "delivery fee"))) (Rec (SubUnQuoted (Ident "Alice"))) DateAny)))))
 
 bikeDeliveryModifiedAST = ConComp (ComConState (ConStateIfThen (CondiOr (SimConOne (IDSim (NumInt 1)) HoldYes (SubUnQuoted (Ident "Alice")) VSPay (ObjNu (NumPound PoundTwo (NumInt 100))) (Rec (SubUnQuoted (Ident "Bob"))) (DateSpe (DateSpeOnThe (NumInt 1) MApr (NumInt 2021)))) (CondiSim (SimConOne (IDSim (NumInt 2)) HoldYes (SubUnQuoted (Ident "Alice")) VSPay (ObjNu (NumDol DollarTwo (NumInt 120))) (Rec (SubUnQuoted (Ident "Bob"))) (DateSpe (DateSpeOnThe (NumInt 1) MApr (NumInt 2021)))))) (StateAnd (SimStateOne (IDSim (NumInt 3)) HoldYes (SubUnQuoted (Ident "Bob")) (ModalObli ObliTwo) VDel (ObjNonNu (NonNumOther (SubUnQuoted (Ident "bicycle")))) (Rec (SubUnQuoted (Ident "Alice"))) (DateSpe (DateSpeOnThe (NumInt 5) MApr (NumInt 2021)))) (StateAnd (SimStateOne (IDSim (NumInt 4)) HoldYes (SubUnQuoted (Ident "Bob")) ModalPermi VDel (ObjNonNu (NonNumRep (SubUnQuoted (Ident "receipt")))) (Rec (SubUnQuoted (Ident "Alice"))) DateAny) (StateSim (SimStateOne (IDSim (NumInt 5)) HoldYes (SubUnQuoted (Ident "Bob")) ModalForbi VCharge (ObjNu (NumAmount (SubQuoted "delivery fee"))) (Rec (SubUnQuoted (Ident "Alice"))) DateAny))))))
 
@@ -109,7 +109,7 @@ guarantorAST = ConAnd (ComState (StateSim (SimStateOne (IDSim (NumInt 1)) HoldYe
 
 sampleTests :: [(String, Contract)]
 sampleTests =
-    [ (emptyContract, emptyContractAST)
+    [(emptyContract, emptyContractAST)
     , (simpleDefinition1, simpleDefinition1AST)
     , (simpleDefinition2, simpleDefinition2AST)
     , (simpleDefinition3, simpleDefinition3AST)
@@ -186,13 +186,12 @@ sampleTests =
     , (definitionAndStatementAndConditionalStatement, definitionAndStatementAndConditionalStatementAST)
     , (definitionAndConditionalStatementAndConditionalDefinition, definitionAndConditionalStatementAndConditionalDefinitionAST)
     , (allFourComponentsAnd, allFourComponentsAndAST)
-    , (bikeDeliveryOriginal, bikeDeliveryAST)
+    , (bikeDeliveryOriginal, bikeDeliveryOriginalAST)
     , (bikeDeliveryModified, bikeDeliveryModifiedAST)
     , (bikeDeliverySanction, bikeDeliverySanctionAST)
     , (isdaOriginal, isdaOriginalAST)
     , (isdaModified, isdaModifiedAST)
-    , (guarantor, guarantorAST)
-    ]
+    , (guarantor, guarantorAST)]
 
 parserTest :: IO ()
 parserTest = do
