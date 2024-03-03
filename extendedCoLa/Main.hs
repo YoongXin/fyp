@@ -1,7 +1,7 @@
 module Main where
 
 import Prelude
-  ( ($), (.), (==)
+  ( ($), (.), (==), (<$>)
   , Either(..)
   , Int, (>)
   , String, (++), concat, unlines
@@ -36,6 +36,7 @@ import qualified Data.Map as Map
 import Control.Monad.State
 import System.IO 
 import System.Process
+import Data.Time
 
 parseContract :: String -> Contract
 parseContract contractString =
@@ -104,15 +105,17 @@ checkInconsistency contractFilePath performanceFilePath = do
 
     let combinedOutput = contractFullForm ++ "\n\n" ++ performanceFullForm ++ "\n\n" ++ axioms
 
-    -- Write the combined output to a new file
-    writeFile "checkInconsistency.p" combinedOutput
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
 
-    putStrLn "Combined TPTP representation written to checkInconsistency.p\n"
+    let tptpFilePath = "output/checkInconsistency" ++ timeStamp ++ ".p"
+
+    writeFile tptpFilePath combinedOutput
+
+    putStrLn $ "Combined TPTP representation written to " ++ tptpFilePath ++ "\n"
       
     -- Run the Vampire command and capture its output
-    output <- readProcess "./vampire_rel" ["--input_file", "checkInconsistency.p"] ""
+    output <- readProcess "./vampire_rel" ["--input_file", tptpFilePath] ""
 
-    -- Display the output in the terminal
     putStrLn "Vampire command output:"
     putStrLn output
 
@@ -165,9 +168,9 @@ checkInconsistencyContract contractString performanceString = do
 
     let combinedOutput = contractFullForm ++ "\n\n" ++ performanceFullForm ++ "\n\n" ++ axioms
 
-    writeFile "checkInconsistency.p" combinedOutput
+    writeFile "output/checkInconsistency.p" combinedOutput
       
-    output <- readProcess "./vampire_rel" ["--input_file", "checkInconsistency.p"] ""
+    output <- readProcess "./vampire_rel" ["--input_file", "output/checkInconsistency.p"] ""
 
     let outputTwo = determineOutputTwo output
     return outputTwo
@@ -184,13 +187,18 @@ convertToNFA contractFilePath = do
     let graph = nfaToGraph nfa
     let dotFile = visualizeGraph nfa graph
 
-    writeFile "nfa.dot" dotFile
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
 
-    putStrLn "Dot file written to nfa.dot\n"
+    let graphFilePath = "output/graph" ++ timeStamp ++ ".dot" 
+    let pngFilePath = "output/graph" ++ timeStamp ++ ".png"
 
-    callCommand $ "dot -Tpng nfa.dot -o nfa.png"
+    writeFile graphFilePath dotFile
 
-    putStrLn "NFA image generated"
+    putStrLn $ "Dot file written to " ++ graphFilePath ++ "\n"
+
+    callCommand $ "dot -Tpng " ++ graphFilePath ++ " -o " ++ pngFilePath
+
+    putStrLn "Graph image generated"
 
 findPathInNFA :: FilePath -> Node -> Node -> Int -> IO ()
 findPathInNFA contractFilePath startNode endNode numEdges = do
@@ -198,11 +206,16 @@ findPathInNFA contractFilePath startNode endNode numEdges = do
     let nfa = runNFAConversion (parseContract contractString)
     let dotFile = visualisePossiblePath nfa startNode endNode numEdges
 
-    writeFile "nfaWithPathHighlighted.dot" dotFile
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
 
-    putStrLn "Dot file written to nfaWithPathHighlighted.dot\n"
+    let graphFilePath = "output/graphWithPathHighlighted" ++ timeStamp ++ ".dot" 
+    let pngFilePath = "output/graphWithpPathHighlighted" ++ timeStamp ++ ".png"
 
-    callCommand $ "dot -Tpng nfaWithPathHighlighted.dot -o nfaWithPathHighlighted.png"
+    writeFile graphFilePath dotFile
+
+    putStrLn $ "Dot file written to " ++ graphFilePath ++ "\n"
+
+    callCommand $ "dot -Tpng " ++ graphFilePath ++ " -o " ++ pngFilePath
 
     putStrLn "NFA image with possible path highlighted generated"
 
@@ -211,9 +224,13 @@ convertToPetriNet contractFilePath = do
     contractString <- readFile contractFilePath
     let petriNet = printPNContract (contractToPN (parseContract contractString))
 
-    writeFile "petriNetPythonCode.txt" petriNet
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
 
-    putStrLn "Petri net file written to petriNetPythonCode.txt"
+    let codeFilePath = "output/petriNetPythonCode" ++ timeStamp ++ ".txt"
+
+    writeFile codeFilePath petriNet
+
+    putStrLn $ "Petri net file written to " ++ codeFilePath ++ "\n"
 
     putStrLn "Copy file content to python for visualization"
 
@@ -226,11 +243,15 @@ checkCompleteness contractFilePath = do
         completenessScore = generateCompletenessScoring ast completenessReport'
         completenessReport = printCompletenessReport completenessReport' completenessScore
 
-    writeFile "completenessReport.txt" completenessReport
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
 
-    putStrLn "Completeness Report Generated"
+    let reportFilePath = "output/completenessReport" ++ timeStamp ++ ".txt"
 
-    putStrLn "Check completenessReport.txt"
+    writeFile reportFilePath completenessReport
+
+    putStrLn "Completeness Report Generated\n"
+
+    putStrLn $ "Check " ++ reportFilePath
 
 convertToDFA :: FilePath -> IO ()
 convertToDFA contractFilePath = do
@@ -239,11 +260,16 @@ convertToDFA contractFilePath = do
     let graph = dfaToGraph dfa
     let dotFile = visualizeGraphDFA dfa graph
 
-    writeFile "dfa.dot" dotFile
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
 
-    putStrLn "Dot file written to dfa.dot\n"
+    let dotFilePath = "output/dfa" ++ timeStamp ++ ".dot"
+    let pngFilePath = "output/dfa" ++ timeStamp ++ ".png"
 
-    callCommand $ "dot -Tpng dfa.dot -o dfa.png"
+    writeFile dotFilePath dotFile
+
+    putStrLn $ "Dot file written to " ++ dotFilePath ++ "\n"
+
+    callCommand $ "dot -Tpng " ++ dotFilePath ++ " -o " ++ pngFilePath
 
     putStrLn "DFA image generated"
 

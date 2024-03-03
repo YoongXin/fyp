@@ -9,7 +9,7 @@ digraph {
       ,fillcolor=lightblue
       ,style=filled];
     4 [label="(4) Bob MUST NOT charge Amount \"delivery fee\" to Alice on ANYDATE"
-      ,fillcolor=lightblue
+      ,fillcolor=lightgray
       ,style=filled];
     5 [label="(5) Bob MUST deliver OtherObject \"bicycle\" to Alice on the 5 April 2021"
       ,fillcolor=lightblue
@@ -35,9 +35,9 @@ digraph {
            ,fontcolor=lightgray
            ,color=lightgray];
     3 -> 4 [label=EPSILON
-           ,fillcolor=blue
-           ,fontcolor=blue
-           ,color=blue];
+           ,fillcolor=lightgray
+           ,fontcolor=lightgray
+           ,color=lightgray];
     4 -> 1 [label="Bob DIDN'T charge Amount \"delivery fee\" to Alice on ANYDATE"
            ,fillcolor=lightgray
            ,fontcolor=lightgray

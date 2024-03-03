@@ -249,13 +249,6 @@ removeNonBreachTransitions :: Set.Set TransitionD -> Set.Set EventD -> Set.Set T
 removeNonBreachTransitions transitions events =
     Set.filter (\(TransitionD _ event _) -> not (event `Set.member` events)) transitions
 
--- exampleStateDict :: StateDictionary
--- exampleStateDict = Map.fromList
---     [ (StateAD "Hello", (Set.fromList [EventD "World", EventD "Bye"], 1))
---     , (StateAD "Chris", (Set.singleton (EventD "Clack"), 3))
---     , (StateAD "hate", (Set.fromList [EventD "mad", EventD "everyone"], 1))
---     ]
-
 dateSpeToInt :: Num -> Month -> Num -> Integer
 dateSpeToInt (NumInt year) month (NumInt day) = dateToInt year (monthToInt month) (fromInteger day)
 
@@ -402,6 +395,9 @@ generateBreachEvent subject verb object receiver date =
                     let eventStr = "Occurrence of " ++ temporalOffsetToString to ++ " " ++ temporalQuantifierToString tq1 ++ " THEDATE " ++ subjectToString the
                     in EventD eventStr
 
+generateTransitionsAccepting :: [StateAD] -> [StateAD] -> State (StateDictionary, SelfLoopingEvents) [TransitionD]
+generateTransitionsAccepting ac1 ac2 = concat <$> mapM (\state1 -> concat <$> mapM (generateTransition state1) ac1) ac2
+
 contractToDFA :: Contract -> State (StateDictionary, SelfLoopingEvents) DFA
 contractToDFA (ConEmpty) = return $ DFA 
     { states = Set.singleton $ StateAD "Empty"
@@ -421,10 +417,13 @@ contractToDFA (ConAnd component contract) = do
         endStates1 = acceptingStates dfa1
         endStates2 = acceptingStates dfa2
 
+    newTransitions1 <- generateTransitionsAccepting (Set.toList endStates1) (Set.toList endStates2)
+    newTransitions2 <- generateTransitionsAccepting (Set.toList endStates2) (Set.toList endStates1)
+
     return $ DFA
       { states = Set.union (combinedStates) (Set.singleton $ StateAD "Start")
       , events = combinedEvents
-      , transitions = combinedTransitions
+      , transitions = Set.unions [(combinedTransitions), (Set.fromList newTransitions1), (Set.fromList newTransitions2)]
       , startStates = Set.singleton $ StateAD "Start"
       , acceptingStates = Set.union (endStates1) (endStates2)
       }
