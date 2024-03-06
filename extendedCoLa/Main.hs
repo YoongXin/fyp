@@ -1,42 +1,31 @@
 module Main where
 
 import Prelude
-  ( ($), (.), (==), (<$>)
-  , Either(..)
-  , Int, (>)
-  , String, (++), concat, unlines
-  , Show, show
-  , IO, (>>), (>>=), mapM_, putStrLn
-  , FilePath
-  , getContents, readFile, error, otherwise
+  ( ($), (.), (==), (<$>), (>>), (>>=), (>), (++)
+  , Either(..), Int, String, Show, IO, FilePath
+  , concat, unlines, show, mapM_, putStrLn, getContents, readFile, error, otherwise
   )
-import System.Environment ( getArgs )
-import System.Exit        ( exitFailure )
-import Control.Monad      ( when )
+
 import Data.Graph.Inductive.Graph 
-import System.IO.Unsafe (unsafePerformIO)
-
-import AbsCoLa   
-import LexCoLa   ( Token, mkPosToken )
-import ParCoLa   ( pContract, myLexer )
-import PrintCoLa ( Print, printTree )
-import SkelCoLa  ()
-import GenerateAST
-import AstToFOL
-import FOLToTPTP
-import AstToNFA
-import AstToPetriNet
-import ExampleContracts
-import CheckCompleteness
-import AstToDFA
-import ComplexityAnalysis
-
-import Data.List (isInfixOf)
-import qualified Data.Map as Map
 import Control.Monad.State
 import System.IO 
 import System.Process
 import Data.Time
+import System.IO.Unsafe ( unsafePerformIO )
+import Data.List ( isInfixOf )
+import qualified Data.Map as Map
+
+import Parser.AbsCoLa   
+import Parser.ParCoLa 
+import Parser.GenerateAst
+import Helper.ExampleContracts
+import ContractAnalysis.AstToFol
+import ContractAnalysis.FolToTptp
+import ContractAnalysis.AstToGraph
+import ContractAnalysis.AstToDfa
+import ContractAnalysis.AstToPetriNet
+import ContractAnalysis.CompletenessAnalysis
+import ContractAnalysis.ComplexityAnalysis
 
 parseContract :: String -> Contract
 parseContract contractString =
@@ -180,8 +169,8 @@ getConsistencyAnalysisResult ioResult = unsafePerformIO $ do
     result <- ioResult
     return (if result == "No inconsistency detected" then "Consistent" else "Inconsistent")
 
-convertToNFA :: FilePath -> IO ()
-convertToNFA contractFilePath = do
+convertToGraph :: FilePath -> IO ()
+convertToGraph contractFilePath = do
     contractString <- readFile contractFilePath
     let nfa = runNFAConversion (parseContract contractString)
     let graph = nfaToGraph nfa
@@ -200,8 +189,8 @@ convertToNFA contractFilePath = do
 
     putStrLn "Graph image generated"
 
-findPathInNFA :: FilePath -> Node -> Node -> Int -> IO ()
-findPathInNFA contractFilePath startNode endNode numEdges = do
+findPathInGraph :: FilePath -> Node -> Node -> Int -> IO ()
+findPathInGraph contractFilePath startNode endNode numEdges = do
     contractString <- readFile contractFilePath
     let nfa = runNFAConversion (parseContract contractString)
     let dotFile = visualisePossiblePath nfa startNode endNode numEdges

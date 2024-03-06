@@ -3,8 +3,8 @@ module Test.InconsistencyAnalysisTest where
 import Test.QuickCheck
 import Data.List (isInfixOf)
 import qualified Main as CoLaParser
-import AbsCoLa 
-import ExampleContracts
+import Parser.AbsCoLa 
+import Helper.ExampleContracts
 
 prop_consistencyChecking :: String -> String -> String -> Property
 prop_consistencyChecking inputContract inputPerformance expectedResult =

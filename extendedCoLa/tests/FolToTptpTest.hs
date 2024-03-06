@@ -2,9 +2,9 @@ module Test.FolToTptpTest where
 
 import Test.QuickCheck
 import qualified Main as CoLaParser
-import FOLToTPTP
-import AbsCoLa 
-import ExampleContracts
+import ContractAnalysis.FolToTptp
+import Parser.AbsCoLa 
+import Helper.ExampleContracts
 
 prop_convertToTPTP :: String -> String -> Property
 prop_convertToTPTP input expectedTPTPFormula =

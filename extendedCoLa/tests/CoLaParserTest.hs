@@ -2,8 +2,8 @@ module Test.CoLaParserTest where
 
 import Test.QuickCheck
 import qualified Main as CoLaParser
-import AbsCoLa 
-import ExampleContracts
+import Parser.AbsCoLa 
+import Helper.ExampleContracts
 
 prop_parseSentence :: String -> Contract -> Property
 prop_parseSentence input expectedContract =
