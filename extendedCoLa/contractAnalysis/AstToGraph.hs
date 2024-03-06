@@ -6,33 +6,31 @@ import Prelude
   , zip, foldr, foldl, filter, otherwise, elem, reverse, break, tail, length, any, putStrLn, unlines, show
   )
 
+import Data.GraphViz
+import Debug.Trace
+import Control.Monad.State
+import Data.Graph.Inductive.Graph          
 import qualified Data.Set as Set
 import qualified Data.Map as Map
-import Control.Monad.State
-import Data.List (map, lookup, sort, group, concatMap) 
-import Data.List (foldl')
-import Data.List (stripPrefix)
 import qualified Data.List as List
-
-import Data.Maybe (fromMaybe)
-
-import Debug.Trace
-
-import Data.Functor ((<&>))
-import qualified Data.Text.Lazy as L (pack, unpack)
-import qualified Data.Text.Lazy.IO as IO (putStrLn)
-import Data.Graph.Inductive.Graph          
-import Data.Graph.Inductive.PatriciaTree (Gr)
-import Data.GraphViz                       
-import Data.GraphViz.Attributes (Attribute(..))
 import qualified Data.GraphViz.Attributes.Complete as Gv
-import Data.GraphViz.Printing (renderDot, toDot)
-import Data.Text.Internal.Lazy (Text)
-import Data.Graph.Inductive (LEdge)
 import qualified Data.GraphViz.Attributes.Colors as Gvc
 
+import Data.List ( map, lookup, sort, group, concatMap ) 
+import Data.List ( foldl' )
+import Data.List ( stripPrefix )
+import Data.Maybe ( fromMaybe )
+import Data.Functor ( (<&>) )
+import Data.Graph.Inductive.PatriciaTree ( Gr )
+import Data.GraphViz.Attributes ( Attribute(..) )
+import Data.GraphViz.Printing ( renderDot, toDot )
+import Data.Text.Internal.Lazy ( Text )
+import Data.Graph.Inductive ( LEdge )
+import qualified Data.Text.Lazy as L ( pack, unpack )
+import qualified Data.Text.Lazy.IO as IO ( putStrLn )
 
-import Parser.AbsCoLa   
+import Parser.AbsCoLa  
+import Helper.ToStringFunctions 
 
 type StateDict = Map.Map StateA Event
 
@@ -100,7 +98,6 @@ prettyPrintNFA nfa = putStrLn $ printNFA nfa
 modifyStateDict :: (StateDict -> StateDict) -> State StateDict ()
 modifyStateDict f = modify f
 
--- Helper function to add a state and event to the StateDict
 addToStateDict :: StateA -> Event -> State StateDict ()
 addToStateDict newState newEvent = do
     modifyStateDict (\dict -> Map.insert newState newEvent dict)
@@ -110,117 +107,6 @@ generateTransitions stateSet1 stateSet2 = do
     updatedMap <- get
     let transitionsList = [Transition frontState (Map.findWithDefault (Event "DefaultEvent") frontState updatedMap) backState | frontState <- Set.toList stateSet1, backState <- Set.toList stateSet2]
     return transitionsList
-
-subjectToString :: Subject -> String
-subjectToString (SubQuoted str) = str
-subjectToString (SubUnQuoted ident) = getIdentString ident
-
-getIdentString :: Ident -> String
-getIdentString (Ident str) = str
-
-numericalExpressionToString :: NumericalExpression -> String
-numericalExpressionToString (NumExpNum (NumInt n)) = show n 
-numericalExpressionToString (NumExpObj numObj) = numericalObjectToString numObj
-numericalExpressionToString (NumExpOp expr1 operator expr2) =
-    let str1 = numericalExpressionToString expr1
-        str2 = numericalExpressionToString expr2
-        operatorStr = case operator of
-            OpPlus -> " + "
-            OpMin -> " - "
-            OpMult -> " * "
-            OpDiv -> " / "
-    in str1 ++ operatorStr ++ str2
-
-numericalObjectToString :: NumericalObject -> String
-numericalObjectToString (NumPound _ (NumInt n)) = "£" ++ show n
-numericalObjectToString (NumDol _ (NumInt n)) = "$" ++ show n
-numericalObjectToString (NumEur _ (NumInt n)) = "€" ++ show n
-numericalObjectToString (NumAmount subject) = subjectToString subject
-
-dateSpeToString :: Num -> Month -> Num -> String
-dateSpeToString (NumInt day) month (NumInt year) = show day ++ " " ++ monthToString month ++ " " ++ show year
-
-monthToString :: Month -> String
-monthToString MJan = "January"
-monthToString MFeb = "February"
-monthToString MMar = "March"
-monthToString MApr = "April"
-monthToString MMay = "May"
-monthToString MJun = "June"
-monthToString MJul = "July"
-monthToString MAug = "August"
-monthToString MSep = "September"
-monthToString MOct = "October"
-monthToString MNov = "November"
-monthToString MDec = "December"
-
-verbToString :: Verb -> String
-verbToString VDel = "deliver"
-verbToString VPay = "pay"
-verbToString VCharge = "charge"
-verbToString VRefund = "refund"
-
-objectToString :: Object -> String
-objectToString (ObjNu (NumPound _ (NumInt num))) = "£" ++ show num
-objectToString (ObjNu (NumDol _ (NumInt num))) = "$" ++ show num
-objectToString (ObjNu (NumEur _ (NumInt num))) = "€" ++ show num
-objectToString (ObjNu (NumAmount subject)) = "Amount \"" ++ subjectToString subject ++ "\""
-objectToString (ObjNonNu (NonNumCurr subject)) = "SomeCurrency \"" ++ subjectToString subject ++ "\""
-objectToString (ObjNonNu (NonNumRep subject)) = "Report \"" ++ subjectToString subject ++ "\""
-objectToString (ObjNonNu (NonNumNamed subject)) = "NamedObject \"" ++ subjectToString subject ++ "\""
-objectToString (ObjNonNu (NonNumOther subject)) = "OtherObject \"" ++ subjectToString subject ++ "\""
-
-receiverToString :: Receiver -> String
-receiverToString (Rec subject) = subjectToString subject
-
-dateToString :: Date -> String
-dateToString (DateSpe (DateSpeOnThe day month year)) = "on the " ++ dateSpeToString day month year
-dateToString (DateSpe (DateSpeOn day month year)) = "on " ++ dateSpeToString day month year
-dateToString (DateAny) = "on ANYDATE"
-dateToString (DateSome subject) = "on SOMEDATE " ++ subjectToString subject
-dateToString (DateThe subject) = "on THEDATE " ++ subjectToString subject
-dateToString (DateQuanSpecific tq day month year) = temporalQuantifierToString tq ++ dateSpeToString day month year  
-dateToString (DateQuanSome tq subject) = temporalQuantifierToString tq ++ "SOMEDATE " ++ subjectToString subject
-dateToString (DateQuanThe tq subject) = temporalQuantifierToString tq ++ "THEDATE " ++ subjectToString subject
-dateToString (DateQuanSomeWO to tq subject) = temporalOffsetToString to ++ temporalQuantifierToString tq ++ "SOMEDATE " ++ subjectToString subject
-dateToString (DateQuanTheWO to tq subject) = temporalOffsetToString to ++ temporalQuantifierToString tq ++ "THEDATE " ++ subjectToString subject
-dateToString (DateQuanTempSome tq1 to tq2 subject) = temporalQuantifierToString tq1 ++ temporalOffsetToString to ++ temporalQuantifierToString tq2 ++ "SOMEDATE " ++ subjectToString subject
-dateToString (DateQuanTempThe tq1 to tq2 subject) = temporalQuantifierToString tq1 ++ temporalOffsetToString to ++ temporalQuantifierToString tq2 ++ "THEDATE " ++ subjectToString subject
-
-temporalQuantifierToString :: TemporalQuantifier -> String
-temporalQuantifierToString TempAfter = " AFTER "
-temporalQuantifierToString TempBefore = " BEFORE "
-
-temporalOffsetToString :: TemporalOffset -> String
-temporalOffsetToString (TempOffDay num) = show num ++ " day"
-temporalOffsetToString (TempOffYear num) = show num ++ " year"
-temporalOffsetToString (TempOffWeek num) = show num ++ " week"
-temporalOffsetToString (TempOffDays num) = show num ++ " days"
-temporalOffsetToString (TempOffYears num) = show num ++ " years"
-temporalOffsetToString (TempOffWeeks num) = show num ++ " weeks"
-
-verbToVerbStatusString :: Verb -> String
-verbToVerbStatusString VDel = "delivered"
-verbToVerbStatusString VPay = "paid"
-verbToVerbStatusString VCharge = "charged"
-verbToVerbStatusString VRefund = "refunded"
-
-verbStatusToString :: VerbStatus -> String
-verbStatusToString VSDel = "delivered"
-verbStatusToString VSPay = "paid"
-verbStatusToString VSCharge = "charged"
-verbStatusToString VSRefund = "refunded"
-
-verbStatusToVerbString :: VerbStatus -> String
-verbStatusToVerbString VSDel = "deliver"
-verbStatusToVerbString VSPay = "pay"
-verbStatusToVerbString VSCharge = "charge"
-verbStatusToVerbString VSRefund = "refund"
-
-comparisonToString :: Comparison -> String
-comparisonToString (CompareLess) = "LESS THAN"
-comparisonToString (CompareEq _) = "EQUAL TO"
-comparisonToString (CompareMore _) = "MORE THAN"
 
 contractToNFA :: Contract -> State StateDict NFA
 contractToNFA (ConEmpty) = return $ NFA 
@@ -1138,14 +1024,6 @@ notCreateNFABooleanExpressionNH boolEx = do
         , startStates = Set.singleton yesState
         , acceptingStates = Set.singleton yesState
         }
-
-yesBooleanExpressionToString :: BooleanExpression -> String
-yesBooleanExpressionToString (BoolEx subject1 verbStatus comparison subject2) =
-    subjectToString subject1 ++ " " ++ verbStatusToString verbStatus ++ " " ++ comparisonToString comparison ++ " " ++ subjectToString subject2
-
-noBooleanExpressionToString :: BooleanExpression -> String
-noBooleanExpressionToString (BoolEx subject1 verbStatus comparison subject2) =
-    subjectToString subject1 ++ " DIDN'T " ++ verbStatusToVerbString verbStatus ++ " " ++ comparisonToString comparison ++ " " ++ subjectToString subject2
 
 runNFAConversion :: Contract -> NFA
 runNFAConversion contract = evalState (contractToNFA contract) (Map.empty)

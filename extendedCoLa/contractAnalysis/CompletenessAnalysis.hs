@@ -15,6 +15,7 @@ import Control.Monad ( liftM2 )
 
 import Parser.AbsCoLa
 import ContractAnalysis.AstToDfa 
+import Helper.ToStringFunctions
 
 data CompletenessReport
     = IncompleteItems ([SimpleCondition], [SimpleDefinition], [SimpleCondition], [SimpleStatement], BoolExDictionary)
@@ -119,7 +120,7 @@ printBooleanExpression' id holds subject1 verbStatus comparison subject2 =
         holdStr = holdsToString holds
         subject1Str = subjectToString subject1
         verbStatusStr = verbStatusToString verbStatus
-        comparisonStr = comparisonToString comparison
+        comparisonStr = comparisonToString' comparison
         subject2Str = subjectToString subject2
 
         be = idStr ++ " " ++ holdStr ++ " " ++ subject1Str ++ " " ++ verbStatusStr ++ " " ++ comparisonStr ++ " " ++ subject2Str
@@ -130,7 +131,7 @@ printBooleanExpressionNH' id subject1 verbStatus comparison subject2 =
     let idStr = idToString id
         subject1Str = subjectToString subject1
         verbStatusStr = verbStatusToString verbStatus
-        comparisonStr = comparisonToString comparison
+        comparisonStr = comparisonToString' comparison
         subject2Str = subjectToString subject2
 
         be = idStr ++ " " ++ subject1Str ++ " " ++ verbStatusStr ++ " " ++ comparisonStr ++ " " ++ subject2Str
@@ -191,122 +192,6 @@ printKeyValuePair key values acc =
         ids = map snd values
         linesToPrint = zipWith (\comparison id -> id ++ " " ++ keyWithoutLastWord ++ " " ++ comparison ++ " " ++ lastWord ++ "\n") comparisons ids
     in acc ++ concat linesToPrint
-
-idToString :: ID -> String
-idToString (IDSim num) = "[" ++ numToString num ++ "]"
-idToString (IDRep num1 num2) = "[" ++ numToString num1 ++ "]"
-
-numToString :: Num -> String
-numToString (NumInt integer) = show integer
-
-holdsToString :: Holds -> String
-holdsToString (HoldYes) = "it is the case that"
-holdsToString (HoldNo) = "it is not the case that"
-
-subjectToString :: Subject -> String
-subjectToString (SubQuoted str) = str
-subjectToString (SubUnQuoted ident) = getIdentString ident
-
-getIdentString :: Ident -> String
-getIdentString (Ident str) = str
-
-verbStatusToString :: VerbStatus -> String
-verbStatusToString VSDel = "delivered"
-verbStatusToString VSPay = "paid"
-verbStatusToString VSCharge = "charged"
-verbStatusToString VSRefund = "refunded"
-
-comparisonToString :: Comparison -> String
-comparisonToString (CompareLess) = "less than"
-comparisonToString (CompareEq _) = "equal to"
-comparisonToString (CompareMore _) = "more than"
-
-objectToString :: Object -> String
-objectToString (ObjNu (NumPound _ (NumInt num))) = "£" ++ show num
-objectToString (ObjNu (NumDol _ (NumInt num))) = "$" ++ show num
-objectToString (ObjNu (NumEur _ (NumInt num))) = "€" ++ show num
-objectToString (ObjNu (NumAmount subject)) = "Amount \"" ++ subjectToString subject ++ "\""
-objectToString (ObjNonNu (NonNumCurr subject)) = "SomeCurrency \"" ++ subjectToString subject ++ "\""
-objectToString (ObjNonNu (NonNumRep subject)) = "Report \"" ++ subjectToString subject ++ "\""
-objectToString (ObjNonNu (NonNumNamed subject)) = "NamedObject \"" ++ subjectToString subject ++ "\""
-objectToString (ObjNonNu (NonNumOther subject)) = "OtherObject \"" ++ subjectToString subject ++ "\""
-
-receiverToString :: Receiver -> String
-receiverToString (Rec subject) = subjectToString subject
-
-dateToString :: Date -> String
-dateToString (DateSpe (DateSpeOnThe day month year)) = "on the " ++ dateSpeToString day month year
-dateToString (DateSpe (DateSpeOn day month year)) = "on " ++ dateSpeToString day month year
-dateToString (DateAny) = "on ANYDATE"
-dateToString (DateSome subject) = "on SOMEDATE " ++ subjectToString subject
-dateToString (DateThe subject) = "on THEDATE " ++ subjectToString subject
-dateToString (DateQuanSpecific tq day month year) = temporalQuantifierToString tq ++ dateSpeToString day month year  
-dateToString (DateQuanSome tq subject) = temporalQuantifierToString tq ++ "SOMEDATE " ++ subjectToString subject
-dateToString (DateQuanThe tq subject) = temporalQuantifierToString tq ++ "THEDATE " ++ subjectToString subject
-dateToString (DateQuanSomeWO to tq subject) = temporalOffsetToString to ++ temporalQuantifierToString tq ++ "SOMEDATE " ++ subjectToString subject
-dateToString (DateQuanTheWO to tq subject) = temporalOffsetToString to ++ temporalQuantifierToString tq ++ "THEDATE " ++ subjectToString subject
-dateToString (DateQuanTempSome tq1 to tq2 subject) = temporalQuantifierToString tq1 ++ temporalOffsetToString to ++ temporalQuantifierToString tq2 ++ "SOMEDATE " ++ subjectToString subject
-dateToString (DateQuanTempThe tq1 to tq2 subject) = temporalQuantifierToString tq1 ++ temporalOffsetToString to ++ temporalQuantifierToString tq2 ++ "THEDATE " ++ subjectToString subject
-
-temporalQuantifierToString :: TemporalQuantifier -> String
-temporalQuantifierToString TempAfter = " AFTER "
-temporalQuantifierToString TempBefore = " BEFORE "
-
-temporalOffsetToString :: TemporalOffset -> String
-temporalOffsetToString (TempOffDay num) = show num ++ " day"
-temporalOffsetToString (TempOffYear num) = show num ++ " year"
-temporalOffsetToString (TempOffWeek num) = show num ++ " week"
-temporalOffsetToString (TempOffDays num) = show num ++ " days"
-temporalOffsetToString (TempOffYears num) = show num ++ " years"
-temporalOffsetToString (TempOffWeeks num) = show num ++ " weeks"
-
-dateSpeToString :: Num -> Month -> Num -> String
-dateSpeToString (NumInt day) month (NumInt year) = show day ++ " " ++ monthToString month ++ " " ++ show year
-
-monthToString :: Month -> String
-monthToString MJan = "January"
-monthToString MFeb = "February"
-monthToString MMar = "March"
-monthToString MApr = "April"
-monthToString MMay = "May"
-monthToString MJun = "June"
-monthToString MJul = "July"
-monthToString MAug = "August"
-monthToString MSep = "September"
-monthToString MOct = "October"
-monthToString MNov = "November"
-monthToString MDec = "December"
-
-verbToString :: Verb -> String
-verbToString VDel = "deliver"
-verbToString VPay = "pay"
-verbToString VCharge = "charge"
-verbToString VRefund = "refund"
-
-modalVerbToString :: ModalVerb -> String
-modalVerbToString (ModalObli (ObliOne)) = "shall"
-modalVerbToString (ModalObli (ObliTwo)) = "must"
-modalVerbToString (ModalPermi) = "may"
-modalVerbToString (ModalForbi) = "is forbidden to"
-
-numericalExpressionToString :: NumericalExpression -> String
-numericalExpressionToString (NumExpNum (NumInt n)) = show n 
-numericalExpressionToString (NumExpObj numObj) = numericalObjectToString numObj
-numericalExpressionToString (NumExpOp expr1 operator expr2) =
-    let str1 = numericalExpressionToString expr1
-        str2 = numericalExpressionToString expr2
-        operatorStr = case operator of
-            OpPlus -> " + "
-            OpMin -> " - "
-            OpMult -> " * "
-            OpDiv -> " / "
-    in str1 ++ operatorStr ++ str2
-
-numericalObjectToString :: NumericalObject -> String
-numericalObjectToString (NumPound _ (NumInt n)) = "£" ++ show n
-numericalObjectToString (NumDol _ (NumInt n)) = "$" ++ show n
-numericalObjectToString (NumEur _ (NumInt n)) = "€" ++ show n
-numericalObjectToString (NumAmount subject) = subjectToString subject
 
 checkContractCompleteness :: Contract -> State BoolExDictionary CompletenessReport
 checkContractCompleteness (ConEmpty) = return $ IncompleteItems ([], [], [], [], Map.empty)
@@ -470,7 +355,7 @@ checkBoolExCompleteness id holds subject1 verbStatus comparison subject2 =
         holdStr = holdsToString holds
         subject1Str = subjectToString subject1
         verbStatusStr = verbStatusToString verbStatus
-        comparisonStr = comparisonToString comparison
+        comparisonStr = comparisonToString' comparison
         subject2Str = subjectToString subject2
 
         sentenceStr = holdStr ++ " " ++ subject1Str ++ " " ++ verbStatusStr ++ " " ++ subject2Str

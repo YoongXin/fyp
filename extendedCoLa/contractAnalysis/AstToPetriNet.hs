@@ -8,7 +8,8 @@ import Prelude
 
 import Data.List ( map, intercalate, concatMap )
 
-import Parser.AbsCoLa   
+import Parser.AbsCoLa  
+import Helper.ToStringFunctions 
 
 data PNContract
     = PNContract ([PNStatement], [PNConditionalStatement], [PNDefinition], [PNConditionalDefinition])
@@ -45,23 +46,6 @@ data PNDefinition
 data PNConditionalDefinition 
     = PNConditionalDefinition PNCondition PNDefinition
   deriving (Eq, Read, Show)
-
-dateSpeToString :: Num -> Month -> Num -> String
-dateSpeToString (NumInt day) month (NumInt year) = show day ++ " " ++ monthToString month ++ " " ++ show year
-
-monthToString :: Month -> String
-monthToString MJan = "January"
-monthToString MFeb = "February"
-monthToString MMar = "March"
-monthToString MApr = "April"
-monthToString MMay = "May"
-monthToString MJun = "June"
-monthToString MJul = "July"
-monthToString MAug = "August"
-monthToString MSep = "September"
-monthToString MOct = "October"
-monthToString MNov = "November"
-monthToString MDec = "December"
 
 dateToSubject :: Num -> Month -> Num -> Subject
 dateToSubject day month year = SubQuoted (dateSpeToString day month year)
@@ -371,12 +355,6 @@ printNumericalExpression (NumExpOp expr1 operator expr2) =
             OpDiv -> " / "
     in str1 ++ operatorStr ++ str2
 
-numericalObjectToString :: NumericalObject -> String
-numericalObjectToString (NumPound _ (NumInt n)) = "£" ++ show n
-numericalObjectToString (NumDol _ (NumInt n)) = "$" ++ show n
-numericalObjectToString (NumEur _ (NumInt n)) = "€" ++ show n
-numericalObjectToString (NumAmount subject) = printSubject subject
-
 printPNStatement :: PNStatement -> String
 printPNStatement (PNTemporalActionStatement pnTest subject pnModalVerb verb object receiver date) 
     = "TemporalStatement('" ++ printSubject subject ++ "', '" ++ printModalVerb pnModalVerb ++ "', '" ++
@@ -419,5 +397,3 @@ printPNConditionalDefinition (PNConditionalDefinition pnCondition pnDefinition)
 
 runPetriNetConversion :: Contract -> IO()
 runPetriNetConversion contract = putStrLn $ printPNContract $ contractToPN contract
-
-

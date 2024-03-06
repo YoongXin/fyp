@@ -8,12 +8,20 @@ import Prelude
 
 import Parser.AbsCoLa 
 
+idToString :: ID -> String
+idToString (IDSim num) = "[" ++ numToString num ++ "]"
+idToString (IDRep num1 num2) = "[" ++ numToString num1 ++ "]"
+
 subjectToString :: Subject -> String
 subjectToString (SubQuoted str) = str
 subjectToString (SubUnQuoted ident) = getIdentString ident
 
 getIdentString :: Ident -> String
 getIdentString (Ident str) = str
+
+holdsToString :: Holds -> String
+holdsToString (HoldYes) = "it is the case that"
+holdsToString (HoldNo) = "it is not the case that"
 
 numericalExpressionToString :: NumericalExpression -> String
 numericalExpressionToString (NumExpNum (NumInt n)) = show n 
@@ -57,6 +65,12 @@ verbToString VPay = "pay"
 verbToString VCharge = "charge"
 verbToString VRefund = "refund"
 
+verbToString' :: Verb -> String
+verbToString' VDel = "Deliver"
+verbToString' VPay = "Pay"
+verbToString' VCharge = "Charge"
+verbToString' VRefund = "Refund"
+
 objectToString :: Object -> String
 objectToString (ObjNu (NumPound _ (NumInt num))) = "£" ++ show num
 objectToString (ObjNu (NumDol _ (NumInt num))) = "$" ++ show num
@@ -66,6 +80,16 @@ objectToString (ObjNonNu (NonNumCurr subject)) = "SomeCurrency \"" ++ subjectToS
 objectToString (ObjNonNu (NonNumRep subject)) = "Report \"" ++ subjectToString subject ++ "\""
 objectToString (ObjNonNu (NonNumNamed subject)) = "NamedObject \"" ++ subjectToString subject ++ "\""
 objectToString (ObjNonNu (NonNumOther subject)) = "OtherObject \"" ++ subjectToString subject ++ "\""
+
+objectToString' :: Object -> String
+objectToString' (ObjNu (NumPound _ (NumInt num))) = "ObjectPound" ++ show num
+objectToString' (ObjNu (NumDol _ (NumInt num))) = "ObjectDollar" ++ show num
+objectToString' (ObjNu (NumEur _ (NumInt num))) = "ObjectEuro" ++ show num
+objectToString' (ObjNu (NumAmount subject)) = "ObjectAmount" ++ subjectToString subject
+objectToString' (ObjNonNu (NonNumCurr subject)) = "ObjectSomeCurrency" ++ subjectToString subject
+objectToString' (ObjNonNu (NonNumRep subject)) = "ObjectReport" ++ subjectToString subject
+objectToString' (ObjNonNu (NonNumNamed subject)) = "ObjectNamedObject" ++ subjectToString subject
+objectToString' (ObjNonNu (NonNumOther subject)) = "ObjectOtherObject" ++ subjectToString subject
 
 receiverToString :: Receiver -> String
 receiverToString (Rec subject) = subjectToString subject
@@ -87,6 +111,10 @@ dateToString (DateQuanTempThe tq1 to tq2 subject) = temporalQuantifierToString t
 temporalQuantifierToString :: TemporalQuantifier -> String
 temporalQuantifierToString TempAfter = " AFTER "
 temporalQuantifierToString TempBefore = " BEFORE "
+
+temporalQuantifierToString' :: TemporalQuantifier -> String
+temporalQuantifierToString' TempAfter = "After"
+temporalQuantifierToString' TempBefore = "Before"
 
 temporalOffsetToString :: TemporalOffset -> String
 temporalOffsetToString (TempOffDay (NumInt num)) = show num ++ " day"
@@ -119,6 +147,11 @@ comparisonToString (CompareLess) = "LESS THAN"
 comparisonToString (CompareEq _) = "EQUAL TO"
 comparisonToString (CompareMore _) = "MORE THAN"
 
+comparisonToString' :: Comparison -> String
+comparisonToString' (CompareLess) = "less than"
+comparisonToString' (CompareEq _) = "equal to"
+comparisonToString' (CompareMore _) = "more than"
+
 dateToString' :: Date -> String
 dateToString' (DateSpe (DateSpeOnThe day month year)) = dateSpeToString day month year
 dateToString' (DateSpe (DateSpeOn day month year)) = dateSpeToString day month year
@@ -139,6 +172,12 @@ verbStatusToVerb VSPay = VPay
 verbStatusToVerb VSCharge = VCharge
 verbStatusToVerb VSRefund = VRefund
 
+modalVerbToString :: ModalVerb -> String
+modalVerbToString (ModalObli (ObliOne)) = "shall"
+modalVerbToString (ModalObli (ObliTwo)) = "must"
+modalVerbToString (ModalPermi) = "may"
+modalVerbToString (ModalForbi) = "is forbidden to"
+
 yesBooleanExpressionToString :: BooleanExpression -> String
 yesBooleanExpressionToString (BoolEx subject1 verbStatus comparison subject2) =
     subjectToString subject1 ++ " " ++ verbStatusToString verbStatus ++ " " ++ comparisonToString comparison ++ " " ++ subjectToString subject2
@@ -146,3 +185,6 @@ yesBooleanExpressionToString (BoolEx subject1 verbStatus comparison subject2) =
 noBooleanExpressionToString :: BooleanExpression -> String
 noBooleanExpressionToString (BoolEx subject1 verbStatus comparison subject2) =
     subjectToString subject1 ++ " DIDN'T " ++ verbStatusToVerbString verbStatus ++ " " ++ comparisonToString comparison ++ " " ++ subjectToString subject2
+
+numToString :: Num -> String
+numToString (NumInt num) = show num
