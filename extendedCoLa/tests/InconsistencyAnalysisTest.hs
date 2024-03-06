@@ -8,7 +8,7 @@ import ExampleContracts
 
 prop_consistencyChecking :: String -> String -> String -> Property
 prop_consistencyChecking inputContract inputPerformance expectedResult =
-    CoLaParser.consistencyAnalysis (CoLaParser.checkInconsistencyContract (inputContract) (inputPerformance)) === expectedResult
+    CoLaParser.getConsistencyAnalysisResult (CoLaParser.checkInconsistencyInContract (inputContract) (inputPerformance)) === expectedResult
 
 consistencyPerformance1a = "[1] Carol paid EUROS 30 to David on 19 September 2023 C-AND [2] David delivered OTHEROBJECT orange to Carol on 25 September 2023"
 consistencyPerformance1b = "[1] Carol paid EUROS 30 to David before 20 September 2023 C-AND [2] David delivered OTHEROBJECT orange to Carol on 29 September 2023"
@@ -68,8 +68,8 @@ consistencyAnalysisSampleTests =
     , (guarantor, guarantorPerformance1c, noInconsistencyExpected)
     ]
 
-consistencyAnalysisConversionTest :: IO ()
-consistencyAnalysisConversionTest = do
+consistencyAnalysisTest :: IO ()
+consistencyAnalysisTest = do
     putStrLn "Running QuickCheck tests for consistency checking pipeline ..."
     quickCheck $ forAll (elements consistencyAnalysisSampleTests) (\(input1, input2, expected) -> prop_consistencyChecking input1 input2 expected)
     putStrLn "Done."
