@@ -104,7 +104,7 @@ subjectToTerm (SubQuoted str) = Var str
 subjectToTerm (SubUnQuoted ident) = Var (getIdentString ident)
 
 numericalExpressionToTerm :: NumericalExpression -> Term
-numericalExpressionToTerm (NumExpNum (NumInt n)) = Var (show n)  -- Assuming you want to represent numbers as variables
+numericalExpressionToTerm (NumExpNum (NumInt n)) = Var (show n) 
 numericalExpressionToTerm (NumExpObj numObj) = numericalObjectToTerm numObj
 numericalExpressionToTerm (NumExpOp expr1 operator expr2) =
     let term1 = numericalExpressionToTerm expr1
@@ -172,40 +172,30 @@ dateSpeToInt (NumInt year) month (NumInt day) = dateToInt year (monthToInt month
 
 lookupDate :: String -> State (DateDictionary, TempQuanDictionary) String
 lookupDate date = do
-    -- Get the current state of the dictionaries
     (dateDictionary, tempQuanDictionary) <- get
 
-    -- Check if the date is already in the dictionary
     case Map.lookup date dateDictionary of
         Just value -> return value
         Nothing -> do
-            -- If it doesn't exist, add a new entry to the date dictionary
             let newValue = "D" ++ show (Map.size dateDictionary + 1)
             let newDateDict = Map.insert date newValue dateDictionary
-            -- Update only the DateDictionary
             put (newDateDict, tempQuanDictionary)
             return newValue
 
 updateTempQuanDictionary :: String -> String -> Integer -> State (DateDictionary, TempQuanDictionary) ()
 updateTempQuanDictionary key value intValue = do
-    -- Get the current state of the TempQuanDictionary
     (dateDictionary, tempQuanDictionary) <- get
 
-    -- Update the TempQuanDictionary
     let newTempQuanDict = Map.insert key (value, intValue) tempQuanDictionary
 
-    -- Update the state with the new TempQuanDictionary
     put (dateDictionary, newTempQuanDict)
 
 checkTempQuanDictionary :: String -> Integer -> State (DateDictionary, TempQuanDictionary) Bool
 checkTempQuanDictionary key intValue = do
-    -- Get the current state of the TempQuanDictionary
     (dateDictionary, tempQuanDictionary) <- get
 
-    -- Check if the key exists in the TempQuanDictionary
     case Map.lookup key tempQuanDictionary of
         Just (tempStr, tempInt) -> do
-            -- Compare based on the specified condition
             case tempStr of
                 "Before" -> return (intValue <= tempInt)
                 "After"  -> return (intValue >= tempInt)
@@ -213,13 +203,10 @@ checkTempQuanDictionary key intValue = do
 
 checkTempQuanDictionary' :: String -> Integer -> State (DateDictionary, TempQuanDictionary) Bool
 checkTempQuanDictionary' key intValue = do
-    -- Get the current state of the TempQuanDictionary
     (dateDictionary, tempQuanDictionary) <- get
 
-    -- Check if the key exists in the TempQuanDictionary
     case Map.lookup key tempQuanDictionary of
         Just (tempStr, tempInt) -> do
-            -- Compare based on the specified condition
             case tempStr of
                 "Before" -> return (intValue >= tempInt)
                 "After"  -> return (intValue <= tempInt)
@@ -455,7 +442,6 @@ createFormulaSimpleStatement holds modalVerb verb subject object receiver day mo
         (HoldNo, ModalForbi, VRefund) -> yesMayRefund 
 
     where
-        -- Common base predicates
         basePredicates = 
             And
                 (And
@@ -464,7 +450,6 @@ createFormulaSimpleStatement holds modalVerb verb subject object receiver day mo
                 )
                 (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
         noMustDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
         yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
@@ -511,13 +496,11 @@ createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver =
         (HoldNo, ModalForbi, VRefund) -> yesMayRefund 
 
     where
-        -- Common base predicates
         basePredicates = 
             And
                 (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                 (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
         noMustDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
         yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
@@ -537,10 +520,8 @@ createFormulaSimpleStatementDAny holds modalVerb verb subject object receiver =
 
 createFormulaSimpleStatementDSomeThe :: Holds -> ModalVerb -> Verb -> Subject -> Object -> Receiver -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receiver date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case dateType of
             DateSome _ -> And
                             (And
@@ -552,11 +533,9 @@ createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receive
                             (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (holds, modalVerb, verb) of
                 (HoldYes, ModalObli _, VDel) -> yesMustDel 
@@ -585,7 +564,6 @@ createFormulaSimpleStatementDSomeThe holds modalVerb verb subject object receive
                 (HoldNo, ModalForbi, VRefund) -> yesMayRefund 
 
             where
-                -- Predicates for different cases
                 yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "mustDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
                 noMustDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "mustDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
                 yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "mayDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
@@ -727,7 +705,6 @@ createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier sub
         (HoldNo, ModalForbi, VRefund, TempAfter) -> yesMayRefundAfter
 
     where
-        -- Common base predicates
         basePredicates = 
             And
                 (And
@@ -736,7 +713,6 @@ createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier sub
                 )
                 (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesMustDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
         noMustDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
         yesMayDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
@@ -772,10 +748,8 @@ createFormulaSimpleStatementDQuanSpe holds modalVerb verb temporalQuantifier sub
 
 createFormulaSimpleStatementDQuanSomeThe :: Holds -> ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier subject object receiver date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case dateType of
             DateQuanSome _ _ -> And
                             (And
@@ -787,11 +761,9 @@ createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier
                             (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (holds, modalVerb, verb, temporalQuantifier) of
                 (HoldYes, ModalObli _, VDel, TempBefore) -> yesMustDelBefore
@@ -844,7 +816,6 @@ createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier
                 (HoldNo, ModalForbi, VRefund, TempAfter) -> yesMayRefundAfter
 
             where
-                -- Predicates for different cases
                 yesMustDelBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "mustDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
                 noMustDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "mustDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
                 yesMayDelBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "mayDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
@@ -880,10 +851,8 @@ createFormulaSimpleStatementDQuanSomeThe holds modalVerb verb temporalQuantifier
 
 createFormulaSimpleStatementDQuanTempSomeThe :: Holds -> ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case (dateType, tq) of
             (DateQuanTempSome _ _ _ _, TempBefore) -> And
                             (And
@@ -916,11 +885,9 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
                             )
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (holds, modalVerb, verb, temporalQuantifier) of
                 (HoldYes, ModalObli _, VDel, TempBefore) -> do
@@ -1044,7 +1011,6 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
                 (HoldNo, ModalForbi, VRefund, TempAfter) -> yesMayRefundAfter
 
             where
-                -- Predicates for different cases
                 yesMustDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
                 noMustDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
                 yesMayDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
@@ -1080,10 +1046,8 @@ createFormulaSimpleStatementDQuanTempSomeThe holds modalVerb verb temporalQuanti
 
 createFormulaSimpleStatementDQuanSomeTheWO :: Holds -> ModalVerb -> Verb -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementDQuanSomeTheWO holds modalVerb verb subject object receiver temporalOffset tq date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case (dateType, tq) of
             (DateQuanSomeWO _ _ _, TempBefore) -> And
                             (And
@@ -1116,11 +1080,9 @@ createFormulaSimpleStatementDQuanSomeTheWO holds modalVerb verb subject object r
                             )
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (holds, modalVerb, verb) of
                 (HoldYes, ModalObli _, VDel) -> yesMustDel
@@ -1149,7 +1111,6 @@ createFormulaSimpleStatementDQuanSomeTheWO holds modalVerb verb subject object r
                 (HoldNo, ModalForbi, VRefund) -> yesMayRefund
 
             where
-                -- Predicates for different cases
                 yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
                 noMustDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
                 yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
@@ -1184,7 +1145,6 @@ createFormulaSimpleStatementNH modalVerb verb subject object receiver day month 
         (ModalForbi, VRefund) -> noMayRefund 
 
     where
-        -- Common base predicates
         basePredicates = 
             And
                 (And
@@ -1193,7 +1153,6 @@ createFormulaSimpleStatementNH modalVerb verb subject object receiver day month 
                 )
                 (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
         yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
         noMayDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
@@ -1224,13 +1183,11 @@ createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver =
         (ModalForbi, VRefund) -> noMayRefund 
 
     where
-        -- Common base predicates
         basePredicates = 
             And
                 (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                 (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
         yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
         noMayDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
@@ -1246,10 +1203,8 @@ createFormulaSimpleStatementNHDAny modalVerb verb subject object receiver =
 
 createFormulaSimpleStatementNHDSomeThe :: ModalVerb -> Verb -> Subject -> Object -> Receiver -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case dateType of
             DateSome _ -> And
                             (And
@@ -1261,11 +1216,9 @@ createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver da
                             (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (modalVerb, verb) of
                 (ModalObli _, VDel) -> yesMustDel 
@@ -1282,7 +1235,6 @@ createFormulaSimpleStatementNHDSomeThe modalVerb verb subject object receiver da
                 (ModalForbi, VRefund) -> noMayRefund 
 
             where
-                -- Predicates for different cases
                 yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "mustDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
                 yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "mayDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
                 noMayDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "mayDeliver" [Var "X", Var "Y", Var "O", Var actualValue])
@@ -1388,7 +1340,6 @@ createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject
             formula
 
     where
-        -- Common base predicates
         basePredicates = 
             And
                 (And
@@ -1397,7 +1348,6 @@ createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject
                 )
                 (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesMustDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
         yesMayDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
         noMayDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
@@ -1425,10 +1375,8 @@ createFormulaSimpleStatementNHDQuanSpe modalVerb verb temporalQuantifier subject
 
 createFormulaSimpleStatementNHDQuanSomeThe :: ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier subject object receiver date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case dateType of
             DateQuanSome _ _ -> And
                             (And
@@ -1440,11 +1388,9 @@ createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier sub
                             (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue 
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (modalVerb, verb, temporalQuantifier) of
                 (ModalObli _, VDel, TempBefore) -> yesMustDelBefore
@@ -1473,7 +1419,6 @@ createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier sub
                 (ModalForbi, VRefund, TempAfter) -> noMayRefundAfter
 
             where
-                -- Predicates for different cases
                 yesMustDelBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "mustDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
                 yesMayDelBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "mayDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
                 noMayDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "mayDeliverBefore" [Var "X", Var "Y", Var "O", Var actualValue])
@@ -1501,10 +1446,8 @@ createFormulaSimpleStatementNHDQuanSomeThe modalVerb verb temporalQuantifier sub
 
 createFormulaSimpleStatementNHDQuanTempSomeThe :: ModalVerb -> Verb -> TemporalQuantifier -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier subject object receiver temporalOffset tq date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case (dateType, tq) of
             (DateQuanTempSome _ _ _ _, TempBefore) -> And
                             (And
@@ -1537,11 +1480,9 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
                             )
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (modalVerb, verb, temporalQuantifier) of
                 (ModalObli _, VDel, TempBefore) -> do
@@ -1633,7 +1574,6 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
                     formula
 
             where
-                -- Predicates for different cases
                 yesMustDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
                 yesMayDelBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
                 noMayDelBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliverBefore" [Var "X", Var "Y", Var "O", Var "D"])
@@ -1661,10 +1601,8 @@ createFormulaSimpleStatementNHDQuanTempSomeThe modalVerb verb temporalQuantifier
 
 createFormulaSimpleStatementNHDQuanSomeTheWO :: ModalVerb -> Verb -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementNHDQuanSomeTheWO modalVerb verb subject object receiver temporalOffset tq date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case (dateType, tq) of
             (DateQuanSomeWO _ _ _, TempBefore) -> And
                             (And
@@ -1697,11 +1635,9 @@ createFormulaSimpleStatementNHDQuanSomeTheWO modalVerb verb subject object recei
                             )
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (modalVerb, verb) of
                 (ModalObli _, VDel) -> yesMustDel
@@ -1718,7 +1654,6 @@ createFormulaSimpleStatementNHDQuanSomeTheWO modalVerb verb subject object recei
                 (ModalForbi, VRefund) -> noMayRefund
 
             where
-                -- Predicates for different cases
                 yesMustDel = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mustDeliver" [Var "X", Var "Y", Var "O", Var "D"])
                 yesMayDel = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
                 noMayDel = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayDeliver" [Var "X", Var "Y", Var "O", Var "D"])
@@ -1732,7 +1667,6 @@ createFormulaSimpleStatementNHDQuanSomeTheWO modalVerb verb subject object recei
                 yesMayRefund = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayRefund" [Var "X", Var "Y", Var "O", Var "D"])
                 noMayRefund = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "mayRefund" [Var "X", Var "Y", Var "O", Var "D"])
 
--- Convert different kinds of objects to predicates
 objectToPredicate :: Object -> FOLFormula
 objectToPredicate (ObjNu (NumPound _ (NumInt num))) = Pred "objectPound" [Var "O", Var (show num)]
 objectToPredicate (ObjNu (NumDol _ (NumInt num))) = Pred "objectDollar" [Var "O", Var (show num)]
@@ -1952,7 +1886,6 @@ simpleConditiontoFOL (SimConFiveNH id booleanExpression) = boolExToFOL booleanEx
 createFormulaSimpleStatementDateCheck :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver day month year =
     let
-        -- Common base predicates
         basePredicates =
             And
                 (And
@@ -1961,7 +1894,6 @@ createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver d
                 )
                 (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
         noDelivered = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
         yesPaid = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2019,7 +1951,6 @@ createFormulaSimpleStatementDateCheck holds verbStatus subject object receiver d
 createFormulaSimpleStatementNHDateCheck :: VerbStatus -> Subject -> Object -> Receiver -> Num -> Month -> Num -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementNHDateCheck verbStatus subject object receiver day month year =
     let
-        -- Common base predicates
         basePredicates =
             And
                 (And
@@ -2028,7 +1959,6 @@ createFormulaSimpleStatementNHDateCheck verbStatus subject object receiver day m
                 )
                 (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
         yesPaid = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
         yesCharged = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "charged" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2069,10 +1999,8 @@ createFormulaSimpleStatementNHDateCheck verbStatus subject object receiver day m
 
 createFormulaSimpleStatementDateCheckSomeThe :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object receiver temporalOffset tq date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case (dateType, tq) of
             (DateQuanSomeWO _ _ _, TempBefore) -> And
                             (And
@@ -2105,11 +2033,9 @@ createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object rec
                             )
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (holds, verbStatus) of
                 (HoldYes, VSDel) -> do
@@ -2157,7 +2083,6 @@ createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object rec
                     return formula
 
             where
-                -- Predicates for different cases
                 yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
                 noDelivered = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
                 yesPaid = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2169,10 +2094,8 @@ createFormulaSimpleStatementDateCheckSomeThe holds verbStatus subject object rec
 
 createFormulaSimpleStatementNHDateCheckSomeThe :: VerbStatus -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleStatementNHDateCheckSomeThe verbStatus subject object receiver temporalOffset tq date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case (dateType, tq) of
             (DateQuanSomeWO _ _ _, TempBefore) -> And
                             (And
@@ -2205,11 +2128,9 @@ createFormulaSimpleStatementNHDateCheckSomeThe verbStatus subject object receive
                             )
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (verbStatus) of
                 (VSDel) -> do
@@ -2245,7 +2166,6 @@ createFormulaSimpleStatementNHDateCheckSomeThe verbStatus subject object receive
                         else return $ Falser
 
             where
-                -- Predicates for different cases
                 yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
                 yesPaid = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
                 yesCharged = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "charged" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2264,7 +2184,6 @@ createFormulaSimpleCondition holds verbStatus subject object receiver day month 
         (HoldNo, VSRefund) -> noRefunded
 
     where
-        -- Common base predicates
         basePredicates =
             And
                 (And
@@ -2273,7 +2192,6 @@ createFormulaSimpleCondition holds verbStatus subject object receiver day month 
                 )
                 (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
         noDelivered = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
         yesPaid = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2296,13 +2214,11 @@ createFormulaSimpleConditionDAny holds verbStatus subject object receiver =
         (HoldNo, VSRefund) -> noRefunded
 
     where
-        -- Common base predicates
         basePredicates =
             And
                 (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                 (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
         noDelivered = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
         yesPaid = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2314,10 +2230,8 @@ createFormulaSimpleConditionDAny holds verbStatus subject object receiver =
 
 createFormulaSimpleConditionDSomeThe :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case dateType of
             DateSome _ -> And
                             (And
@@ -2329,11 +2243,9 @@ createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver da
                             (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (holds, verbStatus) of
                 (HoldYes, VSDel) -> yesDelivered
@@ -2346,7 +2258,6 @@ createFormulaSimpleConditionDSomeThe holds verbStatus subject object receiver da
                 (HoldNo, VSRefund) -> noRefunded
 
             where
-                -- Predicates for different cases
                 yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var actualValue])
                 noDelivered = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var actualValue])
                 yesPaid = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var actualValue])
@@ -2377,7 +2288,6 @@ createFormulaSimpleConditionDQuanSpe holds verbStatus temporalQuantifier subject
         (HoldNo, VSRefund, TempAfter) -> noRefundedAfter
 
     where
-        -- Common base predicates
         basePredicates =
             And
                 (And
@@ -2386,7 +2296,6 @@ createFormulaSimpleConditionDQuanSpe holds verbStatus temporalQuantifier subject
                 )
                 (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesDeliveredBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "deliveredBefore" [Var "X", Var "Y", Var "O", Var "D"])
         noDeliveredBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "deliveredBefore" [Var "X", Var "Y", Var "O", Var "D"])
         yesPaidBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paidBefore" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2406,10 +2315,8 @@ createFormulaSimpleConditionDQuanSpe holds verbStatus temporalQuantifier subject
 
 createFormulaSimpleConditionDQuanSomeThe :: Holds -> VerbStatus -> TemporalQuantifier -> Subject -> Object -> Receiver -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier subject object receiver date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case dateType of
             DateQuanSome _ _ -> And
                             (And
@@ -2421,11 +2328,9 @@ createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier sub
                             (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue =
             case (holds, verbStatus, temporalQuantifier) of
                 (HoldYes, VSDel, TempBefore) -> yesDeliveredBefore
@@ -2446,7 +2351,6 @@ createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier sub
                 (HoldNo, VSRefund, TempAfter) -> noRefundedAfter
 
             where
-                -- Predicates for different cases
                 yesDeliveredBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "deliveredBefore" [Var "X", Var "Y", Var "O", Var actualValue])
                 noDeliveredBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "deliveredBefore" [Var "X", Var "Y", Var "O", Var actualValue])
                 yesPaidBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "paidBefore" [Var "X", Var "Y", Var "O", Var actualValue])
@@ -2466,10 +2370,8 @@ createFormulaSimpleConditionDQuanSomeThe holds verbStatus temporalQuantifier sub
 
 createFormulaSimpleConditionDQuanTempSomeThe :: Holds -> VerbStatus -> TemporalQuantifier -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier subject object receiver temporalOffset tq date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case (dateType, tq) of
             (DateQuanTempSome _ _ _ _, TempBefore) -> And
                             (And
@@ -2502,11 +2404,9 @@ createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier
                             )
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (holds, verbStatus, temporalQuantifier) of
                 (HoldYes, VSDel, TempBefore) -> yesDeliveredBefore
@@ -2527,7 +2427,6 @@ createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier
                 (HoldNo, VSRefund, TempAfter) -> noRefundedAfter
 
             where
-                -- Predicates for different cases
                 yesDeliveredBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "deliveredBefore" [Var "X", Var "Y", Var "O", Var "D"])
                 noDeliveredBefore = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "deliveredBefore" [Var "X", Var "Y", Var "O", Var "D"])
                 yesPaidBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paidBefore" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2547,10 +2446,8 @@ createFormulaSimpleConditionDQuanTempSomeThe holds verbStatus temporalQuantifier
 
 createFormulaSimpleConditionDQuanSomeTheWO :: Holds -> VerbStatus -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleConditionDQuanSomeTheWO holds verbStatus subject object receiver temporalOffset tq date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case (dateType, tq) of
             (DateQuanSomeWO _ _ _, TempBefore) -> And
                             (And
@@ -2583,11 +2480,9 @@ createFormulaSimpleConditionDQuanSomeTheWO holds verbStatus subject object recei
                             )
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (holds, verbStatus) of
                 (HoldYes, VSDel) -> yesDelivered
@@ -2600,7 +2495,6 @@ createFormulaSimpleConditionDQuanSomeTheWO holds verbStatus subject object recei
                 (HoldNo, VSRefund) -> noRefunded
 
             where
-                -- Predicates for different cases
                 yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
                 noDelivered = return $ Not $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
                 yesPaid = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2619,7 +2513,6 @@ createFormulaSimpleConditionNH verbStatus subject object receiver day month year
         VSRefund -> yesRefunded
 
     where
-        -- Common base predicates
         basePredicates =
                 And
                     (And
@@ -2628,7 +2521,6 @@ createFormulaSimpleConditionNH verbStatus subject object receiver day month year
                     )
                     (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
         yesPaid = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
         yesCharged = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "charged" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2643,13 +2535,11 @@ createFormulaSimpleConditionNHDAny verbStatus subject object receiver =
         VSRefund -> yesRefunded
 
     where
-        -- Common base predicates
         basePredicates =
                     And
                         (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                         (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
         yesPaid = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
         yesCharged = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ Exists [Var "D"] $ Brackets $ And basePredicates (Pred "charged" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2657,10 +2547,8 @@ createFormulaSimpleConditionNHDAny verbStatus subject object receiver =
 
 createFormulaSimpleConditionNHDSomeThe :: VerbStatus -> Subject -> Object -> Receiver -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case dateType of
             DateSome _ -> And
                             (And
@@ -2673,11 +2561,9 @@ createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date d
                             (objectToPredicate object)
 
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case verbStatus of
                 VSDel -> yesDelivered
@@ -2686,7 +2572,6 @@ createFormulaSimpleConditionNHDSomeThe verbStatus subject object receiver date d
                 VSRefund -> yesRefunded
 
             where
-                -- Predicates for different cases
                 yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var actualValue])
                 yesPaid = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var actualValue])
                 yesCharged = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "charged" [Var "X", Var "Y", Var "O", Var actualValue])
@@ -2705,7 +2590,6 @@ createFormulaSimpleConditionNHDQuanSpe verbStatus temporalQuantifier subject obj
         (VSRefund, TempAfter) -> yesRefundedAfter
 
     where
-        -- Common base predicates
         basePredicates =
             And
                 (And
@@ -2714,7 +2598,6 @@ createFormulaSimpleConditionNHDQuanSpe verbStatus temporalQuantifier subject obj
                 )
                 (objectToPredicate object)
                 
-        -- Predicates for different cases
         yesDeliveredBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "deliveredBefore" [Var "X", Var "Y", Var "O", Var "D"])
         yesPaidBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paidBefore" [Var "X", Var "Y", Var "O", Var "D"])
         yesChargedBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "chargedBefore" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2726,10 +2609,8 @@ createFormulaSimpleConditionNHDQuanSpe verbStatus temporalQuantifier subject obj
 
 createFormulaSimpleConditionNHDQuanSomeThe :: VerbStatus -> TemporalQuantifier -> Subject -> Object -> Receiver -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject object receiver date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case dateType of
             DateQuanSome _ _ -> And
                             (And
@@ -2741,11 +2622,9 @@ createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject
                             (And (Pred "name" [Var "X", subjectToTerm subject]) (Pred "name" [Var "Y", receiverToTerm receiver]))
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue 
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (verbStatus, temporalQuantifier) of
                 (VSDel, TempBefore) -> yesDeliveredBefore
@@ -2758,7 +2637,6 @@ createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject
                 (VSRefund, TempAfter) -> yesRefundedAfter
 
             where
-                -- Predicates for different cases
                 yesDeliveredBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "deliveredBefore" [Var "X", Var "Y", Var "O", Var actualValue])
                 yesPaidBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "paidBefore" [Var "X", Var "Y", Var "O", Var actualValue])
                 yesChargedBefore = return $ ForAll [Var "X", Var "Y", Var "O"] $ Brackets $ And basePredicates (Pred "chargedBefore" [Var "X", Var "Y", Var "O", Var actualValue])
@@ -2770,10 +2648,8 @@ createFormulaSimpleConditionNHDQuanSomeThe verbStatus temporalQuantifier subject
 
 createFormulaSimpleConditionNHDQuanTempSomeThe :: VerbStatus -> TemporalQuantifier -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier subject object receiver temporalOffset tq date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case (dateType, tq) of
             (DateQuanTempSome _ _ _ _, TempBefore) -> And
                             (And
@@ -2806,11 +2682,9 @@ createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier sub
                             )
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (verbStatus, temporalQuantifier) of
                 (VSDel, TempBefore) -> yesDeliveredBefore
@@ -2823,7 +2697,6 @@ createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier sub
                 (VSRefund, TempAfter) -> yesRefundedAfter
 
             where
-                -- Predicates for different cases
                 yesDeliveredBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "deliveredBefore" [Var "X", Var "Y", Var "O", Var "D"])
                 yesPaidBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paidBefore" [Var "X", Var "Y", Var "O", Var "D"])
                 yesChargedBefore = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "chargedBefore" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2835,10 +2708,8 @@ createFormulaSimpleConditionNHDQuanTempSomeThe verbStatus temporalQuantifier sub
 
 createFormulaSimpleConditionNHDQuanSomeTheWO :: VerbStatus -> Subject -> Object -> Receiver -> TemporalOffset -> TemporalQuantifier -> Subject -> Date -> State (DateDictionary, TempQuanDictionary) FOLFormula
 createFormulaSimpleConditionNHDQuanSomeTheWO verbStatus subject object receiver temporalOffset tq date dateType = do
-    -- Get the actual value associated with the date
     actualValue <- lookupDate (subjectToString date)
 
-    -- Use actualValue here
     let basePredicates = case (dateType, tq) of
             (DateQuanSomeWO _ _ _, TempBefore) -> And
                             (And
@@ -2871,11 +2742,9 @@ createFormulaSimpleConditionNHDQuanSomeTheWO verbStatus subject object receiver 
                             )
                             (objectToPredicate object)
 
-    -- Generate FOL formulas based on different cases
     generateFormulas basePredicates actualValue
 
     where
-        -- Function to generate FOL formulas based on different cases
         generateFormulas basePredicates actualValue = 
             case (verbStatus) of
                 (VSDel) -> yesDelivered
@@ -2884,7 +2753,6 @@ createFormulaSimpleConditionNHDQuanSomeTheWO verbStatus subject object receiver 
                 (VSRefund) -> yesRefunded
 
             where
-                -- Predicates for different cases
                 yesDelivered = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "delivered" [Var "X", Var "Y", Var "O", Var "D"])
                 yesPaid = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "paid" [Var "X", Var "Y", Var "O", Var "D"])
                 yesCharged = return $ ForAll [Var "X", Var "Y", Var "O", Var "D"] $ Brackets $ And basePredicates (Pred "charged" [Var "X", Var "Y", Var "O", Var "D"])
@@ -2907,10 +2775,8 @@ boolExToFOL (BoolEx subject1 verbStatus comparison subject2) =
         (VSRefund, CompareMore _) -> refundedMore
 
     where
-        -- Common base predicates
         basePredicates = (And (Pred "name" [Var "X", subjectToTerm subject1]) (Pred "name" [Var "Y", subjectToTerm subject2]))
                           
-        -- Predicates for different cases
         deliveredLess = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "deliveredLess" [Var "X", Var "Y"])
         deliveredEqual = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "deliveredEqual" [Var "X", Var "Y"])
         deliveredMore = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "deliveredMore" [Var "X", Var "Y"])
@@ -2924,15 +2790,12 @@ boolExToFOL (BoolEx subject1 verbStatus comparison subject2) =
         refundedEqual = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "refundedEqual" [Var "X", Var "Y"])
         refundedMore = return $ ForAll [Var "X", Var "Y"] $ Brackets $ And basePredicates (Pred "refundedMore" [Var "X", Var "Y"])
 
--- Function to run contractToFOLWithCheck with two empty dictionaries
 runFOLConversion :: Contract -> FOLFormula
 runFOLConversion contract = evalState (contractToFOLWithCheck contract) (Map.empty, Map.empty)
 
--- Function to run contractToFOLWithCheck with two empty dictionaries
 runFOLConversion' :: Contract -> (FOLFormula, DateDictionary, TempQuanDictionary)
 runFOLConversion' contract = (result, newDateDict, newTempQuanDict)
   where
-    -- Run the conversion and get the result and the updated state
     (result, (newDateDict, newTempQuanDict)) = runState (contractToFOLWithCheck contract) (Map.empty, Map.empty)
 
 getTempQuanDictAfterConversion :: Contract -> TempQuanDictionary
@@ -2940,20 +2803,17 @@ getTempQuanDictAfterConversion contract = newTempQuanDict
     where
         (_, (_, newTempQuanDict)) = runState (contractToFOLWithCheck contract) (Map.empty, Map.empty)
 
--- Updated function to convert the contract to FOL formula with date dictionary check
 contractToFOLWithCheck :: Contract -> State (DateDictionary, TempQuanDictionary) FOLFormula
 contractToFOLWithCheck contract = do
     folFormula <- contractToFOL contract
     addDateDictionaryCheck folFormula
 
--- Function to add date dictionary check to the FOL formula
 addDateDictionaryCheck :: FOLFormula -> State (DateDictionary, TempQuanDictionary) FOLFormula
 addDateDictionaryCheck folFormula = do
     dateDict <- gets fst
     let dateVars = Map.elems (Map.map Var dateDict)
     return $ addDateDictionaryCheck' folFormula dateVars
 
--- Helper function to apply ForAll quantification
 addDateDictionaryCheck' :: FOLFormula -> [Term] -> FOLFormula
 addDateDictionaryCheck' folFormula dateVars =
     case dateVars of

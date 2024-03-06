@@ -1015,12 +1015,9 @@ createDFASimpleStatement holds subject modalVerb verb object receiver date =
         mayEventStr = subjectToString subject ++ " " ++ verbToVerbStatusString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         mayEvent = EventD mayEventStr
 
-        -- mustNotStateStrNB = objectToString object ++ " not " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver
-        -- mustNotEventStrNB = subjectToString subject ++ " DIDN'T " ++ verbToString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         mustNotStateStrB = "BREACH: " ++ objectToString object ++ " " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver
         mustNotEventStrB = subjectToString subject ++ " " ++ verbToVerbStatusString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
-        -- mustNotStateNB = StateAD mustNotStateStrNB
-        -- mustNotEventNB = EventD mustNotEventStrNB
+
         mustNotStateB = StateAD mustNotStateStrB
         mustNotEventB = EventD mustNotEventStrB
 
@@ -1048,17 +1045,8 @@ createDFASimpleStatement holds subject modalVerb verb object receiver date =
                 }
     
         mustNot = do
-            -- addToStateDictionary mustNotStateNB (Set.singleton $ mustNotEventNB) 1
             addToStateDictionary mustNotStateB (Set.singleton $ mustNotEventB) 3
-            -- newTransitions1 <- generateTransition (StateAD "Start") mustNotStateNB
             newTransitions2 <- generateTransition (StateAD "Start") mustNotStateB
-            -- return $ DFA
-            --     { states = Set.fromList [mustNotStateNB, mustNotStateB, StateAD "Start"]
-            --     , events = Set.fromList [mustNotEventNB, mustNotEventB]
-            --     , transitions = Set.union (Set.fromList newTransitions1) (Set.fromList newTransitions2)
-            --     , startStates = Set.singleton $ StateAD "Start"
-            --     , acceptingStates = Set.singleton mustNotStateNB
-            --     }
             return $ DFA
                 { states = Set.fromList [mustNotStateB, StateAD "Start"]
                 , events = Set.fromList [mustNotEventB]
@@ -1086,12 +1074,8 @@ createDFASimpleStatementNH subject modalVerb verb object receiver date =
         mayEventStr = subjectToString subject ++ " " ++ verbToVerbStatusString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         mayEvent = EventD mayEventStr
 
-        -- mustNotStateStrNB = objectToString object ++ " not " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver
-        -- mustNotEventStrNB = subjectToString subject ++ " DIDN'T " ++ verbToString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         mustNotStateStrB = "BREACH: " ++ objectToString object ++ " " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver
         mustNotEventStrB = subjectToString subject ++ " " ++ verbToVerbStatusString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
-        -- mustNotStateNB = StateAD mustNotStateStrNB
-        -- mustNotEventNB = EventD mustNotEventStrNB
         mustNotStateB = StateAD mustNotStateStrB
         mustNotEventB = EventD mustNotEventStrB
 
@@ -1119,9 +1103,7 @@ createDFASimpleStatementNH subject modalVerb verb object receiver date =
                 }
 
         mustNot = do
-            -- addToStateDictionary mustNotStateNB (Set.singleton $ mustNotEventNB) 1
             addToStateDictionary mustNotStateB (Set.singleton $ mustNotEventB) 3
-            -- newTransitions1 <- generateTransition (StateAD "Start") mustNotStateNB
             newTransitions2 <- generateTransition (StateAD "Start") mustNotStateB
             return $ DFA
                 { states = Set.fromList [mustNotStateB, StateAD "Start"]
@@ -1310,7 +1292,6 @@ runDFAConversion contract = evalState (contractToDFA contract) (Map.empty, [])
 runDFAConversion' :: Contract -> (DFA, StateDictionary, SelfLoopingEvents)
 runDFAConversion' contract = (result, newStateDict, newSLEvents)
   where
-    -- Run the conversion and get the result and the updated state
     (result, (newStateDict, newSLEvents)) = runState (contractToDFA contract) (Map.empty, [])
 
 extractForbiddenState :: (DFA, StateDictionary, SelfLoopingEvents) -> [StateAD]
@@ -1420,7 +1401,6 @@ labelledNodesParamsDFA :: DFA -> GraphvizParams Node Text Text () Text
 labelledNodesParamsDFA dfa = nonClusteredParams
     { fmtNode = \(_, label) ->
         let nodeColor = if (isAcceptingDFA label dfa) then Green else if (isBreachDFA label) then LightSalmon else LightGray
-            -- Insert newline characters to break the label into lines with a maximum of five words
             wordsList = words (L.unpack label)
             linesList = groupWordsIntoLines 5 wordsList
             multiLineString = intercalate "\n" linesList
@@ -1430,7 +1410,7 @@ labelledNodesParamsDFA dfa = nonClusteredParams
     }
 
 groupWordsIntoLines :: Int -> [String] -> [String]
-groupWordsIntoLines _ [] = [] -- If the input list is empty, return an empty list
+groupWordsIntoLines _ [] = [] 
 groupWordsIntoLines maxWordsPerLine wordsList = go wordsList []
     where
     go [] linesAcc = reverse linesAcc

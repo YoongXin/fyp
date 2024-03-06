@@ -55,15 +55,12 @@ data NFA = NFA
     } 
   deriving (Eq, Ord, Read, Show)
 
--- -- Pretty-printing for StateA
 printStateA :: StateA -> String
 printStateA (StateA s) = s
 
--- -- Pretty-printing for Event
 printEvent :: Event -> String
 printEvent (Event e) = e
 
--- -- Pretty-printing for Transition
 printTransition :: Transition -> String
 printTransition (Transition from event to) = printStateA from ++ " --(" ++ printEvent event ++ ")--> " ++ printStateA to
 
@@ -77,7 +74,6 @@ prettyPrintTransitions transitions = putStrLn $ printTransitions transitions
 prettyPrintListOfSets :: [Set.Set Transition] -> IO ()
 prettyPrintListOfSets listOfSets = mapM_ prettyPrintTransitions listOfSets
 
--- -- Pretty-printing for NFA
 printNFA :: NFA -> String
 printNFA nfa =
     unlines
@@ -1064,7 +1060,6 @@ isAccepting state nfa = (convertStringToState $ L.unpack state) `Set.member` (ac
 convertStringToState :: String -> StateA
 convertStringToState str = StateA (removeFirstSpace (stripIntegerLabel str))
 
--- Function to strip off "[integer]" from a string
 stripIntegerLabel :: String -> String
 stripIntegerLabel str =
     case stripPrefix "(" str of
@@ -1073,7 +1068,6 @@ stripIntegerLabel str =
             _                       -> str
         Nothing   -> str
 
--- Function to remove the first space in a string
 removeFirstSpace :: String -> String
 removeFirstSpace (' ' : rest) = rest
 removeFirstSpace str = str
@@ -1106,17 +1100,15 @@ removeSelfLoopingTransitions nfa =
 findPaths :: Gr Text Text -> Node -> Node -> Int -> [[Node]]
 findPaths graph startNode endNode maxEdges = dfs startNode [startNode] 0
     where
-    -- Helper function for DFS
     dfs :: Node -> [Node] -> Int -> [[Node]]
     dfs currentNode path edges
         | currentNode == endNode && edges == maxEdges = [reverse path]
-        | edges == maxEdges = []  -- Reached the maximum number of edges without reaching the endNode
+        | edges == maxEdges = []  
         | otherwise = concatMap (dfsNext currentNode path edges) (suc graph currentNode)
 
-    -- Helper function to explore next nodes in DFS
     dfsNext :: Node -> [Node] -> Int -> Node -> [[Node]]
     dfsNext currentNode path edges nextNode
-        | nextNode `elem` path = []  -- Avoid revisiting nodes
+        | nextNode `elem` path = []  
         | otherwise = dfs nextNode (nextNode : path) (edges + 1)
 
 nodesToEdges :: [Node] -> [Edge]
@@ -1131,16 +1123,16 @@ countOccurrences elem = length . filter (any (elem ==))
 checkNodeOccurrences :: [[Node]] -> Node -> Int
 checkNodeOccurrences listsOfNodes node =
   case countOccurrences node listsOfNodes of
-    0 -> 0  -- Node is not in any list
-    1 -> 1  -- Node is in exactly one list
-    _ -> 2  -- Node is in more than one list
+    0 -> 0  
+    1 -> 1  
+    _ -> 2 
 
 checkEdgeOccurrences :: [[Edge]] -> Edge -> Int
 checkEdgeOccurrences listsOfEdges edge =
   case countOccurrences edge listsOfEdges of
-    0 -> 0  -- Edge is not in any list
-    1 -> 1  -- Edge is in exactly one list
-    _ -> 2  -- Edge is in more than one list
+    0 -> 0  
+    1 -> 1  
+    _ -> 2  
 
 visualizeGraphPP :: [[Node]] -> Gr Text Text -> String
 visualizeGraphPP pathNodes graph = L.unpack dotText

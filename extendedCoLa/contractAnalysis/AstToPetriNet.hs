@@ -61,7 +61,6 @@ contractToPN (ConEmpty) = ([], [], [], [])
 contractToPN (ConComp component) = componentToPN component
 contractToPN (ConAnd component contract) = combineComponents (componentToPN component) (contractToPN contract)
 
--- Helper function to help concatenating lists into one tuple
 combineComponents (s1, cs1, d1, cd1) (s2, cs2, d2, cd2) =
     (s1 ++ s2, cs1 ++ cs2, d1 ++ d2, cd1 ++ cd2)
 
