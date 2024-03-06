@@ -2,24 +2,16 @@ module ContractAnalysis.ComplexityAnalysis where
 
 import Prelude
   ( ($), (++), (.), (+), (^), (/), (-), (<=), (!!)
-  , Int, Integer, Double
-  , String
-  , Show, show
-  , Read
-  , Bool(..)
-  , Maybe(..)
-  , IO, putStrLn
-  , fromIntegral
-  , map, notElem
-  , sum, length, floor
+  , Int, Integer, Double, String, Show, Read, IO, Bool(..), Maybe(..)
+  , map, notElem, sum, length, floor, fromIntegral, putStrLn, show
   )
+
+import Control.Monad.State
+import qualified Data.Map as Map
 
 import Parser.AbsCoLa  
 import Helper.ToStringFunctions
 import ContractAnalysis.AstToDfa
-
-import Control.Monad.State
-import qualified Data.Map as Map
 
 data ComplexityScore = Score Integer
     deriving (Read, Show)   

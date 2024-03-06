@@ -1,9 +1,10 @@
 module ContractAnalysis.FolToTptp where
 
-import Parser.AbsCoLa
-import ContractAnalysis.AstToFol
 import Data.List 
 import System.IO
+
+import Parser.AbsCoLa
+import ContractAnalysis.AstToFol
 
 data TPTPFormula
     = TPTPForAll [TPTPTerm] TPTPFormula
@@ -74,6 +75,3 @@ runTptpConversionContract contract = folToTPTPString "contract" (runFOLConversio
 
 runTptpConversionPerformance :: Contract -> String
 runTptpConversionPerformance performance = folToTPTPString "performance" (runFOLConversion performance)
-
-
-

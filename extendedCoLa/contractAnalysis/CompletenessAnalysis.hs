@@ -2,28 +2,19 @@ module ContractAnalysis.CompletenessAnalysis where
 
 import Prelude
   ( ($), (++), (<), (.), (+), (-)
-  , Int, Integer, toInteger
-  , String
-  , Show, show
-  , Read
-  , Bool(..)
-  , Maybe(..)
-  , IO, putStrLn
-  , words, unwords
-  , init, last
-  , length, null
-  , map, fst, snd
-  , zipWith, concat
+  , Int, Integer, String, Show, Read, IO, Bool(..), Maybe(..)
+  , words, unwords, putStrLn, init, last, length, null, map, fst, snd, zipWith, concat, toInteger, show
   )
+
+import Control.Monad.State
+import qualified Data.Map as Map
+import qualified Data.List as List
+
+import Data.List ( intercalate )
+import Control.Monad ( liftM2 )
 
 import Parser.AbsCoLa
 import ContractAnalysis.AstToDfa 
-
-import qualified Data.Map as Map
-import qualified Data.List as List
-import Data.List (intercalate)
-import Control.Monad (liftM2)
-import Control.Monad.State
 
 data CompletenessReport
     = IncompleteItems ([SimpleCondition], [SimpleDefinition], [SimpleCondition], [SimpleStatement], BoolExDictionary)

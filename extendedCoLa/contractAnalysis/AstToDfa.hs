@@ -2,42 +2,31 @@ module ContractAnalysis.AstToDfa where
 
 import Prelude
   ( ($), (++), (||), (==), (+), (<$>), (<>)
-  , Int, Integer, fromInteger, toInteger, fromIntegral
-  , String
-  , Show, show
-  , Eq
-  , Read
-  , Ord
-  , Bool(..)
-  , IO, putStrLn, unlines
-  , Maybe(..)
-  , zip, foldr
-  , null
-  , head, reverse, splitAt, unwords
-  , fst, snd
-  , error, all, max, not, concat, break
+  , Int, Integer, String, Show, Eq, Read, Ord, IO, Bool(..), Maybe(..)
+  , zip, foldr, null, head, reverse, splitAt, unwords, fst, snd,  fromInteger, toInteger, fromIntegral
+  , error, all, max, not, concat, break, putStrLn, unlines, show
   )
 
+import Data.Time
+import Data.Graph.Inductive.Graph          
+import Data.GraphViz
+import Control.Monad.State  
 import qualified Data.Set as Set
 import qualified Data.Map as Map
-import Control.Monad.State
-import Data.List (map, lookup, sort, group, concatMap, intercalate, find, stripPrefix, isInfixOf, words) 
-import qualified Data.List as List
-import Data.Maybe (catMaybes)
-import Data.Time
-
-import Data.Functor ((<&>))
-import qualified Data.Text.Lazy as L (pack, unpack)
-import qualified Data.Text.Lazy.IO as IO (putStrLn)
-import Data.Graph.Inductive.Graph          
-import Data.Graph.Inductive.PatriciaTree (Gr)
-import Data.GraphViz                       
-import Data.GraphViz.Attributes (Attribute(..))
+import qualified Data.List as List                     
 import qualified Data.GraphViz.Attributes.Complete as Gv
-import Data.GraphViz.Printing (renderDot, toDot)
-import Data.Text.Internal.Lazy (Text)
-import Data.Graph.Inductive (LEdge)
 import qualified Data.GraphViz.Attributes.Colors as Gvc
+
+import Data.List ( map, lookup, sort, group, concatMap, intercalate, find, stripPrefix, isInfixOf, words ) 
+import Data.Maybe ( catMaybes )
+import Data.Functor ( (<&>) )
+import Data.GraphViz.Attributes ( Attribute(..) )
+import Data.Graph.Inductive.PatriciaTree ( Gr )
+import Data.GraphViz.Printing ( renderDot, toDot )
+import Data.Text.Internal.Lazy ( Text )
+import Data.Graph.Inductive ( LEdge )
+import qualified Data.Text.Lazy as L ( pack, unpack )
+import qualified Data.Text.Lazy.IO as IO ( putStrLn )
 
 import Parser.AbsCoLa   
 import Helper.ToStringFunctions

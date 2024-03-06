@@ -1,13 +1,12 @@
 module Helper.ToStringFunctions where
 
-import Parser.AbsCoLa 
-
 import Prelude
   ( ($), (++)
-  , Int
-  , String
+  , Int, String
   , show
   )
+
+import Parser.AbsCoLa 
 
 subjectToString :: Subject -> String
 subjectToString (SubQuoted str) = str

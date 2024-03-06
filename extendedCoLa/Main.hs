@@ -2,7 +2,7 @@ module Main where
 
 import Prelude
   ( ($), (.), (==), (<$>), (>>), (>>=), (>), (++)
-  , Either(..), Int, String, Show, IO, FilePath
+  ,  Int, String, Show, IO, FilePath, Either(..)
   , concat, unlines, show, mapM_, putStrLn, getContents, readFile, error, otherwise
   )
 
@@ -11,9 +11,10 @@ import Control.Monad.State
 import System.IO 
 import System.Process
 import Data.Time
+import qualified Data.Map as Map
+
 import System.IO.Unsafe ( unsafePerformIO )
 import Data.List ( isInfixOf )
-import qualified Data.Map as Map
 
 import Parser.AbsCoLa   
 import Parser.ParCoLa 

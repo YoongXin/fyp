@@ -2,29 +2,23 @@ module ContractAnalysis.AstToFol where
 
 import Prelude
   ( ($), (<$>), (++), (+), (*), (>=), (<=), (&&)
-  , Int, Integer, fromInteger
-  , String
-  , Show, show
-  , Eq
-  , Read
-  , fst
-  , snd
-  , Bool(..)
-  , Maybe(..)
+  , Int, Integer, String, Show, Eq, Read, Bool(..), Maybe(..)
+  , fst, snd, show, fromInteger
   )
 
-import Control.Monad (when)
 import Data.Time
 import Control.Monad.State
-import Control.Monad.IO.Class (liftIO)
+
+import Control.Monad ( when )
+import Control.Monad.IO.Class ( liftIO )
+
+import qualified Data.Map as Map
 
 import Parser.AbsCoLa   
-import qualified Data.Map as Map
 
 type DateDictionary = Map.Map String String
 type TempQuanDictionary = Map.Map String (String, Integer)
 
--- Define a custom data type to represent FOL formulas
 data Term 
     = Var String
     | Fun String [Term]

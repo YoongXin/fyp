@@ -2,20 +2,13 @@ module ContractAnalysis.AstToPetriNet where
 
 import Prelude
   ( ($), (++), (.)
-  , Int
-  , String
-  , Show, show
-  , Eq
-  , Read
-  , Ord
-  , Bool(..)
-  , IO, putStrLn
-  , error
+  , Int, String, Show, Eq, Read, Ord, IO, Bool(..)
+  , error, show, putStrLn
   )
 
-import Parser.AbsCoLa   
+import Data.List ( map, intercalate, concatMap )
 
-import Data.List (map, intercalate, concatMap)
+import Parser.AbsCoLa   
 
 data PNContract
     = PNContract ([PNStatement], [PNConditionalStatement], [PNDefinition], [PNConditionalDefinition])

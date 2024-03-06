@@ -2,24 +2,8 @@ module ContractAnalysis.AstToGraph where
 
 import Prelude
   ( ($), (++), (/=), (==), (+), (||), (-), (&&), (.), (<>)
-  , Int
-  , String
-  , Show, show
-  , Eq
-  , Read
-  , Ord
-  , Bool(..)
-  , IO, putStrLn, unlines
-  , Maybe(..)
-  , zip
-  , foldr, foldl
-  , filter
-  , otherwise
-  , elem
-  , reverse
-  , break
-  , tail
-  , length, any
+  , Int, String, Show, Eq, Read, Ord, IO, Bool(..), Maybe(..)
+  , zip, foldr, foldl, filter, otherwise, elem, reverse, break, tail, length, any, putStrLn, unlines, show
   )
 
 import qualified Data.Set as Set
