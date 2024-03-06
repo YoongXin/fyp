@@ -57,8 +57,8 @@ determineOutputTwo output
     | "Termination reason: Satisfiable" `isInfixOf` output = "No inconsistency detected"
     | otherwise = "Inconsistency detected"
 
-checkInconsistency :: FilePath -> FilePath -> IO ()
-checkInconsistency contractFilePath performanceFilePath = do
+consistencyAnalysis :: FilePath -> FilePath -> IO ()
+consistencyAnalysis contractFilePath performanceFilePath = do
     contractString <- readFile contractFilePath
     let (contract, dateDictionary, tempQuanDictionary) = runFOLConversion' (parseContract contractString)
     let tptpContract = folToTPTPString "contract" contract
@@ -122,8 +122,8 @@ checkInconsistency contractFilePath performanceFilePath = do
     let outputTwo = determineOutputTwo output
     putStrLn outputTwo
 
-checkInconsistencyContract :: String -> String -> IO String
-checkInconsistencyContract contractString performanceString = do
+checkInconsistencyInContract :: String -> String -> IO String
+checkInconsistencyInContract contractString performanceString = do
     let (contract, dateDictionary, tempQuanDictionary) = runFOLConversion' (parseContract contractString)
     let tptpContract = folToTPTPString "contract" contract
     let contractComment = "%TPTP representation for the contract:"
@@ -175,8 +175,8 @@ checkInconsistencyContract contractString performanceString = do
     let outputTwo = determineOutputTwo output
     return outputTwo
 
-consistencyAnalysis :: IO String -> String
-consistencyAnalysis ioResult = unsafePerformIO $ do
+getConsistencyAnalysisResult :: IO String -> String
+getConsistencyAnalysisResult ioResult = unsafePerformIO $ do
     result <- ioResult
     return (if result == "No inconsistency detected" then "Consistent" else "Inconsistent")
 
@@ -219,40 +219,6 @@ findPathInNFA contractFilePath startNode endNode numEdges = do
 
     putStrLn "NFA image with possible path highlighted generated"
 
-convertToPetriNet :: FilePath -> IO()
-convertToPetriNet contractFilePath = do
-    contractString <- readFile contractFilePath
-    let petriNet = printPNContract (contractToPN (parseContract contractString))
-
-    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
-
-    let codeFilePath = "output/petriNetPythonCode" ++ timeStamp ++ ".txt"
-
-    writeFile codeFilePath petriNet
-
-    putStrLn $ "Petri net file written to " ++ codeFilePath ++ "\n"
-
-    putStrLn "Copy file content to python for visualization"
-
-checkCompleteness :: FilePath -> IO()
-checkCompleteness contractFilePath = do
-    contractString <- readFile contractFilePath 
-
-    let ast = parseContract contractString
-        completenessReport' = runCheckCompleteness ast
-        completenessScore = generateCompletenessScoring ast completenessReport'
-        completenessReport = printCompletenessReport completenessReport' completenessScore
-
-    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
-
-    let reportFilePath = "output/completenessReport" ++ timeStamp ++ ".txt"
-
-    writeFile reportFilePath completenessReport
-
-    putStrLn "Completeness Report Generated\n"
-
-    putStrLn $ "Check " ++ reportFilePath
-
 convertToDFA :: FilePath -> IO ()
 convertToDFA contractFilePath = do
     contractString <- readFile contractFilePath
@@ -273,4 +239,55 @@ convertToDFA contractFilePath = do
 
     putStrLn "DFA image generated"
 
--- other object spelling (fol)
+convertToPetriNet :: FilePath -> IO()
+convertToPetriNet contractFilePath = do
+    contractString <- readFile contractFilePath
+    let petriNet = printPNContract (contractToPN (parseContract contractString))
+
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
+
+    let codeFilePath = "output/petriNetPythonCode" ++ timeStamp ++ ".txt"
+
+    writeFile codeFilePath petriNet
+
+    putStrLn $ "Petri net file written to " ++ codeFilePath ++ "\n"
+
+    putStrLn "Copy file content to python for visualization"
+
+generateCompletenessReport :: FilePath -> IO()
+generateCompletenessReport contractFilePath = do
+    contractString <- readFile contractFilePath 
+
+    let ast = parseContract contractString
+        completenessReport' = runCheckCompleteness ast
+        completenessScore = generateCompletenessScoring ast completenessReport'
+        completenessReport = printCompletenessReport completenessReport' completenessScore
+
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
+
+    let reportFilePath = "output/completenessReport" ++ timeStamp ++ ".txt"
+
+    writeFile reportFilePath completenessReport
+
+    putStrLn "Completeness Report Generated\n"
+
+    putStrLn $ "Check " ++ reportFilePath
+
+generateComplexityReport :: FilePath-> IO()
+generateComplexityReport contractFilePath = do
+    contractString <- readFile contractFilePath
+
+    let ast = parseContract contractString
+        complexityMetrics = getComplexityMetrics ast
+        complexityReport = printComplexityReport complexityMetrics
+
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
+
+    let reportFilePath = "output/complexityReport" ++ timeStamp ++ ".txt"
+
+    writeFile reportFilePath complexityReport
+
+    putStrLn "Complexity Report Generated\n"
+
+    putStrLn $ "Check " ++ reportFilePath
+    

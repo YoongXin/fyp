@@ -1,7 +1,7 @@
 module ComplexityAnalysis where
 
 import Prelude
-  ( ($), (++), (.), (+), (^), (/), (-), (<=)
+  ( ($), (++), (.), (+), (^), (/), (-), (<=), (!!)
   , Int, Integer, Double
   , String
   , Show, show
@@ -209,6 +209,7 @@ analyseNumericalExpressionComplexity (NumExpOp numExp1 op numExp2) = do
     numExScore1 <- analyseNumericalExpressionComplexity numExp1
     numExScore2 <- analyseNumericalExpressionComplexity numExp2
     let totalNumExScore = combineScores numExScore1 numExScore2
+    addToHelperDictionary "Numerical Operator" 2
     return $ combineScores (Score 2) totalNumExScore
 
 analyseNumericalObjectComplexity :: NumericalObject -> State HelperDict ComplexityScore
@@ -228,37 +229,31 @@ analyseDateComplexity (DateSpe _) = return $ Score 0
 analyseDateComplexity (DateAny) = return $ Score 0
 analyseDateComplexity (DateSome _) = return $ Score 0
 analyseDateComplexity (DateThe _) = return $ Score 0
-analyseDateComplexity (DateQuanSpecific _ _ _ _) = return $ Score 1
-analyseDateComplexity (DateQuanSome _ _) = return $ Score 1 
-analyseDateComplexity (DateQuanThe _ _) = return $ Score 1
-analyseDateComplexity (DateQuanSomeWO _ _ _) = return $ Score 3
-analyseDateComplexity (DateQuanTheWO _ _ _) = return $ Score 3
-analyseDateComplexity (DateQuanTempSome _ _ _ _) = return $ Score 4
-analyseDateComplexity (DateQuanTempThe _ _ _ _ ) = return $ Score 4
-
--- runComplexityAnalysis :: Contract -> ComplexityScore
--- runComplexityAnalysis contract = 
---     let oriScore, helperDict = runState (analyseContractComplexity contract) (Map.empty)
---         partiesScore = getNumberOfParties helperDict
---         poundScore = getPoundVarianceScore helperDict
---         dollarScore = getDollarVarianceScore helperDict
---         euroScore = getEuroVarianceScore helperDict
-
---         otherScores = partiesScore + poundScore + dollarScore + euroScore 
-
---     in combineScores (oriScore) (Score otherScores)
-
-runComplexityAnalysis :: Contract -> ComplexityScore
-runComplexityAnalysis contract =
-    let (oriScore, helperDict) = runState (analyseContractComplexity contract) Map.empty
-        currencies = ["Pound", "Dollar", "Euro"]
-        varianceScores = map (\currency -> getVarianceScore helperDict currency) currencies
-        dfa = runDFAConversionFinal contract
-        stateCount = getNumberOfStates dfa
-        transitionCount = getNumberOfTransitions dfa
-
-        otherScores = getNumberOfParties helperDict + sum varianceScores + stateCount + transitionCount
-    in combineScores oriScore (Score otherScores)
+analyseDateComplexity (DateQuanSpecific _ _ _ _) = do
+    addToHelperDictionary "Temporal Quantifier" 1
+    return $ Score 1
+analyseDateComplexity (DateQuanSome _ _) = do
+    addToHelperDictionary "Temporal Quantifier" 1
+    return $ Score 1 
+analyseDateComplexity (DateQuanThe _ _) = do
+    addToHelperDictionary "Temporal Quantifier" 1
+    return $ Score 1
+analyseDateComplexity (DateQuanSomeWO _ _ _) = do
+    addToHelperDictionary "Temporal Quantifier" 1
+    addToHelperDictionary "Temporal Offset" 2
+    return $ Score 3
+analyseDateComplexity (DateQuanTheWO _ _ _) = do
+    addToHelperDictionary "Temporal Quantifier" 1
+    addToHelperDictionary "Temporal Offset" 2
+    return $ Score 3
+analyseDateComplexity (DateQuanTempSome _ _ _ _) = do
+    addToHelperDictionary "Temporal Quantifier" 2
+    addToHelperDictionary "Temporal Offset" 2
+    return $ Score 4
+analyseDateComplexity (DateQuanTempThe _ _ _ _ ) = do
+    addToHelperDictionary "Temporal Quantifier" 2
+    addToHelperDictionary "Temporal Offset" 2
+    return $ Score 4
 
 getVarianceScore :: HelperDict -> String -> Integer
 getVarianceScore helperDict currency =
@@ -271,35 +266,14 @@ getVarianceScore helperDict currency =
 
 getNumberOfParties :: HelperDict -> Integer
 getNumberOfParties helperDict =
-    let filteredDict = Map.filterWithKey (\key _ -> key `notElem` ["Pound", "Dollar", "Euro"]) helperDict
+    let filteredDict = Map.filterWithKey (\key _ -> key `notElem` ["Pound", "Dollar", "Euro", "Numerical Operator", "Temporal Quantifier", "Temporal Offset"]) helperDict
     in fromIntegral $ Map.size filteredDict
 
--- getPoundVarianceScore :: HelperDict -> Integer
--- getPoundVarianceScore helperDict =
---     case Map.lookup "Pound" helperDict of
---     Nothing -> 0 
---     Just poundList ->
---         if length poundList <= 1
---         then 0  
---         else calculateVarianceScore poundList
-
--- getDollarVarianceScore :: HelperDict -> Integer
--- getDollarVarianceScore helperDict =
---     case Map.lookup "Dollar" helperDict of
---     Nothing -> 0 
---     Just poundList ->
---         if length poundList <= 1
---         then 0  
---         else calculateVarianceScore poundList
-
--- getEuroVarianceScore :: HelperDict -> Integer
--- getEuroVarianceScore helperDict =
---     case Map.lookup "Euro" helperDict of
---     Nothing -> 0 
---     Just poundList ->
---         if length poundList <= 1
---         then 0  
---         else calculateVarianceScore poundList
+getScoreOfMetrics :: HelperDict -> String -> Integer
+getScoreOfMetrics helperDict keyValue =
+    case Map.lookup keyValue helperDict of
+        Nothing -> 0  
+        Just nums -> sum nums 
 
 calculateVarianceScore :: [Integer] -> Integer
 calculateVarianceScore amountList = 
@@ -317,3 +291,34 @@ calculateVariance nums =
   let avg = calculateAverage nums
       squaredDiffs = map (\x -> (fromIntegral x - avg) ^ 2) nums
   in sum squaredDiffs / fromIntegral (length nums)
+
+getComplexityMetrics :: Contract -> [Integer]
+getComplexityMetrics contract =
+    let (oriScore, helperDict) = runState (analyseContractComplexity contract) Map.empty
+
+        dfa = runDFAConversionFinal contract
+        stateCount = getNumberOfStates dfa
+        transitionCount = getNumberOfTransitions dfa
+
+        numberOfParties = getNumberOfParties helperDict
+
+        numericalOperatorScore = getScoreOfMetrics helperDict "Numerical Operator"
+        temporalQuantifierScore = getScoreOfMetrics helperDict "Temporal Quantifier"
+        temporalOffsetScore = getScoreOfMetrics helperDict "Temporal Offset"
+
+        currencies = ["Pound", "Dollar", "Euro"]
+        varianceScores = map (\currency -> getVarianceScore helperDict currency) currencies
+        paymentVariabilityScore = sum varianceScores
+
+    in [stateCount, transitionCount, numberOfParties, numericalOperatorScore, temporalQuantifierScore, temporalOffsetScore, paymentVariabilityScore]
+
+printComplexityReport :: [Integer] -> String
+printComplexityReport metricScores =
+    "Number of States: " ++ show (metricScores !! 0) ++ "\n" ++ 
+    "Number of Transitions: " ++ show (metricScores !! 1) ++ "\n" ++
+    "Number of Parties Involved: " ++ show (metricScores !! 2) ++ "\n" ++
+    "Number of Numerical Operators: " ++ show (metricScores !! 3) ++ "\n" ++
+    "Number of Temporal Quantifiers: " ++ show (metricScores !! 4) ++ "\n" ++
+    "Number of Temporal Offsets: " ++ show (metricScores !! 5) ++ "\n" ++
+    "Score for Payment Variability: " ++ show (metricScores !! 6) ++ "\n\n" ++
+    "Total Complexity Score: " ++ show (sum metricScores)
