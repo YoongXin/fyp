@@ -2,7 +2,6 @@ module Test.AstToDfaTest where
     
 import Test.QuickCheck
 import Data.Set ( fromList )
-import qualified Data.Set as Set
 import qualified Main as CoLaParser
 import ContractAnalysis.AstToDfa
 import Parser.AbsCoLa 
