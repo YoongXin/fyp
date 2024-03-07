@@ -236,7 +236,7 @@ tenancy =
     " THEN  [8] it is the case that Landlord must refund AMOUNT securityDeposit to Tenant before 1 October 2024 " ++
     " C-AND " ++
     " IF    [9] it is the case that Landlord charged AMOUNT incrementInRental to Tenant on SOMEDATE unknown " ++
-    " THEN  [10] it is the case that Landlord must deliver REPORT noticeOfRentalIncrement to Tenant 4 weeks before SOMEDATE unknown"
+    " THEN  [10] it is the case that Landlord must deliver REPORT noticeOfRentalIncrement to Tenant 4 weeks before THEDATE unknown"
 
 serviceLevelAgreement = 
     "       [1] ServiceProvider must deliver OTHEROBJECT agreedService to Client on 10 February 2024 " ++

@@ -45,6 +45,17 @@ employmentPerformance1e = "[1] Employee delivered OTHEROBJECT extraHoursOfWork t
 employmentPerformance1f = "[1] Employee delivered OTHEROBJECT targetOutperformance to Employer on SOMEDATE unknownFour C-AND [2] Employer paid AMOUNT bonus to Employee 1 year after SOMEDATE unknownFour C-AND [3] Employee charged AMOUNT serviceChargeOnBehalfOfEmployer to Client on 10 March 2024 C-AND [4] Employee delivered OTHEROBJECT presentationsOnBehalfOfEmployer to Client on 17 March 2024"
 employmentPerformance1g = "[1] Employee delivered OTHEROBJECT absenceWithoutPriorNotice to Employer on SOMEDATE unknownOne C-AND [2] Employee delivered REPORT absenceReason to Employer 5 days after THEDATE unknownOne"
 
+tenancyPerformance1a = "[1] it is the case that Tenant paid POUNDS 15000 to Landlord on 5 September 2023 C-AND [1] it is not the case that Landlord delivered OTHEROBJECT property to Tenant on the 23 September 2023"
+tenancyPerformance1b = "[1] Tenant delivered OTHEROBJECT subletOfProperty to Others on 7 December 2023"
+tenancyPerformance1c = "[1] Tenant delivered OTHEROBJECT notDamagedProperty to Landlord on the 22 September 2024 C-AND [2] Landlord charged AMOUNT securityDeposit to Tenant on 23 August 2023 C-AND [3] Landlord refunded AMOUNT securityDeposit to Tenant on 25 September 2024"
+tenancyPerformance1d = "[1] Landlord charged AMOUNT incrementInRental to Tenant on SOMEDATE unknown C-AND [2] it is not the case that Landlord delivered REPORT noticeOfRentalIncrement to Tenant 4 weeks before THEDATE unknown"
+
+serviceLevelAgreementPerformance1a = "[1] ServiceProvider delivered OTHEROBJECT agreedService to Client on 10 February 2024"
+serviceLevelAgreementPerformance1b = "[1] Client paid POUNDS 100 to ServiceProvider on 14 March 2024"
+serviceLevelAgreementPerformance1c = "[1] ServiceProvider delivered OTHEROBJECT agreedService to Client on 15 February 2024 C-AND [4] ServiceProvider refunded POUNDS 10 to Client on 19 February 2024"
+serviceLevelAgreementPerformance1d = "[1] it is not the case that Client delivered REPORT requestForRefund to ServiceProvider before 13 February 2024"
+serviceLevelAgreementPerformance1e = "[1] it is not the case that Client paid POUNDS 100 to ServiceProvider on 12 April 2024"
+
 noInconsistencyExpected = "Consistent"
 inconsistencyExpected = "Inconsistent"
 
@@ -80,7 +91,16 @@ consistencyAnalysisSampleTests =
     , (employment, employmentPerformance1d, inconsistencyExpected)
     , (employment, employmentPerformance1e, noInconsistencyExpected)
     , (employment, employmentPerformance1f, noInconsistencyExpected)
-    , (employment, employmentPerformance1g, inconsistencyExpected)]
+    , (employment, employmentPerformance1g, inconsistencyExpected)
+    , (tenancy, tenancyPerformance1a, noInconsistencyExpected)
+    , (tenancy, tenancyPerformance1b, inconsistencyExpected)
+    , (tenancy, tenancyPerformance1c, noInconsistencyExpected)
+    , (tenancy, tenancyPerformance1d, inconsistencyExpected)
+    , (serviceLevelAgreement, serviceLevelAgreementPerformance1a, noInconsistencyExpected)
+    , (serviceLevelAgreement, serviceLevelAgreementPerformance1b, inconsistencyExpected)
+    , (serviceLevelAgreement, serviceLevelAgreementPerformance1c, inconsistencyExpected)
+    , (serviceLevelAgreement, serviceLevelAgreementPerformance1d, noInconsistencyExpected)
+    , (serviceLevelAgreement, serviceLevelAgreementPerformance1e, noInconsistencyExpected)]
 
 consistencyAnalysisTest :: IO ()
 consistencyAnalysisTest = do
