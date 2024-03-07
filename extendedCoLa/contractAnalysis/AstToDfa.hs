@@ -1406,7 +1406,12 @@ labelledNodesParamsDFA dfa = nonClusteredParams
             multiLineString = intercalate "\n" linesList
             multiLineLabel = L.pack multiLineString
         in [Gv.Label (Gv.StrLabel multiLineLabel), Gv.FillColor [Gvc.toWColor nodeColor], Gv.Style [filled]]
-    , fmtEdge = \(_, _, edgeLabel) -> [Gv.Label (Gv.StrLabel edgeLabel)]
+    , fmtEdge = \(_, _, edgeLabel) -> 
+        let wordsList = words (L.unpack edgeLabel)
+            linesList = groupWordsIntoLines 4 wordsList
+            multiLineString = intercalate "\n" linesList
+            multiLineLabel = L.pack multiLineString
+        in [Gv.Label (Gv.StrLabel multiLineLabel)]
     }
 
 groupWordsIntoLines :: Int -> [String] -> [String]

@@ -225,7 +225,26 @@ convertToDFA contractFilePath = do
 
     putStrLn $ "Dot file written to " ++ dotFilePath ++ "\n"
 
-    callCommand $ "dot -Tpng " ++ dotFilePath ++ " -o " ++ pngFilePath
+    callCommand $ "dot -Tpng " ++ dotFilePath ++ " -o " ++ pngFilePath ++ " -Gnodesep=0.15 -Granksep=0.3 -Grankdir=LR"
+
+    putStrLn "DFA image generated"
+
+convertToDFA' :: String -> IO ()
+convertToDFA' contractString = do
+    let dfa = runDFAConversionFinal (parseContract contractString)
+    let graph = dfaToGraph dfa
+    let dotFile = visualizeGraphDFA dfa graph
+
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
+
+    let dotFilePath = "output/dfa" ++ timeStamp ++ ".dot"
+    let pngFilePath = "output/dfa" ++ timeStamp ++ ".png"
+
+    writeFile dotFilePath dotFile
+
+    putStrLn $ "Dot file written to " ++ dotFilePath ++ "\n"
+
+    callCommand $ "dot -Tpng " ++ dotFilePath ++ " -o " ++ pngFilePath ++ " -Gnodesep=0.15 -Granksep=0.3 -Grankdir=LR"
 
     putStrLn "DFA image generated"
 
