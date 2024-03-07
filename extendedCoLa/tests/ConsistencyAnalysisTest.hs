@@ -37,6 +37,14 @@ guarantorPerformance1a = "[1] it is not the case that Landlord delivered OTHEROB
 guarantorPerformance1b = "[1] Landlord delivered OTHEROBJECT demandOfTenantPayment to Tenant on the 2 April 2023 C-AND [2] it is not the case that Tenant paid AMOUNT AmountA to Landlord before 10 April 2023 C-AND [3] Landlord delivered OTHEROBJECT demandOfGuarantorPayment to Tenant on the 6 April 2023 C-AND [4] it is not the case that Guarantor paid AMOUNT AmountA to Landlord on the 11 April 2023"
 guarantorPerformance1c = "[1] it is not the case that Tenant paid AMOUNT AmountB to Landlord before 11 September 2023 C-AND [2] Guarantor paid AMOUNT AmountB to Landlord on the 12 September 2023"
 
+employmentPerformance1a = "[1] Employee delivered OTHEROBJECT responsibilities to Employer before 25 March 2024 C-AND [2] it is not the case that Employer paid POUNDS 2500 to Employee on 25 March 2024"
+employmentPerformance1b = "[1] Employee delivered OTHEROBJECT absenceWithoutPriorNotice to Employer on SOMEDATE unknownOne C-AND [2] Employee delivered REPORT absenceReason to Employer 2 days after THEDATE unknownOne C-AND [3] it is not the case that Employer charged POUNDS 100 to Employee 4 weeks after THEDATE unknownOne"
+employmentPerformance1c = "[1] Employee delivered REPORT requestForReimbursement to Employer on THEDATE unknownTwo C-AND [2] Employee delivered REPORT approvalRequest to Employer 3 weeks after SOMEDATE unknownTwo"
+employmentPerformance1d = "[1] Employee charged AMOUNT unauthorisedExpenses to Employer on 20 March 2024"
+employmentPerformance1e = "[1] Employee delivered OTHEROBJECT extraHoursOfWork to Employer on SOMEDATE unknownThree C-AND [2] Employer paid AMOUNT overtimePayment to Employee 1 week after THEDATE unknownThree"
+employmentPerformance1f = "[1] Employee delivered OTHEROBJECT targetOutperformance to Employer on SOMEDATE unknownFour C-AND [2] Employer paid AMOUNT bonus to Employee 1 year after SOMEDATE unknownFour C-AND [3] Employee charged AMOUNT serviceChargeOnBehalfOfEmployer to Client on 10 March 2024 C-AND [4] Employee delivered OTHEROBJECT presentationsOnBehalfOfEmployer to Client on 17 March 2024"
+employmentPerformance1g = "[1] Employee delivered OTHEROBJECT absenceWithoutPriorNotice to Employer on SOMEDATE unknownOne C-AND [2] Employee delivered REPORT absenceReason to Employer 5 days after THEDATE unknownOne"
+
 noInconsistencyExpected = "Consistent"
 inconsistencyExpected = "Inconsistent"
 
@@ -66,7 +74,13 @@ consistencyAnalysisSampleTests =
     , (guarantor, guarantorPerformance1a, inconsistencyExpected)
     , (guarantor, guarantorPerformance1b, inconsistencyExpected)
     , (guarantor, guarantorPerformance1c, noInconsistencyExpected)
-    ]
+    , (employment, employmentPerformance1a, inconsistencyExpected)
+    , (employment, employmentPerformance1b, noInconsistencyExpected)
+    , (employment, employmentPerformance1c, inconsistencyExpected)
+    , (employment, employmentPerformance1d, inconsistencyExpected)
+    , (employment, employmentPerformance1e, noInconsistencyExpected)
+    , (employment, employmentPerformance1f, noInconsistencyExpected)
+    , (employment, employmentPerformance1g, inconsistencyExpected)]
 
 consistencyAnalysisTest :: IO ()
 consistencyAnalysisTest = do

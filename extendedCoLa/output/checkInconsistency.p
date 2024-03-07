@@ -1,10 +1,10 @@
 %TPTP representation for the contract:
 
-fof(contract, axiom, ((! [X,Y,O,D] : (((((name(X,Emily)) & (name(Y,Frank))) & (date(D,60278))) & (objectDollar(O,45))) & (paid(X,Y,O,D)))) => (! [X,Y,O] : (? [D] : ((((name(X,Frank)) & (name(Y,Emily))) & (objectOtherObject(O,notebook))) & (mustDeliver(X,Y,O,D))))))).
+fof(contract, axiom, ((((! [X,Y,O,D] : (((((name(X,Alice)) & (name(Y,Bob))) & (date(D,59305))) & (objectPound(O,100))) & (paid(X,Y,O,D)))) | (! [X,Y,O,D] : (((((name(X,Alice)) & (name(Y,Bob))) & (date(D,59305))) & (objectDollar(O,120))) & (paid(X,Y,O,D))))) => (! [X,Y,O,D] : (((((name(X,Bob)) & (name(Y,Alice))) & (date(D,59309))) & (objectOtherObject(O,bicycle))) & (mustDeliver(X,Y,O,D))))) & ((! [X,Y,O] : (? [D] : ((((name(X,Bob)) & (name(Y,Alice))) & (objectReport(O,receipt))) & (mayDeliver(X,Y,O,D))))) & (~ (! [X,Y,O] : (? [D] : ((((name(X,Bob)) & (name(Y,Alice))) & (objectAmount(O,deliveryfee))) & (mayCharge(X,Y,O,D))))))))).
 
 %TPTP representation for the performance:
 
-fof(performance, axiom, ((! [X,Y,O,D] : (((((name(X,Emily)) & (name(Y,Frank))) & (date(D,60278))) & (objectDollar(O,45))) & (paid(X,Y,O,D)))) & (~ (! [X,Y,O] : (? [D] : ((((name(X,Frank)) & (name(Y,Emily))) & (objectOtherObject(O,notebook))) & (delivered(X,Y,O,D)))))))).
+fof(performance, axiom, ((! [X,Y,O,D] : (((((name(X,Alice)) & (name(Y,Bob))) & (date(D,59305))) & (objectPound(O,100))) & (paid(X,Y,O,D)))) & (~ (! [X,Y,O,D] : (((((name(X,Bob)) & (name(Y,Alice))) & (date(D,59309))) & (objectOtherObject(O,bicycle))) & (delivered(X,Y,O,D))))))).
 
 fof(mustCondition, axiom, (! [X,Y,O,D] :(mustDeliver(X,Y,O,D) => delivered(X,Y,O,D)) & (mustPay(X,Y,O,D) => paid(X,Y,O,D)) & (mustCharge(X,Y,O,D) => charged(X,Y,O,D)) & (mustRefund(X,Y,O,D) => refunded(X,Y,O,D)))).
 

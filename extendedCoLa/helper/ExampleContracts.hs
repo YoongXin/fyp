@@ -195,3 +195,58 @@ guarantor =
     "       AND " ++
     "       [12] it is the case that LocalAuthority delivered OTHEROBJECT overpaymentClaim to Tenant on the 7 January 2024 " ++ 
     " THEN  [13] it is the case that Guarantor must pay AMOUNT AmountC to Landlord before 10 January 2024"
+
+employment = 
+    "       [1] it is the case that Employer must pay POUNDS 2500 to Employee on 25 March 2024 " ++
+    " IF    [2] Employee delivered OTHEROBJECT responsibilities to Employer before 25 March 2024 " ++
+    " C-AND " ++
+    " IF    [3] Employee delivered OTHEROBJECT absenceWithoutPriorNotice to Employer on SOMEDATE unknownOne " ++
+    " THEN  [4] Employee must deliver REPORT absenceReason to Employer before 3 days after THEDATE unknownOne " ++
+    "       AND " ++ 
+    "       [5] Employer may charge POUNDS 100 to Employee 4 weeks after THEDATE unknownOne " ++
+    " C-AND " ++
+    "       [6] Employee must deliver REPORT approvalRequest to Employer before 2 weeks after SOMEDATE unknownTwo " ++
+    " IF    [7] Employee delivered REPORT requestForReimbursement to Employer on THEDATE unknownTwo " ++
+    " C-AND " ++
+    " IF    [8] Employee delivered OTHEROBJECT extraHoursOfWork to Employer on SOMEDATE unknownThree " ++
+    " THEN  [9] Employer must pay AMOUNT overtimePayment to Employee before 4 weeks after THEDATE unknownThree " ++
+    " C-AND " ++
+    "       [10] Employee may deliver OTHEROBJECT presentationsOnBehalfOfEmployer to Client on ANYDATE " ++
+    " C-AND " ++
+    "       [11] Employee is forbidden to charge AMOUNT unauthorisedExpenses to Employer on ANYDATE " ++
+    " C-AND " ++
+    " IF    [12] Employee delivered OTHEROBJECT targetOutperformance to Employer on SOMEDATE unknownFour " ++
+    " THEN  [13] Employer must pay AMOUNT bonus to Employee 1 year after SOMEDATE unknownFour " ++
+    " C-AND " ++
+    "       [14] Employee may charge AMOUNT serviceChargeOnBehalfOfEmployer to Client on ANYDATE"
+
+tenancy = 
+    "       [1] it is the case that Landlord must deliver OTHEROBJECT property to Tenant on the 23 September 2023 " ++
+    " IF    [2] it is the case that Tenant paid POUNDS 15000 to Landlord before 1 September 2023 " ++
+    " C-AND " ++
+    "       [3] it is the case that Landlord may charge AMOUNT securityDeposit to Tenant on 23 August 2023 " ++
+    " C-AND " ++
+    "       [4] it is the case that Tenant may deliver OTHEROBJECT requestForRepair to Landlord on ANYDATE " ++
+    " C-AND " ++
+    "       [5] it is the case that Tenant is forbidden to deliver OTHEROBJECT subletOfProperty to Others on ANYDATE " ++
+    "C-AND " ++
+    " IF    [6] it is the case that Tenant delivered OTHEROBJECT notDamagedProperty to Landlord on the 22 September 2024 " ++
+    "       AND " ++
+    "       [7] it is the case that Landlord charged AMOUNT securityDeposit to Tenant on 23 August 2023 " ++
+    " THEN  [8] it is the case that Landlord must refund AMOUNT securityDeposit to Tenant before 1 October 2024 " ++
+    " C-AND " ++
+    " IF    [9] it is the case that Landlord charged AMOUNT incrementInRental to Tenant on SOMEDATE unknown " ++
+    " THEN  [10] it is the case that Landlord must deliver REPORT noticeOfRentalIncrement to Tenant 4 weeks before SOMEDATE unknown"
+
+serviceLevelAgreement = 
+    "       [1] ServiceProvider must deliver OTHEROBJECT agreedService to Client on 10 February 2024 " ++
+    " C-AND " ++
+    "       [2] Client must pay POUNDS 100 to ServiceProvider before 10 March 2024 " ++
+    " C-AND " ++
+    " IF    [3] ServiceProvider delivered OTHEROBJECT agreedService to Client after 10 February 2024 " ++
+    " THEN  [4] ServiceProvider must refund POUNDS 10 to Client before 17 February 2024 " ++
+    " C-AND " ++
+    "       [5] Client may deliver REPORT requestForRefund to ServiceProvider before 13 February 2024 " ++
+    " C-AND " ++
+    " IF    [6] it is not the case that Client paid POUNDS 100 to ServiceProvider before 10 April 2024 " ++
+    " THEN  [7] it is the case that ServiceProvider may deliver REPORT terminationOfAgreement to Client after 10 April 2024"
