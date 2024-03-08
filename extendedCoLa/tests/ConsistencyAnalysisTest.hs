@@ -1,7 +1,7 @@
-module Test.InconsistencyAnalysisTest where
+module Test.ConsistencyAnalysisTest where
 
 import Test.QuickCheck
-import Data.List (isInfixOf)
+import Data.List ( isInfixOf )
 import qualified Main as CoLaParser
 import Parser.AbsCoLa 
 import Helper.ExampleContracts

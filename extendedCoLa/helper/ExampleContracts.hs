@@ -102,6 +102,12 @@ tqTestContract1 = "IF [1] it is the case that Alice paid POUNDS 3 to Bob before 
 tqTestContract2 = "[1] Cindy must deliver REPORT receipt to Alex after 8 September 2023 IF [2] Alex paid EUROS 10 to Cindy after 1 September 2023 ELSE [3] Cindy is forbidden to refund EUROS 10 to Alex before 10 September 2023"
 tqTestContract3 = "[1] it is not the case that Anthony must deliver OTHEROBJECT letter to Maria before 29 February 2024 C-AND [2] it is the case that Edward may pay POUNDS 4 to Aron after 5 March 2024"
 
+completenessContract1 = "IF [1] it is the case that Alice paid POUNDS 10 to Bob on 12 February 2024 THEN [2] PartyA IS Alice"
+completenessContract2 = "IF [1] Rachel charged POUNDS 72 to Elsa on SOMEDATE unknown THEN [2] Rachel must deliver OTHEROBJECT earphone to Elsa before 3 days after THEDATE unknown"
+completenessContract3 = "IF [1] Samantha delivered OTHEROBJECT book to Harry on 5 June 2023 THEN [2] Samantha IS PartyA ELSE [3] Harry IS PartyA"
+completenessContract4 = "IF [1] Neo paid more than Kathy THEN [2] Ruby must deliver OTHEROBJECT watch to Neo on SOMEDATE unknown ELSE [3] Ruby must deliver OTHEROBJECT watch to Kathy on THEDATE unknown"
+completenessContract5 = "IF [1] Cindy paid more than George THEN [2] Cindy IS PartyA ELSE [3] George IS PartyA C-AND IF [4] Cindy paid less than George OR [5] Cindy paid equal to George THEN [6] Harry must deliver OTHEROBJECT wallet to George on SOMEDATE unknown ELSE [7] Harry must deliver OTHEROBJECT wallet to Cindy on THEDATE unknown"
+
 bikeDeliveryOriginal =
     " IF    [1] it is the case that Alice paid POUNDS 100 to Bob on the 1 April 2021 " ++ 
     "       OR " ++

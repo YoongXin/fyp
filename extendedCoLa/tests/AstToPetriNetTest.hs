@@ -46,8 +46,7 @@ petriNetSampleTests =
     , (guarantor, guarantorPN)
     , (employment, employmentPN)
     , (tenancy, tenancyPN)
-    , (serviceLevelAgreement, serviceLevelAgreementPN)
-    ]
+    , (serviceLevelAgreement, serviceLevelAgreementPN)]
 
 petriNetConversionTest :: IO ()
 petriNetConversionTest = do

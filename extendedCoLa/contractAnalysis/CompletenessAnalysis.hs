@@ -2,7 +2,7 @@ module ContractAnalysis.CompletenessAnalysis where
 
 import Prelude
   ( ($), (++), (<), (.), (+), (-)
-  , Int, Integer, String, Show, Read, IO, Bool(..), Maybe(..)
+  , Int, Integer, String, Eq, Show, Read, IO, Bool(..), Maybe(..)
   , words, unwords, putStrLn, init, last, length, null, map, fst, snd, zipWith, concat, toInteger, show
   )
 
@@ -19,7 +19,7 @@ import Helper.ToStringFunctions
 
 data CompletenessReport
     = IncompleteItems ([SimpleCondition], [SimpleDefinition], [SimpleCondition], [SimpleStatement], BoolExDictionary)
-  deriving (Read, Show)
+  deriving (Eq, Read, Show)
 
 type BoolExDictionary = Map.Map String [(String, String)]
 
