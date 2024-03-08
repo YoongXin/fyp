@@ -10,7 +10,7 @@ import Control.Monad.State
 import qualified Data.Map as Map
 import qualified Data.List as List
 
-import Data.List ( intercalate )
+import Data.List ( intercalate, nub )
 import Control.Monad ( liftM2 )
 
 import Parser.AbsCoLa
@@ -193,6 +193,10 @@ printKeyValuePair key values acc =
         linesToPrint = zipWith (\comparison id -> id ++ " " ++ keyWithoutLastWord ++ " " ++ comparison ++ " " ++ lastWord ++ "\n") comparisons ids
     in acc ++ concat linesToPrint
 
+removeDuplicatesFromBoolExDict :: CompletenessReport -> CompletenessReport
+removeDuplicatesFromBoolExDict (IncompleteItems (conds1, defs, conds2, stmts, dict)) =
+    IncompleteItems (conds1, defs, conds2, stmts, Map.map nub dict)
+
 checkContractCompleteness :: Contract -> State BoolExDictionary CompletenessReport
 checkContractCompleteness (ConEmpty) = return $ IncompleteItems ([], [], [], [], Map.empty)
 checkContractCompleteness (ConComp component) = checkComponentCompleteness component
@@ -205,7 +209,7 @@ combineComponents :: CompletenessReport -> CompletenessReport -> State BoolExDic
 combineComponents (IncompleteItems (sc1, sd1, scc1, ss1, be1)) (IncompleteItems (sc2, sd2, scc2, ss2, be2)) = do
     boolExDict <- get 
 
-    let newDict = Map.union be1 be2
+    let newDict = Map.unionWith (++) be1 be2
     put newDict 
 
     return $ IncompleteItems (sc1 ++ sc2, sd1 ++ sd2, scc1 ++ scc2, ss1 ++ ss2, newDict)
@@ -331,7 +335,7 @@ checkStatementCompleteness (StateAnd simpleStatement statement) = [simpleStateme
 checkBooleanExpressionCompleteness :: Condition -> State BoolExDictionary BoolExDictionary
 checkBooleanExpressionCompleteness (CondiSim simpleCondition) = checkSimpleConditionCompleteness simpleCondition
 checkBooleanExpressionCompleteness (CondiOr simpleCondition condition) 
-    = liftM2 Map.union (checkSimpleConditionCompleteness simpleCondition) (checkBooleanExpressionCompleteness condition)
+    = liftM2 (Map.unionWith (++)) (checkSimpleConditionCompleteness simpleCondition) (checkBooleanExpressionCompleteness condition)
 checkBooleanExpressionCompleteness (CondiAnd simpleCondition condition)
     = liftM2 Map.union (checkSimpleConditionCompleteness simpleCondition) (checkBooleanExpressionCompleteness condition)
 
@@ -385,7 +389,7 @@ generateCompletenessScoring contract (IncompleteItems (scs, sds, sccs, sss, beDi
     in finalScore
 
 runCheckCompleteness :: Contract -> CompletenessReport
-runCheckCompleteness contract = evalState (checkContractCompleteness contract) (Map.empty)
+runCheckCompleteness contract = removeDuplicatesFromBoolExDict (evalState (checkContractCompleteness contract) (Map.empty))
 
 printCompletenessReport :: CompletenessReport -> Integer -> String
 printCompletenessReport (IncompleteItems (scs, sds, sccs, sss, beDict)) completenessScore =
