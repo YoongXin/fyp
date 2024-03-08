@@ -14,13 +14,13 @@ prop_incompleteItems input expectedCompletenessReport =
 prop_completenessScore :: String -> Integer -> Property
 prop_completenessScore input expectedCompletenessScoring =
     let contract = CoLaParser.parseContract input
-    in generateCompletenessScoring (contract) (runCheckCompleteness contract) === expectedCompletenessScoring
+    in generateCompletenessScore (contract) (runCheckCompleteness contract) === expectedCompletenessScoring
 
 prop_completenessReport :: String -> String -> Property
 prop_completenessReport input expectedFinalCompletenessReport = 
     let contract = CoLaParser.parseContract input
         incompleteItems = runCheckCompleteness contract
-        score = generateCompletenessScoring contract incompleteItems
+        score = generateCompletenessScore contract incompleteItems
     in printCompletenessReport incompleteItems score === expectedFinalCompletenessReport
 
 emptyContractIncompleteItems = IncompleteItems ([],[],[],[],fromList [])

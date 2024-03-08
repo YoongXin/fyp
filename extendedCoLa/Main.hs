@@ -269,7 +269,7 @@ generateCompletenessReport contractFilePath = do
 
     let ast = parseContract contractString
         completenessReport' = runCheckCompleteness ast
-        completenessScore = generateCompletenessScoring ast completenessReport'
+        completenessScore = generateCompletenessScore ast completenessReport'
         completenessReport = printCompletenessReport completenessReport' completenessScore
 
     timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime

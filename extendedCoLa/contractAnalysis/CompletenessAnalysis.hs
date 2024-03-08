@@ -379,8 +379,8 @@ updateBoolExDict sentence comparison id = do
 
     return newDict 
 
-generateCompletenessScoring :: Contract -> CompletenessReport -> Integer
-generateCompletenessScoring contract (IncompleteItems (scs, sds, sccs, sss, beDict)) =
+generateCompletenessScore :: Contract -> CompletenessReport -> Integer
+generateCompletenessScore contract (IncompleteItems (scs, sds, sccs, sss, beDict)) =
     let dfa = runDFAConversionFinal contract
         positiveScore = getNumberOfStates dfa
         negativeScore = length scs + length sccs + Map.size beDict
