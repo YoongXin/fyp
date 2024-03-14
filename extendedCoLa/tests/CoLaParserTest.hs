@@ -113,8 +113,8 @@ tenancyAST = ConAnd (ComConState (ConStateIf (StateSim (SimStateOne (IDSim (NumI
 
 serviceLevelAgreementAST = ConAnd (ComState (StateSim (SimStateOneNH (IDSim (NumInt 1)) (SubUnQuoted (Ident "ServiceProvider")) (ModalObli ObliTwo) VDel (ObjNonNu (NonNumOther (SubUnQuoted (Ident "agreedService")))) (Rec (SubUnQuoted (Ident "Client"))) (DateSpe (DateSpeOn (NumInt 10) MFeb (NumInt 2024)))))) (ConAnd (ComState (StateSim (SimStateOneNH (IDSim (NumInt 2)) (SubUnQuoted (Ident "Client")) (ModalObli ObliTwo) VPay (ObjNu (NumPound PoundTwo (NumInt 100))) (Rec (SubUnQuoted (Ident "ServiceProvider"))) (DateQuanSpecific TempBefore (NumInt 10) MMar (NumInt 2024))))) (ConAnd (ComConState (ConStateIfThen (CondiSim (SimConOneNH (IDSim (NumInt 3)) (SubUnQuoted (Ident "ServiceProvider")) VSDel (ObjNonNu (NonNumOther (SubUnQuoted (Ident "agreedService")))) (Rec (SubUnQuoted (Ident "Client"))) (DateQuanSpecific TempAfter (NumInt 10) MFeb (NumInt 2024)))) (StateSim (SimStateOneNH (IDSim (NumInt 4)) (SubUnQuoted (Ident "ServiceProvider")) (ModalObli ObliTwo) VRefund (ObjNu (NumPound PoundTwo (NumInt 10))) (Rec (SubUnQuoted (Ident "Client"))) (DateQuanSpecific TempBefore (NumInt 17) MFeb (NumInt 2024)))))) (ConAnd (ComState (StateSim (SimStateOneNH (IDSim (NumInt 5)) (SubUnQuoted (Ident "Client")) ModalPermi VDel (ObjNonNu (NonNumRep (SubUnQuoted (Ident "requestForRefund")))) (Rec (SubUnQuoted (Ident "ServiceProvider"))) (DateQuanSpecific TempBefore (NumInt 13) MFeb (NumInt 2024))))) (ConComp (ComConState (ConStateIfThen (CondiSim (SimConOne (IDSim (NumInt 6)) HoldNo (SubUnQuoted (Ident "Client")) VSPay (ObjNu (NumPound PoundTwo (NumInt 100))) (Rec (SubUnQuoted (Ident "ServiceProvider"))) (DateQuanSpecific TempBefore (NumInt 10) MApr (NumInt 2024)))) (StateSim (SimStateOne (IDSim (NumInt 7)) HoldYes (SubUnQuoted (Ident "ServiceProvider")) ModalPermi VDel (ObjNonNu (NonNumRep (SubUnQuoted (Ident "terminationOfAgreement")))) (Rec (SubUnQuoted (Ident "Client"))) (DateQuanSpecific TempAfter (NumInt 10) MApr (NumInt 2024))))))))))
 
-sampleTests :: [(String, Contract)]
-sampleTests =
+parserSampleTests :: [(String, Contract)]
+parserSampleTests =
     [(emptyContract, emptyContractAST)
     , (simpleDefinition1, simpleDefinition1AST)
     , (simpleDefinition2, simpleDefinition2AST)
@@ -205,5 +205,5 @@ sampleTests =
 parserTest :: IO ()
 parserTest = do
     putStrLn "Running QuickCheck tests for parser..."
-    quickCheck $ forAll (elements sampleTests) (\(input, expected) -> prop_parseSentence input expected)
+    quickCheck $ forAll (elements parserSampleTests) (\(input, expected) -> prop_parseSentence input expected)
     putStrLn "Done."

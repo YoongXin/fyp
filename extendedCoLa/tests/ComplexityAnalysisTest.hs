@@ -1,7 +1,6 @@
 module Test.ComplexityAnalysisTest where
 
 import Test.QuickCheck
--- import Data.Map ( fromList )
 import qualified Main as CoLaParser
 import Parser.AbsCoLa 
 import Helper.ExampleContracts
