@@ -4,7 +4,7 @@ import Prelude
   ( ($), (++), (||), (==), (+), (<$>), (<>)
   , Int, Integer, String, Show, Eq, Read, Ord, IO, Bool(..), Maybe(..)
   , zip, foldr, null, head, reverse, splitAt, unwords, fst, snd,  fromInteger, toInteger, fromIntegral
-  , error, all, max, not, concat, break, putStrLn, unlines, show
+  , error, all, max, not, concat, break, putStrLn, unlines, show, length, drop, filter, notElem
   )
 
 import Data.Time
@@ -1004,9 +1004,9 @@ createDFASimpleStatement holds subject modalVerb verb object receiver date =
          (HoldNo, ModalForbi) -> may
 
     where
-        mustStateStrNB = objectToString object ++ " " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        mustStateStrNB = objectToString object ++ " " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         mustEventStrNB = subjectToString subject ++ " " ++ verbToVerbStatusString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
-        mustStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        mustStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         mustEventB = generateBreachEvent subject verb object receiver date
         mustStateNB = StateAD mustStateStrNB
         mustEventNB = EventD mustEventStrNB
@@ -1063,9 +1063,9 @@ createDFASimpleStatementNH subject modalVerb verb object receiver date =
          (ModalForbi) -> mustNot
 
     where
-        mustStateStrNB = objectToString object ++ " " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        mustStateStrNB = objectToString object ++ " " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         mustEventStrNB = subjectToString subject ++ " " ++ verbToVerbStatusString verb ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
-        mustStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        mustStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbToVerbStatusString verb ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         mustEventB = generateBreachEvent subject verb object receiver date
         mustStateNB = StateAD mustStateStrNB
         mustEventNB = EventD mustEventStrNB
@@ -1142,12 +1142,12 @@ createDFASimpleCondition holds subject verbStatus object receiver date =
         (HoldNo) -> didNot
 
     where 
-        didStateStrNB = objectToString object ++ " " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        didStateStrNB = objectToString object ++ " " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         didEventStrNB = subjectToString subject ++ " " ++ verbStatusToString verbStatus ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         didStateNB = StateAD didStateStrNB
         didEventNB = EventD didEventStrNB
         
-        didStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+        didStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         didEventB = generateBreachEvent subject (verbStatusToVerb verbStatus) object receiver date
         didStateB = StateAD didStateStrB
 
@@ -1188,12 +1188,12 @@ createDFASimpleCondition holds subject verbStatus object receiver date =
 
 createDFASimpleConditionNH :: Subject -> VerbStatus -> Object -> Receiver -> Date -> State (StateDictionary, SelfLoopingEvents) DFA
 createDFASimpleConditionNH subject verbStatus object receiver date = do
-    let didStateStrNB = objectToString object ++ " " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " on time"
+    let didStateStrNB = objectToString object ++ " " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         didEventStrNB = subjectToString subject ++ " " ++ verbStatusToString verbStatus ++ " " ++ objectToString object ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         didStateNB = StateAD didStateStrNB
         didEventNB = EventD didEventStrNB
         
-        didStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ "to " ++ receiverToString receiver ++ " on time"
+        didStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ "to " ++ receiverToString receiver ++ " " ++ dateToString date
         didEventB = generateBreachEvent subject (verbStatusToVerb verbStatus) object receiver date
         didStateB = StateAD didStateStrB
 
@@ -1332,6 +1332,16 @@ createSelfLoopingTransitions (dfa, stateDict, slEvents) =
         e = slEvents
         tl = evalState (generateTransitionsSelfLooping s e) (stateDict, slEvents)
     in tl
+
+getElseStates :: Set.Set StateAD -> StateDictionary -> Set.Set StateAD
+getElseStates conditionStates stateDict =
+    Set.fromList $ catMaybes $ map (\state -> checkState state stateDict) (Set.toList conditionStates)
+    where
+    checkState :: StateAD -> StateDictionary -> Maybe StateAD
+    checkState state dict =
+        case Map.lookup state dict of
+            Just (_, 7) -> Just state
+            _           -> Nothing
 
 runDFAConversionFinal :: Contract -> DFA
 runDFAConversionFinal contract = 
