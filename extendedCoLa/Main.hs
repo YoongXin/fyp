@@ -42,8 +42,8 @@ main = do
     putStrLn "Parsed contract:"
     print parsedContract
 
-determineOutputTwo :: String -> String
-determineOutputTwo output
+determineVampireResult :: String -> String
+determineVampireResult output
     | "Termination reason: Satisfiable" `isInfixOf` output = "No inconsistency detected"
     | otherwise = "Inconsistency detected"
 
@@ -109,8 +109,8 @@ consistencyAnalysis contractFilePath performanceFilePath = do
     putStrLn "Vampire command output:"
     putStrLn output
 
-    let outputTwo = determineOutputTwo output
-    putStrLn outputTwo
+    let consistencyAnalysisResult = determineVampireResult output
+    putStrLn consistencyAnalysisResult
 
 checkInconsistencyInContract :: String -> String -> IO String
 checkInconsistencyInContract contractString performanceString = do
@@ -162,7 +162,7 @@ checkInconsistencyInContract contractString performanceString = do
       
     output <- readProcess "./vampire_rel" ["--input_file", "output/checkInconsistency.p"] ""
 
-    let outputTwo = determineOutputTwo output
+    let outputTwo = determineVampireResult output
     return outputTwo
 
 getConsistencyAnalysisResult :: IO String -> String
