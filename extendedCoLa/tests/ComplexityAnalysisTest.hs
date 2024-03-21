@@ -31,7 +31,7 @@ isdaModifiedComplexityMetrics = [10,86,4,4,0,0,0]
 guarantorComplexityMetrics = [17,51,5,0,4,0,0]
 employmentComplexityMetrics = [21,108,3,0,9,10,1107]
 tenancyComplexityMetrics = [14,54,3,0,3,2,0]
-serviceLevelAgreementComplexityMetrics = [10,38,2,0,6,0,25]
+serviceLevelAgreementComplexityMetrics = [11,41,2,0,6,0,25]
 
 emptyContractComplexityReport = "Number of States: 1\nNumber of Transitions: 0\nNumber of Parties Involved: 0\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 0\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 0\n\nTotal Complexity Score: 1"
 bikeDeliveryOriginalComplexityReport = "Number of States: 6\nNumber of Transitions: 14\nNumber of Parties Involved: 2\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 0\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 0\n\nTotal Complexity Score: 22"
@@ -42,7 +42,7 @@ isdaModifiedComplexityReport = "Number of States: 10\nNumber of Transitions: 86\
 guarantorComplexityReport = "Number of States: 17\nNumber of Transitions: 51\nNumber of Parties Involved: 5\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 4\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 0\n\nTotal Complexity Score: 77"
 employmentComplexityReport = "Number of States: 21\nNumber of Transitions: 108\nNumber of Parties Involved: 3\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 9\nNumber of Temporal Offsets: 10\nScore for Payment Variability: 1107\n\nTotal Complexity Score: 1258"
 tenancyComplexityReport = "Number of States: 14\nNumber of Transitions: 54\nNumber of Parties Involved: 3\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 3\nNumber of Temporal Offsets: 2\nScore for Payment Variability: 0\n\nTotal Complexity Score: 76"
-serviceLevelAgreementComplexityReport = "Number of States: 10\nNumber of Transitions: 38\nNumber of Parties Involved: 2\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 6\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 25\n\nTotal Complexity Score: 81"
+serviceLevelAgreementComplexityReport = "Number of States: 11\nNumber of Transitions: 41\nNumber of Parties Involved: 2\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 6\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 25\n\nTotal Complexity Score: 85"
 
 complexityMetricsSampleTests :: [(String, [Integer])]
 complexityMetricsSampleTests = 
