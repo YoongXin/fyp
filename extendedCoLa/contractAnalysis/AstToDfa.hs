@@ -1193,7 +1193,7 @@ createDFASimpleConditionNH subject verbStatus object receiver date = do
         didStateNB = StateAD didStateStrNB
         didEventNB = EventD didEventStrNB
         
-        didStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ "to " ++ receiverToString receiver ++ " " ++ dateToString date
+        didStateStrB = "BREACH: " ++ objectToString object ++ " not " ++ verbStatusToString verbStatus ++ " by " ++ subjectToString subject ++ " to " ++ receiverToString receiver ++ " " ++ dateToString date
         didEventB = generateBreachEvent subject (verbStatusToVerb verbStatus) object receiver date
         didStateB = StateAD didStateStrB
 
