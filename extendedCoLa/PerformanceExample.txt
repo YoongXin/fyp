@@ -1,1 +1,1 @@
-[1] Carol paid EUROS 30 to David before 20 September 2023 C-AND [2] David delivered OTHEROBJECT orange to Carol on the 29 September 2023
+[1] Alice paid POUNDS 100 to Bob on the 1 April 2021 C-AND [2] Bob delivered OTHEROBJECT bicycle to Alice on the 5 April 2021

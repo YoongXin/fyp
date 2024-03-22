@@ -1,14 +1,14 @@
 digraph {
-    1 [label="$120 paid by Alice to\nBob on time OR £100\npaid by Alice to Bob\non time"
+    1 [label="$120 paid by Alice to\nBob on the 1 April\n2021 OR £100 paid by\nAlice to Bob on the\n1 April 2021"
       ,fillcolor=lightgray
       ,style=filled];
-    2 [label="$120 paid by Alice to\nBob on time OR £100\npaid by Alice to Bob\non time AND BREACH: OtherObject\n\"bicycle\" not delivered by Bob\nto Alice on time"
+    2 [label="$120 paid by Alice to\nBob on the 1 April\n2021 OR £100 paid by\nAlice to Bob on the\n1 April 2021 AND BREACH:\nOtherObject \"bicycle\" not delivered by\nBob to Alice on the\n5 April 2021"
       ,fillcolor=lightsalmon
       ,style=filled];
-    3 [label="$120 paid by Alice to\nBob on time OR £100\npaid by Alice to Bob\non time AND OtherObject \"bicycle\"\ndelivered by Bob to Alice\non time"
+    3 [label="$120 paid by Alice to\nBob on the 1 April\n2021 OR £100 paid by\nAlice to Bob on the\n1 April 2021 AND OtherObject\n\"bicycle\" delivered by Bob to\nAlice on the 5 April\n2021"
       ,fillcolor=green
       ,style=filled];
-    4 [label="BREACH: $120 not paid by\nAlice to Bob on time\nAND BREACH: £100 not paid\nby Alice to Bob on\ntime"
+    4 [label="BREACH: $120 not paid by\nAlice to Bob on the\n1 April 2021 AND BREACH:\n£100 not paid by Alice\nto Bob on the 1\nApril 2021"
       ,fillcolor=lightsalmon
       ,style=filled];
     5 [label="BREACH: Amount \"delivery fee\" charged\nby Bob to Alice"
