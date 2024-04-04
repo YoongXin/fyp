@@ -45,7 +45,7 @@ connectTerms :: Subject -> Verb -> Receiver -> Object -> String
 connectTerms subject verb receiver object = subjectToString subject ++ verbToString' verb ++ receiverToString receiver ++ objectToString' object
 
 contractToFOL :: Contract -> State (DateDictionary, TempQuanDictionary) FOLFormula
-contractToFOL (ConEmpty) = return $ Brackets $ Pred "Empty" [Var "Empty"]
+contractToFOL (ConEmpty) = return $ Brackets $ Pred "empty" [Var "empty"]
 contractToFOL (ConComp component) = componentToFOL component 
 contractToFOL (ConAnd component contract) = do
     c1 <- Brackets <$> componentToFOL component

@@ -45,7 +45,7 @@ main = do
 determineVampireResult :: String -> String
 determineVampireResult output
     | "Termination reason: Satisfiable" `isInfixOf` output = "No inconsistency detected"
-    | otherwise = "Inconsistency detected"
+    | otherwise = "Inconsistency detected."
 
 consistencyAnalysis :: FilePath -> FilePath -> IO ()
 consistencyAnalysis contractFilePath performanceFilePath = do
