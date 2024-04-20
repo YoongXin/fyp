@@ -66,8 +66,7 @@ consistencyAnalysis contractFilePath performanceFilePath = do
                     "(mustDeliver(X,Y,O,D) => delivered(X,Y,O,D)) & " ++
                     "(mustPay(X,Y,O,D) => paid(X,Y,O,D)) & " ++
                     "(mustCharge(X,Y,O,D) => charged(X,Y,O,D)) & " ++
-                    "(mustRefund(X,Y,O,D) => refunded(X,Y,O,D))" ++
-                    "))."
+                    "(mustRefund(X,Y,O,D) => refunded(X,Y,O,D))))."
 
     let forbiddenAxiom = "fof(forbiddenContradiction, axiom, (" ++
                          "! [X, Y, D, O] : (" ++
@@ -76,8 +75,7 @@ consistencyAnalysis contractFilePath performanceFilePath = do
                          "(~ mayCharge(X, Y, O, D) & charged(X, Y, O, D)) |" ++
                          "(~ mayRefund(X, Y, O, D) & refunded(X, Y, O, D))" ++
                          " => $false" ++
-                         ")" ++
-                         "))."
+                         ")))."
 
     let mustTemporalQuantifierAxiom = "fof(mustWithTemporalQuantifierContradiction, axiom, (" ++
                                       "! [X, Y, O, D] : (" ++
@@ -92,15 +90,13 @@ consistencyAnalysis contractFilePath performanceFilePath = do
                                       " => $false)))."
 
     let axioms = mustAxiom ++ "\n\n" ++ forbiddenAxiom ++ "\n\n" ++ mustTemporalQuantifierAxiom
-
-    let combinedOutput = contractFullForm ++ "\n\n" ++ performanceFullForm ++ "\n\n" ++ axioms
+        combinedOutput = contractFullForm ++ "\n\n" ++ performanceFullForm ++ "\n\n" ++ axioms
 
     timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
 
     let tptpFilePath = "output/checkInconsistency" ++ timeStamp ++ ".p"
 
     writeFile tptpFilePath combinedOutput
-
     putStrLn $ "Combined TPTP representation written to " ++ tptpFilePath ++ "\n"
       
     -- Run the Vampire command and capture its output
@@ -129,8 +125,7 @@ checkInconsistencyInContract contractString performanceString = do
                     "(mustDeliver(X,Y,O,D) => delivered(X,Y,O,D)) & " ++
                     "(mustPay(X,Y,O,D) => paid(X,Y,O,D)) & " ++
                     "(mustCharge(X,Y,O,D) => charged(X,Y,O,D)) & " ++
-                    "(mustRefund(X,Y,O,D) => refunded(X,Y,O,D))" ++
-                    "))."
+                    "(mustRefund(X,Y,O,D) => refunded(X,Y,O,D))))."
 
     let forbiddenAxiom = "fof(forbiddenContradiction, axiom, (" ++
                          "! [X, Y, D, O] : (" ++
@@ -139,8 +134,7 @@ checkInconsistencyInContract contractString performanceString = do
                          "(~ mayCharge(X, Y, O, D) & charged(X, Y, O, D)) |" ++
                          "(~ mayRefund(X, Y, O, D) & refunded(X, Y, O, D))" ++
                          " => $false" ++
-                         ")" ++
-                         "))."
+                         ")))."
 
     let mustTemporalQuantifierAxiom = "fof(mustWithTemporalQuantifierContradiction, axiom, (" ++
                                       "! [X, Y, O, D] : (" ++
@@ -155,8 +149,7 @@ checkInconsistencyInContract contractString performanceString = do
                                       " => $false)))."
 
     let axioms = mustAxiom ++ "\n\n" ++ forbiddenAxiom ++ "\n\n" ++ mustTemporalQuantifierAxiom
-
-    let combinedOutput = contractFullForm ++ "\n\n" ++ performanceFullForm ++ "\n\n" ++ axioms
+        combinedOutput = contractFullForm ++ "\n\n" ++ performanceFullForm ++ "\n\n" ++ axioms
 
     writeFile "output/checkInconsistency.p" combinedOutput
       
