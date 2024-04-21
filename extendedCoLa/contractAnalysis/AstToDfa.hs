@@ -1,10 +1,10 @@
 module ContractAnalysis.AstToDfa where
 
 import Prelude
-  ( ($), (++), (||), (==), (+), (<$>), (<>)
+  ( ($), (++), (||), (==), (+), (<$>), (<>), (/=)
   , Int, Integer, String, Show, Eq, Read, Ord, IO, Bool(..), Maybe(..)
   , zip, foldr, null, head, reverse, splitAt, unwords, fst, snd,  fromInteger, toInteger, fromIntegral
-  , error, all, max, not, concat, break, putStrLn, unlines, show, length, drop, filter, notElem
+  , error, all, max, not, concat, break, putStrLn, unlines, show, length, drop, filter, notElem, otherwise
   )
 
 import Data.Time
@@ -17,7 +17,7 @@ import qualified Data.List as List
 import qualified Data.GraphViz.Attributes.Complete as Gv
 import qualified Data.GraphViz.Attributes.Colors as Gvc
 
-import Data.List ( map, lookup, sort, group, concatMap, intercalate, find, stripPrefix, isInfixOf, words ) 
+import Data.List ( map, lookup, sort, group, concatMap, intercalate, find, stripPrefix, isInfixOf, words, isPrefixOf ) 
 import Data.Maybe ( catMaybes )
 import Data.Functor ( (<&>) )
 import Data.GraphViz.Attributes ( Attribute(..) )
@@ -102,6 +102,15 @@ removeFromStateDictionary toBeRemovedStates = do
 removeStatesFromDictionary :: Set.Set StateAD -> StateDictionary -> StateDictionary
 removeStatesFromDictionary toBeRemovedStates dict =
     foldr Map.delete dict (Set.toList toBeRemovedStates)
+
+replaceStateInDictionary :: StateAD -> StateAD -> State (StateDictionary, SelfLoopingEvents) ()
+replaceStateInDictionary oldState newState = do
+    modifyStateDictionary (\dict ->
+        case Map.lookup oldState dict of
+            Just (events, int)
+                | int /= 1 -> Map.insert newState (events, 1) $ Map.delete oldState dict
+                | otherwise -> Map.insert newState (events, int) $ Map.delete oldState dict
+            Nothing -> dict)    
 
 generateTransition :: StateAD -> StateAD -> State (StateDictionary, SelfLoopingEvents) [TransitionD]
 generateTransition state1 state2 = do
@@ -383,6 +392,11 @@ generateBreachEvent subject verb object receiver date =
 generateTransitionsAccepting :: [StateAD] -> [StateAD] -> State (StateDictionary, SelfLoopingEvents) [TransitionD]
 generateTransitionsAccepting ac1 ac2 = concat <$> mapM (\state1 -> concat <$> mapM (generateTransition state1) ac1) ac2
 
+cleanBreachState :: StateAD -> StateAD
+cleanBreachState (StateAD stateStr) = StateAD $ if "BREACH:" `isPrefixOf` stateStr
+                                         then drop 7 stateStr
+                                         else stateStr
+
 contractToDFA :: Contract -> State (StateDictionary, SelfLoopingEvents) DFA
 contractToDFA (ConEmpty) = return $ DFA 
     { states = Set.singleton $ StateAD "Empty"
@@ -425,19 +439,22 @@ definitionToDFA (DefAnd simpleDefinition definition) = do
     dfa1 <- simpleDefinitionToDFA simpleDefinition
     dfa2 <- definitionToDFA definition
 
-    let events1 = events dfa1
-        events2 = events dfa2
-        combinedEvent = generateAndEvent events1 events2
+    let states1 = acceptingStates dfa1
+        states2 = acceptingStates dfa2
+        combinedDefState = generateAndState states1 states2
+        eventStr = "Null"
+        defEvent = EventD eventStr
 
-    addSelfLoopingEvents combinedEvent
+    addToStateDictionary combinedDefState (Set.singleton $ defEvent) 1
+    newTransitions <- generateTransition (StateAD "Start") combinedDefState
 
     return $ DFA
-      { states = Set.singleton $ StateAD "Start"
-      , events = Set.singleton (combinedEvent)
-      , transitions = Set.empty
-      , startStates = Set.singleton $ StateAD "Start"
-      , acceptingStates = Set.empty
-      }
+        { states = Set.fromList [StateAD "Start", combinedDefState]
+        , events = Set.singleton defEvent
+        , transitions = Set.fromList newTransitions
+        , startStates = Set.singleton $ StateAD "Start"
+        , acceptingStates = Set.singleton combinedDefState
+        }
 
 conditionalDefinitionToDFA :: ConditionalDefinition -> State (StateDictionary, SelfLoopingEvents) DFA
 conditionalDefinitionToDFA (ConDefIf definition condition) = do
@@ -451,8 +468,8 @@ conditionalDefinitionToDFA (ConDefIf definition condition) = do
         allConditionEvents = events dfaCon
         conditionEvents = getNonBreachEvents allConditionEvents oriDict
         definitionEvents = events dfaDef
-        definitionState = evalState (generateThenState' conditionEvents definitionEvents) (oriDict, oriList)
         conditionState = getNonBreachState conditionStates oriDict
+        definitionState = generateAndState (Set.singleton $ conditionState) (acceptingStates dfaDef)
 
     addToStateDictionary definitionState definitionEvents 1
 
@@ -477,8 +494,8 @@ conditionalDefinitionToDFA (ConDefIfThen condition definition) = do
         allConditionEvents = events dfaCon
         conditionEvents = getNonBreachEvents allConditionEvents oriDict
         definitionEvents = events dfaDef
-        definitionState = evalState (generateThenState' conditionEvents definitionEvents) (oriDict, oriList)
         conditionState = getNonBreachState conditionStates oriDict
+        definitionState = generateAndState (Set.singleton $ conditionState) (acceptingStates dfaDef)
 
     addToStateDictionary definitionState definitionEvents 1
 
@@ -506,23 +523,27 @@ conditionalDefinitionToDFA (ConDefIfElse definition1 condition definition2) = do
         conditionState = getNonBreachState conditionStates oriDict
         conditionEvents = getNonBreachEvents allConditionEvents oriDict
         definitionEvents1 = events dfaDef1
-        definitionState1 = evalState (generateThenState' conditionEvents definitionEvents1) (oriDict, oriList)
+        definitionState1 = generateAndState (Set.singleton $ conditionState) (acceptingStates dfaDef1)
         
-        nonConditionState = getBreachState conditionStates oriDict
+        oldNonConditionState = getBreachState conditionStates oriDict
+        nonConditionState = cleanBreachState oldNonConditionState
         nonConditionEvents = getBreachEvents allConditionEvents oriDict
         definitionEvents2 = events dfaDef2
-        definitionState2 = evalState (generateThenState' nonConditionEvents definitionEvents2) (oriDict, oriList)
+        definitionState2 = generateAndState (Set.singleton $ conditionState) (acceptingStates dfaDef2)
 
     addToStateDictionary definitionState1 definitionEvents1 1
     addToStateDictionary definitionState2 definitionEvents2 1
+    replaceStateInDictionary oldNonConditionState nonConditionState 
 
     newTransitions1 <- generateTransition conditionState definitionState1
     newTransitions2 <- generateTransition nonConditionState definitionState2
+    newTransitions3 <- generateTransition (StateAD "Start") conditionState
+    newTransitions4 <- generateTransition (StateAD "Start") nonConditionState
 
     return $ DFA
-        { states = Set.unions [(conditionStates), (Set.singleton $ StateAD "Start"), (Set.singleton $ definitionState1), (Set.singleton $ definitionState2)]
+        { states = Set.unions [(Set.singleton $ conditionState), (Set.singleton $ nonConditionState), (Set.singleton $ StateAD "Start"), (Set.singleton $ definitionState1), (Set.singleton $ definitionState2)]
         , events = combinedEvents
-        , transitions = Set.unions [(transitions dfaCon), (Set.fromList newTransitions1), (Set.fromList newTransitions2)]
+        , transitions = Set.unions [(Set.fromList newTransitions1), (Set.fromList newTransitions2), (Set.fromList newTransitions3), (Set.fromList newTransitions4)]
         , startStates = Set.singleton $ StateAD "Start"
         , acceptingStates = Set.union (Set.singleton $ definitionState1) (Set.singleton $ definitionState2)
         }
@@ -541,23 +562,27 @@ conditionalDefinitionToDFA (ConDefIfThenElse condition definition1 definition2) 
         conditionState = getNonBreachState conditionStates oriDict
         conditionEvents = getNonBreachEvents allConditionEvents oriDict
         definitionEvents1 = events dfaDef1
-        definitionState1 = evalState (generateThenState' conditionEvents definitionEvents1) (oriDict, oriList)
+        definitionState1 = generateAndState (Set.singleton $ conditionState) (acceptingStates dfaDef1)
         
-        nonConditionState = getBreachState conditionStates oriDict
+        oldNonConditionState = getBreachState conditionStates oriDict
+        nonConditionState = cleanBreachState oldNonConditionState
         nonConditionEvents = getBreachEvents allConditionEvents oriDict
         definitionEvents2 = events dfaDef2
-        definitionState2 = evalState (generateThenState' nonConditionEvents definitionEvents2) (oriDict, oriList)
+        definitionState2 = generateAndState (Set.singleton $ conditionState) (acceptingStates dfaDef2)
 
     addToStateDictionary definitionState1 definitionEvents1 1
     addToStateDictionary definitionState2 definitionEvents2 1
+    replaceStateInDictionary oldNonConditionState nonConditionState 
 
     newTransitions1 <- generateTransition conditionState definitionState1
     newTransitions2 <- generateTransition nonConditionState definitionState2
+    newTransitions3 <- generateTransition (StateAD "Start") conditionState
+    newTransitions4 <- generateTransition (StateAD "Start") nonConditionState
 
     return $ DFA
-        { states = Set.unions [(conditionStates), (Set.singleton $ StateAD "Start"), (Set.singleton $ definitionState1), (Set.singleton $ definitionState2)]
+        { states = Set.unions [(Set.singleton $ conditionState), (Set.singleton $ nonConditionState), (Set.singleton $ StateAD "Start"), (Set.singleton $ definitionState1), (Set.singleton $ definitionState2)]
         , events = combinedEvents
-        , transitions = Set.unions [(transitions dfaCon), (Set.fromList newTransitions1), (Set.fromList newTransitions2)]
+        , transitions = Set.unions [(Set.fromList newTransitions1), (Set.fromList newTransitions2), (Set.fromList newTransitions3), (Set.fromList newTransitions4)]
         , startStates = Set.singleton $ StateAD "Start"
         , acceptingStates = Set.union (Set.singleton $ definitionState1) (Set.singleton $ definitionState2)
         }
@@ -785,7 +810,8 @@ conditionalStatementToDFA (ConStateIfElse statement1 condition statement2) = do
         statementBreachStates1 = getBreachStates (states dfaState1) oriDict
         statementBreachState1 = generateThenState conditionState statementBreachStates1
 
-        nonConditionState = getBreachState conditionStates oriDict
+        oldNonConditionState = getBreachState conditionStates oriDict
+        nonConditionState = cleanBreachState oldNonConditionState
         nonConditionEvents = getBreachEvents allConditionEvents oriDict
         statementEvents2 = getNonBreachEvents (events dfaState2) oriDict
         statementStates2 = getNonBreachStates (states dfaState2) oriDict
@@ -799,16 +825,19 @@ conditionalStatementToDFA (ConStateIfElse statement1 condition statement2) = do
     addToStateDictionary statementBreachState1 statementBreachEvents1 2
     addToStateDictionary statementState2 statementEvents2 1
     addToStateDictionary statementBreachState2 statementBreachEvents2 2
+    replaceStateInDictionary oldNonConditionState nonConditionState 
         
     newTransitions1 <- generateTransition conditionState statementState1
     newTransitions2 <- generateTransition conditionState statementBreachState1
     newTransitions3 <- generateTransition nonConditionState statementState2
     newTransitions4 <- generateTransition nonConditionState statementBreachState2
+    newTransitions5 <- generateTransition (StateAD "Start") conditionState
+    newTransitions6 <- generateTransition (StateAD "Start") nonConditionState
 
     return $ DFA
-        { states = Set.unions [(conditionStates), (Set.singleton $ StateAD "Start"), (Set.singleton $ statementState1), (Set.singleton $ statementBreachState1), (Set.singleton $ statementState2), (Set.singleton $ statementBreachState2)]
+        { states = Set.unions [(Set.singleton $ conditionState), (Set.singleton $ nonConditionState), (Set.singleton $ StateAD "Start"), (Set.singleton $ statementState1), (Set.singleton $ statementBreachState1), (Set.singleton $ statementState2), (Set.singleton $ statementBreachState2)]
         , events = Set.unions [(allConditionEvents), (statementEvents1), (statementBreachEvents1), (statementEvents2), (statementBreachEvents2)]
-        , transitions = Set.unions [(transitions dfaCon), (Set.fromList newTransitions1), (Set.fromList newTransitions2), (Set.fromList newTransitions3), (Set.fromList newTransitions4)]
+        , transitions = Set.unions [(Set.fromList newTransitions1), (Set.fromList newTransitions2), (Set.fromList newTransitions3), (Set.fromList newTransitions4), (Set.fromList newTransitions5), (Set.fromList newTransitions6)]
         , startStates = Set.singleton $ StateAD "Start"
         , acceptingStates = Set.union (Set.singleton $ statementState1) (Set.singleton $ statementState2)
         }
@@ -833,7 +862,8 @@ conditionalStatementToDFA (ConStateIfThenElse condition statement1 statement2) =
         statementBreachStates1 = getBreachStates (states dfaState1) oriDict
         statementBreachState1 = generateThenState conditionState statementBreachStates1
 
-        nonConditionState = getBreachState conditionStates oriDict
+        oldNonConditionState = getBreachState conditionStates oriDict
+        nonConditionState = cleanBreachState oldNonConditionState
         nonConditionEvents = getBreachEvents allConditionEvents oriDict
         statementEvents2 = getNonBreachEvents (events dfaState2) oriDict
         statementStates2 = getNonBreachStates (states dfaState2) oriDict
@@ -847,16 +877,19 @@ conditionalStatementToDFA (ConStateIfThenElse condition statement1 statement2) =
     addToStateDictionary statementBreachState1 statementBreachEvents1 2
     addToStateDictionary statementState2 statementEvents2 1
     addToStateDictionary statementBreachState2 statementBreachEvents2 2
+    replaceStateInDictionary oldNonConditionState nonConditionState 
         
     newTransitions1 <- generateTransition conditionState statementState1
     newTransitions2 <- generateTransition conditionState statementBreachState1
     newTransitions3 <- generateTransition nonConditionState statementState2
     newTransitions4 <- generateTransition nonConditionState statementBreachState2
+    newTransitions5 <- generateTransition (StateAD "Start") conditionState
+    newTransitions6 <- generateTransition (StateAD "Start") nonConditionState
 
     return $ DFA
-        { states = Set.unions [(conditionStates), (Set.singleton $ StateAD "Start"), (Set.singleton $ statementState1), (Set.singleton $ statementBreachState1), (Set.singleton $ statementState2), (Set.singleton $ statementBreachState2)]
+        { states = Set.unions [(Set.singleton $ conditionState), (Set.singleton $ nonConditionState), (Set.singleton $ StateAD "Start"), (Set.singleton $ statementState1), (Set.singleton $ statementBreachState1), (Set.singleton $ statementState2), (Set.singleton $ statementBreachState2)]
         , events = Set.unions [(allConditionEvents), (statementEvents1), (statementBreachEvents1), (statementEvents2), (statementBreachEvents2)]
-        , transitions = Set.unions [(transitions dfaCon), (Set.fromList newTransitions1), (Set.fromList newTransitions2), (Set.fromList newTransitions3), (Set.fromList newTransitions4)]
+        , transitions = Set.unions [(Set.fromList newTransitions1), (Set.fromList newTransitions2), (Set.fromList newTransitions3), (Set.fromList newTransitions4), (Set.fromList newTransitions5), (Set.fromList newTransitions6)]
         , startStates = Set.singleton $ StateAD "Start"
         , acceptingStates = Set.union (Set.singleton $ statementState1) (Set.singleton $ statementState2)
         }
@@ -865,50 +898,59 @@ simpleDefinitionToDFA :: SimpleDefinition -> State (StateDictionary, SelfLooping
 simpleDefinitionToDFA (SimDefIs id subject1 subject2) = do
     let subjectStr1 = subjectToString subject1
         subjectStr2 = subjectToString subject2
-        eventStr = subjectStr1 ++ " IS " ++ subjectStr2
+        stateStr = subjectStr1 ++ " IS " ++ subjectStr2
+        eventStr = "Null"
 
+        simDefState = StateAD stateStr
         simDefEvent = EventD eventStr
 
-    addSelfLoopingEvents simDefEvent
+    addToStateDictionary simDefState (Set.singleton $ simDefEvent) 1
+    newTransitions <- generateTransition (StateAD "Start") simDefState
 
     return $ DFA
-        { states = Set.singleton $ StateAD "Start"
+        { states = Set.fromList [StateAD "Start", simDefState]
         , events = Set.singleton simDefEvent
-        , transitions = Set.empty
+        , transitions = Set.fromList newTransitions
         , startStates = Set.singleton $ StateAD "Start"
-        , acceptingStates = Set.empty
+        , acceptingStates = Set.singleton simDefState
         }
 simpleDefinitionToDFA (SimDefEq id subject numericalExpression) = do
     let subjectStr = subjectToString subject
         numExpStr = numericalExpressionToString numericalExpression
-        eventStr = subjectStr ++ " EQUALS " ++ numExpStr
+        stateStr = subjectStr ++ " EQUALS " ++ numExpStr
+        eventStr = "Null"
 
+        simDefState = StateAD stateStr
         simDefEvent = EventD eventStr
 
-    addSelfLoopingEvents simDefEvent
+    addToStateDictionary simDefState (Set.singleton $ simDefEvent) 1
+    newTransitions <- generateTransition (StateAD "Start") simDefState
 
     return $ DFA
-        { states = Set.singleton $ StateAD "Start"
+        { states = Set.fromList [StateAD "Start", simDefState]
         , events = Set.singleton simDefEvent
-        , transitions = Set.empty
+        , transitions = Set.fromList newTransitions
         , startStates = Set.singleton $ StateAD "Start"
-        , acceptingStates = Set.empty
+        , acceptingStates = Set.singleton simDefState
         }
 simpleDefinitionToDFA (SimDefDate id subject day month year) = do
     let subjectStr = subjectToString subject
         dateStr = dateSpeToString day month year
-        eventStr = subjectStr ++ " IS " ++ dateStr
+        stateStr = subjectStr ++ " IS " ++ dateStr
+        eventStr = "Null"
 
+        simDefState = StateAD stateStr
         simDefEvent = EventD eventStr
 
-    addSelfLoopingEvents simDefEvent
+    addToStateDictionary simDefState (Set.singleton $ simDefEvent) 1
+    newTransitions <- generateTransition (StateAD "Start") simDefState
 
     return $ DFA
-        { states = Set.singleton $ StateAD "Start"
+        { states = Set.fromList [StateAD "Start", simDefState]
         , events = Set.singleton simDefEvent
-        , transitions = Set.empty
+        , transitions = Set.fromList newTransitions
         , startStates = Set.singleton $ StateAD "Start"
-        , acceptingStates = Set.empty
+        , acceptingStates = Set.singleton simDefState
         }
 
 conditionToDFA :: Condition -> State (StateDictionary, SelfLoopingEvents) DFA
