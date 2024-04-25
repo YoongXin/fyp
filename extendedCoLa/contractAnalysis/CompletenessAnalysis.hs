@@ -1,15 +1,16 @@
 module ContractAnalysis.CompletenessAnalysis where
 
 import Prelude
-  ( ($), (++), (<), (.), (+), (-)
-  , Int, Integer, String, Eq, Show, Read, IO, Bool(..), Maybe(..)
-  , words, unwords, putStrLn, init, last, length, null, map, fst, snd, zipWith, concat, toInteger, show
+  ( ($), (++), (<), (.), (+), (-), (/)
+  , Int, Integer, Double, String, Eq, Show, Read, IO, Bool(..), Maybe(..)
+  , words, unwords, putStrLn, init, last, length, null, map, fst, snd, zipWith, concat, toInteger, show, fromIntegral
   )
 
 import Control.Monad.State
 import qualified Data.Map as Map
 import qualified Data.List as List
 
+import Text.Printf
 import Data.List ( intercalate, nub )
 import Control.Monad ( liftM2 )
 
@@ -379,19 +380,20 @@ updateBoolExDict sentence comparison id = do
 
     return newDict 
 
-generateCompletenessScore :: Contract -> CompletenessReport -> Integer
+generateCompletenessScore :: Contract -> CompletenessReport -> Double
 generateCompletenessScore contract (IncompleteItems (scs, sds, sccs, sss, beDict)) =
     let dfa = runDFAConversionFinal contract
         positiveScore = getNumberOfStates dfa
         negativeScore = length scs + length sccs + Map.size beDict
-        finalScore = positiveScore - toInteger negativeScore
+        initialScore = positiveScore - toInteger negativeScore
+        finalScore = fromIntegral initialScore / fromIntegral positiveScore
 
     in finalScore
 
 runCheckCompleteness :: Contract -> CompletenessReport
 runCheckCompleteness contract = removeDuplicatesFromBoolExDict (evalState (checkContractCompleteness contract) (Map.empty))
 
-printCompletenessReport :: CompletenessReport -> Integer -> String
+printCompletenessReport :: CompletenessReport -> Double -> String
 printCompletenessReport (IncompleteItems (scs, sds, sccs, sss, beDict)) completenessScore =
     "\n=======================================================\n" ++
     "Incomplete Conditional Definitions (If without \"else\"):\n" ++
@@ -419,4 +421,4 @@ printCompletenessReport (IncompleteItems (scs, sds, sccs, sss, beDict)) complete
     "\n\n===================\n" ++
     "Completeness Score:\n" ++
     "===================\n\n" ++
-    show completenessScore
+    printf "%.3f" completenessScore
