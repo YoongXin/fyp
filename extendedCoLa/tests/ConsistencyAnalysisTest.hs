@@ -10,6 +10,8 @@ prop_consistencyChecking :: String -> String -> String -> Property
 prop_consistencyChecking inputContract inputPerformance expectedResult =
     CoLaParser.getConsistencyAnalysisResult (CoLaParser.checkInconsistencyInContract (inputContract) (inputPerformance)) === expectedResult
 
+emptyPerformance = ""
+
 consistencyPerformance1a = "[1] Carol paid EUROS 30 to David on 19 September 2023 C-AND [2] David delivered OTHEROBJECT orange to Carol on 25 September 2023"
 consistencyPerformance1b = "[1] Carol paid EUROS 30 to David before 20 September 2023 C-AND [2] David delivered OTHEROBJECT orange to Carol on 29 September 2023"
 consistencyPerformance1c = "[1] it is not the case that Carol paid EUROS 30 to David before 20 September 2023 C-AND [2] it is not the case that David delivered OTHEROBJECT orange to Carol before 27 September 2023"
@@ -77,6 +79,8 @@ consistencyAnalysisSampleTests =
     , (consistencyContract7, consistencyPerformance7a, inconsistencyExpected)
     , (consistencyContract7, consistencyPerformance7b, noInconsistencyExpected)
     , (consistencyContract7, consistencyPerformance7c, noInconsistencyExpected)
+    , (consistencyContract8, emptyPerformance, inconsistencyExpected)
+    , (consistencyContract9, emptyPerformance, inconsistencyExpected)
     , (bikeDeliveryOriginal, bikeOriginalPerformance1a, noInconsistencyExpected)
     , (bikeDeliveryOriginal, bikeOriginalPerformance1b, inconsistencyExpected)
     , (bikeDeliveryOriginal, bikeOriginalPerformance1c, inconsistencyExpected)

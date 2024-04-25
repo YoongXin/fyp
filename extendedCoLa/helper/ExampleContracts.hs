@@ -97,6 +97,8 @@ consistencyContract4 = "IF [1] it is the case that Ivana charged DOLLARS 13 to J
 consistencyContract5 = "IF [1] it is the case that Kathy paid EUROS 3 to Lily on SOMEDATE unknownOne THEN [2] it is the case that Lily must deliver OTHEROBJECT bicycle to Kathy before 7 days after SOMEDATE unknownOne"
 consistencyContract6 = "IF [1] Mandy paid POUNDS 17 to Nancy on 7 April 2021 THEN [2] Nancy must deliver OTHEROBJECT bag to Mandy on SOMEDATE unknownOne C-AND [3] unknownOne IS 9 April 2021"
 consistencyContract7 = "IF [1] it is the case that Alice paid POUNDS 100 to Bob on the 1 April 2021 OR [4] it is the case that Alice paid DOLLARS 120 to Bob on the 1 April 2021 THEN [2] it is the case that Bob must deliver OTHEROBJECT bicycle to Alice on the 5 April 2021 ELSE [3] it is the case that Bob must deliver OTHEROBJECT orange to Alice on the 5 April 2021"
+consistencyContract8 = "[1] Tom must pay POUNDS 20 to Jerry on 14 April 2024 C-AND [2] Tom is forbidden to pay POUNDS 20 to Jerry on 14 April 2024"
+consistencyContract9 = "[1] it is the case that Charles must deliver OTHEROBJECT bicycle to Alex on 25 January 2023 AND [2] it is not the case that Charles must deliver OTHEROBJECT bicycle to Alex on 25 January 2023"
 
 tqTestContract1 = "IF [1] it is the case that Alice paid POUNDS 3 to Bob before 3 January 2024 THEN [2] it is the case that Bob must deliver OTHEROBJECT watermelon to Alice before 10 January 2024"
 tqTestContract2 = "[1] Cindy must deliver REPORT receipt to Alex after 8 September 2023 IF [2] Alex paid EUROS 10 to Cindy after 1 September 2023 ELSE [3] Cindy is forbidden to refund EUROS 10 to Alex before 10 September 2023"
