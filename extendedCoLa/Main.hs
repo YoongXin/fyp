@@ -92,7 +92,7 @@ consistencyAnalysis contractFilePath performanceFilePath = do
     let axioms = mustAxiom ++ "\n\n" ++ forbiddenAxiom ++ "\n\n" ++ mustTemporalQuantifierAxiom
         combinedOutput = contractFullForm ++ "\n\n" ++ performanceFullForm ++ "\n\n" ++ axioms
 
-    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d-%H:%M:%S" <$> getCurrentTime
 
     let tptpFilePath = "output/checkInconsistency" ++ timeStamp ++ ".p"
 
@@ -170,7 +170,7 @@ convertToGraph contractFilePath = do
     let graph = nfaToGraph nfa
     let dotFile = visualizeGraph nfa graph
 
-    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d-%H:%M:%S" <$> getCurrentTime
 
     let graphFilePath = "output/graph" ++ timeStamp ++ ".dot" 
     let pngFilePath = "output/graph" ++ timeStamp ++ ".png"
@@ -189,7 +189,7 @@ findPathInGraph contractFilePath startNode endNode numEdges = do
     let nfa = runNFAConversion (parseContract contractString)
     let dotFile = visualisePossiblePath nfa startNode endNode numEdges
 
-    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d-%H:%M:%S" <$> getCurrentTime
 
     let graphFilePath = "output/graphWithPathHighlighted" ++ timeStamp ++ ".dot" 
     let pngFilePath = "output/graphWithpPathHighlighted" ++ timeStamp ++ ".png"
@@ -209,7 +209,7 @@ convertToDFA contractFilePath = do
     let graph = dfaToGraph dfa
     let dotFile = visualizeGraphDFA dfa graph
 
-    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d-%H:%M:%S" <$> getCurrentTime
 
     let dotFilePath = "output/dfa" ++ timeStamp ++ ".dot"
     let pngFilePath = "output/dfa" ++ timeStamp ++ ".png"
@@ -228,7 +228,7 @@ convertToDFA' contractString = do
     let graph = dfaToGraph dfa
     let dotFile = visualizeGraphDFA dfa graph
 
-    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d-%H:%M:%S" <$> getCurrentTime
 
     let dotFilePath = "output/dfa" ++ timeStamp ++ ".dot"
     let pngFilePath = "output/dfa" ++ timeStamp ++ ".png"
@@ -246,7 +246,7 @@ convertToPetriNet contractFilePath = do
     contractString <- readFile contractFilePath
     let petriNet = printPNContract (contractToPN (parseContract contractString))
 
-    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d-%H:%M:%S" <$> getCurrentTime
 
     let codeFilePath = "output/petriNetPythonCode" ++ timeStamp ++ ".txt"
 
@@ -265,7 +265,7 @@ generateCompletenessReport contractFilePath = do
         completenessScore = generateCompletenessScore ast completenessReport'
         completenessReport = printCompletenessReport completenessReport' completenessScore
 
-    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d-%H:%M:%S" <$> getCurrentTime
 
     let reportFilePath = "output/completenessReport" ++ timeStamp ++ ".txt"
 
@@ -283,7 +283,7 @@ generateComplexityReport contractFilePath = do
         complexityMetrics = getComplexityMetrics ast
         complexityReport = printComplexityReport complexityMetrics
 
-    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d—%H:%M:%S" <$> getCurrentTime
+    timeStamp <- formatTime defaultTimeLocale "-%Y-%m-%d-%H:%M:%S" <$> getCurrentTime
 
     let reportFilePath = "output/complexityReport" ++ timeStamp ++ ".txt"
 
