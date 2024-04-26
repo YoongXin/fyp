@@ -15,19 +15,19 @@ prop_complexityReport input expectedComplexityReport =
     printComplexityReport (getComplexityMetrics (CoLaParser.parseContract input)) === expectedComplexityReport
 
 emptyContractComplexityMetrics = [1,0,0,0,0,0,0]
-simpleDefinitionComplexityMetrics = [1,1,0,0,0,0,0]
-andDefinitionComplexityMetrics = [1,5,0,0,0,0,0]
-conditionalDefinitionComplexityMetrics = [4,7,2,0,1,0,0]
+simpleDefinitionComplexityMetrics = [2,1,0,0,0,0,0]
+andDefinitionComplexityMetrics = [2,1,0,0,0,0,0]
+conditionalDefinitionComplexityMetrics = [4,3,2,0,1,0,0]
 simpleStatementComplexityMetrics = [2,1,2,0,0,0,0]
 andStatementComplexityMetrics = [4,4,4,0,0,0,0]
 orStatementComplexityMetrics = [5,4,2,0,0,0,0]
-conditionalStatementComplexityMetrics = [5,9,2,0,1,0,3]
+conditionalStatementComplexityMetrics = [5,10,2,0,1,0,3]
 
 bikeDeliveryOriginalComplexityMetrics = [6,14,2,0,0,0,0]
 bikeDeliveryModifiedComplexityMetrics = [4,9,2,0,0,0,0]
 bikeDeliverySanctionComplexityMetrics = [8,26,2,0,0,0,0]
-isdaOriginalComplexityMetrics = [11,111,4,4,0,0,0]
-isdaModifiedComplexityMetrics = [10,86,4,4,0,0,0]
+isdaOriginalComplexityMetrics = [11,45,4,4,0,0,0]
+isdaModifiedComplexityMetrics = [10,36,4,4,0,0,0]
 guarantorComplexityMetrics = [17,51,5,0,4,0,0]
 employmentComplexityMetrics = [21,108,3,0,9,10,1107]
 tenancyComplexityMetrics = [14,54,3,0,3,2,0]
@@ -37,8 +37,8 @@ emptyContractComplexityReport = "Number of States: 1\nNumber of Transitions: 0\n
 bikeDeliveryOriginalComplexityReport = "Number of States: 6\nNumber of Transitions: 14\nNumber of Parties Involved: 2\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 0\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 0\n\nTotal Complexity Score: 22"
 bikeDeliveryModifiedComplexityReport = "Number of States: 4\nNumber of Transitions: 9\nNumber of Parties Involved: 2\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 0\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 0\n\nTotal Complexity Score: 15"
 bikeDeliverySanctionComplexityReport = "Number of States: 8\nNumber of Transitions: 26\nNumber of Parties Involved: 2\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 0\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 0\n\nTotal Complexity Score: 36"
-isdaOriginalComplexityReport = "Number of States: 11\nNumber of Transitions: 111\nNumber of Parties Involved: 4\nNumber of Numerical Operators: 4\nNumber of Temporal Quantifiers: 0\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 0\n\nTotal Complexity Score: 130"
-isdaModifiedComplexityReport = "Number of States: 10\nNumber of Transitions: 86\nNumber of Parties Involved: 4\nNumber of Numerical Operators: 4\nNumber of Temporal Quantifiers: 0\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 0\n\nTotal Complexity Score: 104"
+isdaOriginalComplexityReport = "Number of States: 11\nNumber of Transitions: 45\nNumber of Parties Involved: 4\nNumber of Numerical Operators: 4\nNumber of Temporal Quantifiers: 0\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 0\n\nTotal Complexity Score: 64"
+isdaModifiedComplexityReport = "Number of States: 10\nNumber of Transitions: 36\nNumber of Parties Involved: 4\nNumber of Numerical Operators: 4\nNumber of Temporal Quantifiers: 0\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 0\n\nTotal Complexity Score: 54"
 guarantorComplexityReport = "Number of States: 17\nNumber of Transitions: 51\nNumber of Parties Involved: 5\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 4\nNumber of Temporal Offsets: 0\nScore for Payment Variability: 0\n\nTotal Complexity Score: 77"
 employmentComplexityReport = "Number of States: 21\nNumber of Transitions: 108\nNumber of Parties Involved: 3\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 9\nNumber of Temporal Offsets: 10\nScore for Payment Variability: 1107\n\nTotal Complexity Score: 1258"
 tenancyComplexityReport = "Number of States: 14\nNumber of Transitions: 54\nNumber of Parties Involved: 3\nNumber of Numerical Operators: 0\nNumber of Temporal Quantifiers: 3\nNumber of Temporal Offsets: 2\nScore for Payment Variability: 0\n\nTotal Complexity Score: 76"

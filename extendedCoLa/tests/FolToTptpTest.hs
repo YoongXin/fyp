@@ -10,7 +10,7 @@ prop_convertToTPTP :: String -> String -> Property
 prop_convertToTPTP input expectedTPTPFormula =
     runTptpConversionContract (CoLaParser.parseContract input) === expectedTPTPFormula
 
-emptyContractTPTP = "fof(contract, axiom, (Empty(Empty)))."
+emptyContractTPTP = "fof(contract, axiom, (empty(empty)))."
 simpleDefinitionTPTP = "fof(contract, axiom, (PartyA = Alice))."
 andDefinitionTPTP = "fof(contract, axiom, ((PartyA = Alice) & ((AmountA = Pound100) & (DateA = 60338))))."
 conditionalDefinitionTPTP = "fof(contract, axiom, ((! [X,Y,O,D] : (((((name(X,Kelly)) & (name(Y,Carol))) & (date(D,60310))) & (objectAmount(O,rental))) & (mustChargeBefore(X,Y,O,D)))) => (PartyA = Carol)))."

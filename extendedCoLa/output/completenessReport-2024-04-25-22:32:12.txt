@@ -1,0 +1,33 @@
+
+=======================================================
+Incomplete Conditional Definitions (If without "else"):
+=======================================================
+
+None
+
+======================================================
+Incomplete Conditional Statements (If without "else"):
+======================================================
+
+Conditions:
+[2] it is the case that Tenant paid £15000 Landlord  BEFORE 1 September 2023
+[6] it is the case that Tenant delivered OtherObject "notDamagedProperty" Landlord on the 22 September 2024
+[7] it is the case that Landlord charged Amount "securityDeposit" Tenant on 23 August 2023
+[9] it is the case that Landlord charged Amount "incrementInRental" Tenant on SOMEDATE unknown
+
+Statements:
+[1] it is the case that Landlord must deliver OtherObject "property" Tenant on the 23 September 2023
+[8] it is the case that Landlord must refund Amount "securityDeposit" Tenant  BEFORE 1 October 2024
+[10] it is the case that Landlord must deliver Report "noticeOfRentalIncrement" Tenant 4 weeks BEFORE THEDATE unknown
+
+=============================================================================
+Incomplete Boolean Expressions (Value test that doesn't consider all values):
+=============================================================================
+
+None
+
+===================
+Completeness Score:
+===================
+
+0.714
