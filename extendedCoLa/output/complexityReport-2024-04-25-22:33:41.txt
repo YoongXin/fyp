@@ -1,0 +1,9 @@
+Number of States: 14
+Number of Transitions: 54
+Number of Parties Involved: 3
+Number of Numerical Operators: 0
+Number of Temporal Quantifiers: 3
+Number of Temporal Offsets: 2
+Score for Payment Variability: 0
+
+Total Complexity Score: 76

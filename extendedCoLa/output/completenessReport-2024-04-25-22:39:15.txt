@@ -1,0 +1,28 @@
+
+=======================================================
+Incomplete Conditional Definitions (If without "else"):
+=======================================================
+
+None
+
+======================================================
+Incomplete Conditional Statements (If without "else"):
+======================================================
+
+Conditions:
+[1] Alice paid £5000 Bob on 3 February 2024
+
+Statements:
+[2] Bob must deliver OtherObject "car" Alice on 5 February 2024
+
+=============================================================================
+Incomplete Boolean Expressions (Value test that doesn't consider all values):
+=============================================================================
+
+None
+
+===================
+Completeness Score:
+===================
+
+0.875
